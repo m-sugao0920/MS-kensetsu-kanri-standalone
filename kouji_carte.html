@@ -1,13 +1,16 @@
 <!doctype html>
 <html lang="ja">
 <head>
-<script src="ms_password.js"></script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>工事カルテ｜MS建設管理システム</title>
 <style id="ms-no-flicker">
 /* 初期データ反映前のテンプレートちらつき防止。レイアウト値は変更しない */
 html.ms-app-loading body{visibility:hidden}
+
+/* 残額カード：見出しを金額と一緒に瞬時に読める大きさへ */
+.dashboard .metric .label{font-size:15px!important;font-weight:800!important;line-height:1.35;color:#334f60!important;letter-spacing:.01em}
+.dashboard .metric-sub{font-size:11px!important;line-height:1.35;margin-top:5px;color:#71818c}
 </style>
 <script id="ms-no-flicker-start">
 document.documentElement.classList.add('ms-app-loading');
@@ -33,7 +36,7 @@ main{max-width:1440px;margin:auto;padding:16px 24px 28px}
 .state{display:inline-flex;border-radius:999px;padding:6px 13px;background:#e7f5ec;color:#2e704b;border:1px solid #b9ddc6;font-size:11px;font-weight:950}
 .dashboard{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:11px 0}
 .metric{background:#fff;border:1px solid #d4e1ea;border-radius:10px;padding:10px 12px;min-height:72px;box-shadow:0 4px 11px rgba(23,63,107,.05)}
-.metric .label{font-size:10px;font-weight:900;color:#5e7381}.metric .value{font-size:20px;font-weight:700;margin-top:5px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.metric .label{font-size:10px;font-weight:900;color:#5e7381}.metric .value{font-size:20px;font-weight:700;margin-top:5px;font-variant-numeric:tabular-nums;white-space:nowrap}.metric-sub{margin-top:4px;font-size:10px;color:#71818c;font-weight:600}
 .contract{border-top:3px solid #176fa8}.budget{border-top:3px solid #7957ad}.order{border-top:3px solid #df7b28}.invoice{border-top:3px solid #348c7d}.payment{border-top:3px solid #4d89b4}.remain{border-top:3px solid #a96528}.profit{border-top:3px solid #628a49}.future{border-top:3px solid #9aa7af;background:#fafbfc}
 .future .value{font-size:13px;color:#7b8991;margin-top:9px}
 .content{display:block}
@@ -77,14 +80,14 @@ footer{max-width:1440px;margin:auto;padding:0 24px 18px;color:#728490;font-size:
 </section>
 
 <section class="dashboard">
- <div class="metric contract"><div class="label">受注金額</div><div class="value">1,250,000円</div></div>
- <div class="metric budget"><div class="label">実行予算</div><div class="value">未作成</div></div>
- <div class="metric profit"><div class="label">予定利益 / 利益率</div><div class="value">350,000円 / 28.0%</div></div>
- <div class="metric order"><div class="label">発注金額</div><div class="value">未登録</div></div>
- <div class="metric remain"><div class="label">予算残</div><div class="value">280,000円</div></div>
- <div class="metric invoice"><div class="label">下請請求累計</div><div class="value">未登録</div></div>
- <div class="metric payment"><div class="label">元請請求額</div><div class="value">未登録</div></div>
- <div class="metric contract"><div class="label">入金済額</div><div class="value">未登録</div></div>
+ <div class="metric contract"><div class="label">元請未請求</div><div class="value">—</div><div class="metric-sub">受注 − 元請請求</div></div>
+ <div class="metric budget"><div class="label">下請未発注</div><div class="value">—</div><div class="metric-sub">実行予算 − 発注済</div></div>
+ <div class="metric invoice"><div class="label">下請未請求</div><div class="value">—</div><div class="metric-sub">発注済 − 下請請求</div></div>
+ <div class="metric payment"><div class="label">元請未収金</div><div class="value">—</div><div class="metric-sub">元請請求 − 入金</div></div>
+ <div class="metric contract"><div class="label">受注金額</div><div class="value">—</div></div>
+ <div class="metric order"><div class="label">発注済</div><div class="value">—</div></div>
+ <div class="metric payment"><div class="label">元請請求済</div><div class="value">—</div></div>
+ <div class="metric profit"><div class="label">予定利益 / 利益率</div><div class="value">—</div></div>
 </section>
 
 <div class="content">
@@ -122,7 +125,7 @@ footer{max-width:1440px;margin:auto;padding:0 24px 18px;color:#728490;font-size:
      <button class="action a-order" data-href="hacchu_seikyu_kanri.html"><b>発注・下請請求</b><span>下請・仕入先から来る請求を管理</span></button>
      <button class="action a-invoice" data-href="seikyu_nyukin.html"><b>元請請求・入金</b><span>元請・お客様へ出す請求と入金を管理</span></button>
      <button class="action a-info" data-href="kouji_edit.html"><b>工事情報</b><span>住所・担当者・工期など</span></button>
-     <button class="action a-doc" data-href="kanren_shiryo.html"><b>関連資料</b><span>契約書・リンク・工事資料</span></button>
+     <button class="action a-doc" data-demo="関連資料"><b>関連資料</b><span>契約書・リンク・工事資料</span></button>
     </div>
    </section>
   </div>
@@ -179,14 +182,22 @@ if(x){
  if(metrics.length>=8){
    const budgetTotal=(eb.totalAmount!==undefined&&eb.totalAmount!==null)?Number(eb.totalAmount):null;
    const budgetRemain=budgetTotal!==null?budgetTotal-orderTotal:null;
-   metrics[0].textContent=yenOr(contractNow);
-   metrics[1].textContent=budgetTotal!==null?yenOr(budgetTotal):'未作成';
-   metrics[2].textContent=(eb.profitAmount!==undefined&&eb.profitAmount!==null)?(yenOr(eb.profitAmount)+' / '+Number(eb.profitRate||0).toFixed(1)+'%'):yenOr(f.budgetOrderAmount);
-   metrics[3].textContent=liveOrders.length?yenOr(orderTotal):yenOr(f.budgetOrderAmount);
-   metrics[4].textContent=budgetRemain!==null?yenOr(budgetRemain):'未作成';
-   metrics[5].textContent=liveSupplierInvoices.length?yenOr(supplierInvoiceTotal):'未登録';
-   metrics[6].textContent=liveSalesInvoices.length?yenOr(salesInvoiceTotal):yenOr(f.invoiceAmount);
-   metrics[7].textContent=liveSalesReceipts.length?yenOr(salesReceiptTotal):yenOr(f.paymentAmount);
+   const orderShown=liveOrders.length?orderTotal:Number(f.budgetOrderAmount||0);
+   const supplierShown=liveSupplierInvoices.length?supplierInvoiceTotal:0;
+   const salesInvShown=liveSalesInvoices.length?salesInvoiceTotal:Number(f.invoiceAmount||0);
+   const salesRecShown=liveSalesReceipts.length?salesReceiptTotal:Number(f.paymentAmount||0);
+   const canBill=Math.max(0,Number(contractNow||0)-salesInvShown);
+   const canOrder=budgetTotal!==null?Math.max(0,budgetTotal-orderShown):null;
+   const supplierWaiting=Math.max(0,orderShown-supplierShown);
+   const unpaid=Math.max(0,salesInvShown-salesRecShown);
+   metrics[0].textContent=yenOr(canBill);
+   metrics[1].textContent=canOrder!==null?yenOr(canOrder):'未作成';
+   metrics[2].textContent=yenOr(supplierWaiting);
+   metrics[3].textContent=yenOr(unpaid);
+   metrics[4].textContent=yenOr(contractNow);
+   metrics[5].textContent=yenOr(orderShown);
+   metrics[6].textContent=yenOr(salesInvShown);
+   metrics[7].textContent=(eb.profitAmount!==undefined&&eb.profitAmount!==null)?(yenOr(eb.profitAmount)+' / '+Number(eb.profitRate||0).toFixed(1)+'%'):'未作成';
  }
  const rows=document.querySelectorAll('.progress-row');
  if(rows.length>=4){
