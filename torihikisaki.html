@@ -1,5 +1,4 @@
-<!doctype html><html lang="ja"><head>
-<script src="ms_password.js"></script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>取引先｜MS建設管理システム</title>
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>取引先｜MS建設管理システム</title>
 <style id="ms-no-flicker">
 /* 初期データ反映前のテンプレートちらつき防止。レイアウト値は変更しない */
 html.ms-app-loading body{visibility:hidden}
@@ -28,20 +27,8 @@ window.addEventListener('load',function(){
 @media(max-width:1000px){.kpis{grid-template-columns:repeat(2,1fr)}.analysis{grid-template-columns:1fr}}
 </style></head><body>
 <header><div class="top"><div class="brand">MS建設管理システム　／　取引先</div><button onclick="location.href='index.html'">メイン画面に戻る</button></div></header><main>
-<div class="title"><div><h1>取引先一覧・分析</h1><div class="note">会議・営業管理用。検索、取引状況、受注実績をまとめて確認し、会社名から取引先マスターへ直接移動できます。</div></div><a class="btn" href="torihikisaki_master.html">＋ 新規登録</a></div>
+<div class="title"><div><h1>取引先一覧</h1><div class="note">取引先を検索し、連絡先・取引区分・取引状況を確認します。会社名を選ぶと取引先マスターを開きます。</div></div><a class="btn" href="torihikisaki_master.html">＋ 新規登録</a></div>
 
-<div class="search" style="margin-bottom:10px">
- <div style="display:flex;gap:10px;align-items:end;flex-wrap:wrap">
-  <div><label style="font-size:12px;color:#607480">集計期間</label><br>
-   <select id="period" onchange="applyPeriod()" style="min-width:150px">
-    <option value="fy">今年度</option><option value="month">今月</option><option value="prev">前年同期</option><option value="custom">期間指定</option><option value="all">全期間</option>
-   </select>
-  </div>
-  <div><label style="font-size:12px;color:#607480">開始日</label><br><input id="dateFrom" type="date" onchange="customPeriod()"></div>
-  <div><label style="font-size:12px;color:#607480">終了日</label><br><input id="dateTo" type="date" onchange="customPeriod()"></div>
-  <div class="note" id="periodLabel" style="padding-bottom:8px"></div>
- </div>
-</div>
 <div class="search">
  <div class="searchgrid">
   <input id="q" placeholder="会社名・フリガナ・住所・業種・備考など">
@@ -57,39 +44,15 @@ window.addEventListener('load',function(){
  </div>
 </div>
 
-<div class="kpis">
- <div class="kpi"><span>表示取引先</span><b id="kCount">0社</b></div>
- <div class="kpi"><span>取引中</span><b id="kActive">0社</b></div>
- <div class="kpi"><span>期間内受注先</span><b id="kClients">0社</b></div>
- <div class="kpi"><span>受注工事件数</span><b id="kProjects">0件</b></div>
- <div class="kpi"><span>期間内受注金額</span><b id="kAmount">0円</b></div>
- <div class="kpi"><span>前年同期比</span><b id="kYoY">－</b></div>
- <div class="kpi"><span>今年度取引なし</span><b id="kDormant">0社</b></div>
-</div>
 
 
-<div class="viewtabs"><button id="tabPartners" class="active" onclick="setView('partners')">取引先一覧</button><button id="tabClients" onclick="setView('clients')">受注先別集計</button><button id="tabDormant" onclick="setView('dormant')">取引実績なし</button><button id="tabStaff" onclick="setView('staff')">担当者別実績</button></div>
+<section class="panel" id="partnerPanel"><h2>取引先一覧 <span class="count" id="count"></span></h2><div class="tablewrap"><table><thead><tr><th>取引先No.</th><th>名称</th><th>種別</th><th>取引区分</th><th>担当者・窓口</th><th>電話番号</th><th>地域</th><th>住所</th><th>状態</th></tr></thead><tbody id="rows"></tbody></table></div></section>
 
-<section class="panel" id="partnerPanel"><h2>取引先一覧 <span class="count" id="count"></span></h2><div class="tablewrap"><table><thead><tr><th>取引先No.</th><th>名称</th><th>種別</th><th>取引区分</th><th>担当者・窓口</th><th>電話番号</th><th>地域</th><th>住所</th><th>状態</th><th class="num">受注件数</th><th class="num">受注金額</th><th>最終受注日</th></tr></thead><tbody id="rows"></tbody></table></div></section>
 
-<section class="panel" id="clientPanel" style="display:none"><h2>受注先別集計</h2><div class="tablewrap"><table><thead><tr><th>受注先</th><th class="num">工事件数</th><th class="num">受注金額</th><th>最終受注日</th><th>最近の工事</th></tr></thead><tbody id="clientRows"></tbody></table></div></section>
 
-<section class="panel" id="staffPanel" style="display:none"><h2>担当者別 受注実績</h2><div class="tablewrap"><table><thead><tr><th>順位</th><th>担当者</th><th class="num">受注件数</th><th class="num">受注金額</th><th class="num">構成比</th></tr></thead><tbody id="staffRows"></tbody></table></div></section>
 
-<details id="graphDetails" style="margin-top:18px">
- <summary style="cursor:pointer;font-weight:700;font-size:16px;padding:12px 14px;background:#eef3f5;border:1px solid #cfdadd;border-radius:8px">グラフを表示</summary>
- <div style="margin-top:10px"><div class="analysis">
-<div class="chartbox"><h2>受注先別 受注金額 上位10社</h2><div id="clientChart"></div><div class="chartnote">工事データの発注者名と取引先名を照合して集計。会議用の傾向確認です。</div></div>
-<div class="chartbox"><h2>担当者別 受注実績</h2>
- <div style="margin-bottom:8px"><select id="staffRole" onchange="renderStaff()">
-  <option value="sales">営業担当</option><option value="construction">工事担当</option>
-  <option value="site">現場担当</option><option value="estimate">積算担当</option><option value="design">設計担当</option>
- </select></div><div id="staffChart"></div><div class="chartnote">工事データの「営業担当者」で集計した受注金額。順位は会議時の状況確認用です。</div></div>
- <div class="chartbox"><h2>取引先種別</h2><div id="typeChart"></div><div class="chartnote">現在の検索条件に該当する取引先を集計。</div></div>
-<div class="analysis">
- <div class="chartbox"><h2>月別受注推移</h2><div id="monthChart"></div><div class="chartnote">選択した期間の月別受注金額。</div></div></div>
-</details>
-<div class="foot">※この画面は会議・営業管理用です。会社全体の売上・粗利・未請求・未入金・資金繰りは「経営・管理資料」で確認します。</div>
+
+<div class="foot">※この画面は取引先の検索・確認用です。工事の集計・経営分析は「工事一覧・集計」で確認します。</div>
 </main><script src="shared_storage.js"></script>
 <script src="ms_data.js"></script><script>
 const $=id=>document.getElementById(id),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -184,7 +147,7 @@ function renderPartners(){
  let list=current;
  if(view==='dormant')list=current.filter(r=>!stats.has(r.name));
  $('rows').innerHTML=list.map(r=>{const st=r.tradeStatus||(r.status==='inactive'?'休止':'取引中'),z=stats.get(r.name)||{count:0,amount:0,last:''};
- return `<tr onclick="location.href='torihikisaki_master.html?id=${encodeURIComponent(r.id)}'"><td>${esc(r.no||'')}</td><td class="name">${esc(r.name||'')}</td><td><span class="tag">${esc(r.partnerType||'')}</span></td><td><span class="subtag">${esc(r.tradeType||'')}</span></td><td>${esc(staffName(r.ourStaffId)||r.representative||'')}</td><td>${esc(r.tel||'')}</td><td>${esc(r.area||'')}</td><td>${esc(r.address||'')}</td><td>${esc(st)}</td><td class="num">${z.count}</td><td class="num">${z.amount?yen(z.amount):'－'}</td><td>${esc(z.last||'－')}</td></tr>`}).join('');
+ return `<tr onclick="location.href='torihikisaki_master.html?id=${encodeURIComponent(r.id)}'"><td>${esc(r.no||'')}</td><td class="name">${esc(r.name||'')}</td><td><span class="tag">${esc(r.partnerType||'')}</span></td><td><span class="subtag">${esc(r.tradeType||'')}</span></td><td>${esc(staffName(r.ourStaffId)||r.representative||'')}</td><td>${esc(r.tel||'')}</td><td>${esc(r.area||'')}</td><td>${esc(r.address||'')}</td><td>${esc(st)}</td></tr>`}).join('');
  $('count').textContent=list.length.toLocaleString()+'件表示';
 }
 function renderClients(){
@@ -193,14 +156,14 @@ function renderClients(){
  $('clientRows').innerHTML=a.map(([name,z])=>{const p=partners.find(x=>x.name===name);const link=p?`<a class="linkname" href="torihikisaki_master.html?id=${encodeURIComponent(p.id)}">${esc(name)}</a>`:esc(name);
  return `<tr><td>${link}</td><td class="num">${z.count}</td><td class="num">${yen(z.amount)}</td><td>${esc(z.last||'－')}</td><td>${esc(z.latest||'')}</td></tr>`}).join('')||'<tr><td colspan="5">該当データなし</td></tr>';
 }
-function renderAll(){current=filtered();renderCards();renderPartners();renderClients();renderStaff()}
-function setView(v){view=v;$('partnerPanel').style.display=(v==='clients'||v==='staff')?'none':'';$('clientPanel').style.display=v==='clients'?'':'none';$('staffPanel').style.display=v==='staff'?'':'none';['Partners','Clients','Dormant','Staff'].forEach(x=>$('tab'+x).classList.remove('active'));$('tab'+v[0].toUpperCase()+v.slice(1)).classList.add('active');if(v!=='clients'&&v!=='staff')renderPartners()}
+function renderAll(){current=filtered();renderPartners()}
+function setView(v){view='partners';renderPartners()}
 function clearFilter(){['q','type','trade','area','person','phone','status'].forEach(id=>$(id).value='');renderAll()}
 ['q','person','phone'].forEach(id=>$(id).addEventListener('keydown',e=>{if(e.key==='Enter')renderAll()}));
 ['type','trade','area','status'].forEach(id=>$(id).addEventListener('change',renderAll));
 window.addEventListener('load',()=>{
  partners=(MSData.all('partners')||[]).filter(active).sort((a,b)=>(a.no||'').localeCompare(b.no||''));
  projects=(MSData.all('projects')||[]).filter(active);employees=(MSData.all('employees')||[]).filter(active);employees.forEach(x=>empMap.set(String(x.id),x));
- fillAreas();const qq=new URLSearchParams(location.search).get('q')||'';if(qq)$('q').value=qq;applyPeriod();
+ fillAreas();const qq=new URLSearchParams(location.search).get('q')||'';if(qq)$('q').value=qq;periodProjects=projects;buildStats();current=filtered();renderPartners();
 });
 </script></body></html>
