@@ -1,0 +1,365 @@
+{
+  "schema": "MSCM-COMMON-1",
+  "dataVersion": 2,
+  "exportedAt": "2026-09-28T00:00:00.000Z",
+  "data": {
+    "meta": {
+      "schema": "MSCM-COMMON-1",
+      "dataVersion": 2,
+      "mode": "trial",
+      "createdAt": "2026-09-28T00:00:00.000Z",
+      "updatedAt": "2026-09-28T00:00:00.000Z"
+    },
+    "seq": {
+      "project": 4,
+      "partner": 5,
+      "employee": 2,
+      "worker": 0,
+      "workType": 3,
+      "projectType": 3,
+      "partnerType": 5,
+      "order": 0,
+      "invoice": 0,
+      "payment": 0
+    },
+    "projects": [
+      {
+        "id": "6e002b68-f673-4400-8445-af2904506d9e",
+        "no": "K000001",
+        "name": "青空様 外構改修工事",
+        "registerDate": "2026-07-03",
+        "registeredDate": "2026-07-03",
+        "clientName": "青空建設株式会社",
+        "clientId": "6055c0ff-35df-41fc-879b-a8745b1f436b",
+        "clientSnapshot": {
+          "name": "青空建設株式会社"
+        },
+        "address": "静岡県三島市サンプル町1-1",
+        "contractAmount": 3850000,
+        "finalContractAmount": 3850000,
+        "salesPerson": "佐々木 一郎",
+        "status": "active",
+        "createdAt": "2026-09-28T00:00:00.000Z",
+        "updatedAt": "2026-09-28T00:00:00.000Z"
+      },
+      {
+        "id": "4f7d81e5-ac83-4b9e-a883-6f85ead0ca61",
+        "no": "K000002",
+        "name": "みどり住宅 新築外構工事",
+        "registerDate": "2026-08-12",
+        "registeredDate": "2026-08-12",
+        "clientName": "みどり住宅株式会社",
+        "clientId": "be745d6f-9a09-41b6-8593-f748ed0822f8",
+        "clientSnapshot": {
+          "name": "みどり住宅株式会社"
+        },
+        "address": "静岡県沼津市サンプル町2-2",
+        "contractAmount": 2420000,
+        "finalContractAmount": 2420000,
+        "salesPerson": "佐々木 一郎",
+        "status": "active",
+        "createdAt": "2026-09-28T00:00:00.000Z",
+        "updatedAt": "2026-09-28T00:00:00.000Z"
+      },
+      {
+        "id": "831c967b-2077-4c16-aeab-dfbd3066bb07",
+        "no": "K000003",
+        "name": "サンプル公園 植栽整備工事",
+        "registerDate": "2026-09-01",
+        "registeredDate": "2026-09-01",
+        "clientName": "青空建設株式会社",
+        "clientId": "6055c0ff-35df-41fc-879b-a8745b1f436b",
+        "clientSnapshot": {
+          "name": "青空建設株式会社"
+        },
+        "address": "静岡県伊豆地区サンプル町3-3",
+        "contractAmount": 1680000,
+        "finalContractAmount": 1680000,
+        "salesPerson": "中村 二郎",
+        "status": "active",
+        "createdAt": "2026-09-28T00:00:00.000Z",
+        "updatedAt": "2026-09-28T00:00:00.000Z"
+      },
+      {
+        "id": "a74ad100-e41b-4f29-a5fb-65b8f68d70b2",
+        "no": "K000004",
+        "name": "サンプル邸 駐車場拡張工事",
+        "registerDate": "2026-09-15",
+        "registeredDate": "2026-09-15",
+        "clientName": "みどり住宅株式会社",
+        "clientId": "be745d6f-9a09-41b6-8593-f748ed0822f8",
+        "clientSnapshot": {
+          "name": "みどり住宅株式会社"
+        },
+        "address": "静岡県駿東郡サンプル町4-4",
+        "contractAmount": 980000,
+        "finalContractAmount": 980000,
+        "salesPerson": "中村 二郎",
+        "status": "active",
+        "createdAt": "2026-09-28T00:00:00.000Z",
+        "updatedAt": "2026-09-28T00:00:00.000Z"
+      }
+    ],
+    "partners": [
+      {
+        "id": "6055c0ff-35df-41fc-879b-a8745b1f436b",
+        "no": "T000001",
+        "name": "青空建設株式会社",
+        "kana": "アオゾラケンセツ",
+        "entityType": "法人",
+        "partnerType": "法人顧客",
+        "tradeType": "受注",
+        "tradeStatus": "取引中",
+        "zipcode": "100-0001",
+        "address": "東京都千代田区千代田1-1",
+        "tel": "03-0000-0001",
+        "fax": "",
+        "mail": "sample1@example.invalid",
+        "representative": "山田 太郎",
+        "contacts": [
+          {
+            "name": "佐藤 一郎",
+            "department": "工事部",
+            "position": "課長",
+            "tel": "03-0000-0101"
+          }
+        ],
+        "paymentTerms": "月末締め翌月末払い",
+        "memo": "サンプルデータ",
+        "status": "active",
+        "createdAt": "2026-09-28T00:00:00.000Z",
+        "updatedAt": "2026-09-28T00:00:00.000Z"
+      },
+      {
+        "id": "be745d6f-9a09-41b6-8593-f748ed0822f8",
+        "no": "T000002",
+        "name": "みどり住宅株式会社",
+        "kana": "ミドリジュウタク",
+        "entityType": "法人",
+        "partnerType": "法人顧客",
+        "tradeType": "受注",
+        "tradeStatus": "取引中",
+        "zipcode": "220-0001",
+        "address": "神奈川県横浜市西区みなと1-1",
+        "tel": "045-000-0002",
+        "fax": "",
+        "mail": "sample2@example.invalid",
+        "representative": "鈴木 花子",
+        "contacts": [],
+        "paymentTerms": "月末締め翌月末払い",
+        "memo": "サンプルデータ",
+        "status": "active",
+        "createdAt": "2026-09-28T00:00:00.000Z",
+        "updatedAt": "2026-09-28T00:00:00.000Z"
+      },
+      {
+        "id": "e068e127-8640-4155-ae22-ff6a5a25a26e",
+        "no": "T000003",
+        "name": "富士エクステリア株式会社",
+        "kana": "フジエクステリア",
+        "entityType": "法人",
+        "partnerType": "協力会社",
+        "tradeType": "発注",
+        "tradeStatus": "取引中",
+        "zipcode": "410-0001",
+        "address": "静岡県沼津市サンプル町1-2-3",
+        "tel": "055-000-0003",
+        "fax": "",
+        "mail": "sample3@example.invalid",
+        "representative": "高橋 次郎",
+        "contacts": [],
+        "paymentTerms": "月末締め翌月末払い",
+        "memo": "サンプルデータ",
+        "status": "active",
+        "createdAt": "2026-09-28T00:00:00.000Z",
+        "updatedAt": "2026-09-28T00:00:00.000Z"
+      },
+      {
+        "id": "887db683-25c3-4421-b665-ef73df40cd4c",
+        "no": "T000004",
+        "name": "伊豆グリーン株式会社",
+        "kana": "イズグリーン",
+        "entityType": "法人",
+        "partnerType": "仕入先",
+        "tradeType": "発注",
+        "tradeStatus": "取引中",
+        "zipcode": "410-2200",
+        "address": "静岡県伊豆地区サンプル町4-5-6",
+        "tel": "055-000-0004",
+        "fax": "",
+        "mail": "sample4@example.invalid",
+        "representative": "田中 三郎",
+        "contacts": [],
+        "paymentTerms": "20日締め翌月20日払い",
+        "memo": "サンプルデータ",
+        "status": "active",
+        "createdAt": "2026-09-28T00:00:00.000Z",
+        "updatedAt": "2026-09-28T00:00:00.000Z"
+      },
+      {
+        "id": "b251b520-4f2a-4092-bcd9-659fce9e2e69",
+        "no": "T000005",
+        "name": "サンプル商事株式会社",
+        "kana": "サンプルショウジ",
+        "entityType": "法人",
+        "partnerType": "その他",
+        "tradeType": "両方",
+        "tradeStatus": "取引中",
+        "zipcode": "420-0001",
+        "address": "静岡県静岡市サンプル町7-8-9",
+        "tel": "054-000-0005",
+        "fax": "",
+        "mail": "sample5@example.invalid",
+        "representative": "伊藤 四郎",
+        "contacts": [],
+        "paymentTerms": "月末締め翌月末払い",
+        "memo": "サンプルデータ",
+        "status": "active",
+        "createdAt": "2026-09-28T00:00:00.000Z",
+        "updatedAt": "2026-09-28T00:00:00.000Z"
+      }
+    ],
+    "employees": [
+      {
+        "id": "74376bcc-3a0c-4f0e-83af-036b41a0b60d",
+        "no": "S000001",
+        "name": "佐々木 一郎",
+        "kana": "ササキイチロウ",
+        "department": "営業部",
+        "position": "担当",
+        "tel": "090-0000-0001",
+        "mail": "employee1@example.invalid",
+        "status": "active",
+        "createdAt": "2026-09-28T00:00:00.000Z",
+        "updatedAt": "2026-09-28T00:00:00.000Z"
+      },
+      {
+        "id": "4ab47939-79a2-40ca-aa75-755415a24c65",
+        "no": "S000002",
+        "name": "中村 二郎",
+        "kana": "ナカムラジロウ",
+        "department": "工事部",
+        "position": "担当",
+        "tel": "090-0000-0002",
+        "mail": "employee2@example.invalid",
+        "status": "active",
+        "createdAt": "2026-09-28T00:00:00.000Z",
+        "updatedAt": "2026-09-28T00:00:00.000Z"
+      }
+    ],
+    "workers": [],
+    "companySettings": [],
+    "workTypes": [
+      {
+        "id": "d5a32d9d-7ab9-4a14-b750-3a4b96f9e626",
+        "no": "W0001",
+        "name": "土木工事",
+        "sortOrder": 10,
+        "status": "active",
+        "createdAt": "2026-09-28T00:00:00.000Z",
+        "updatedAt": "2026-09-28T00:00:00.000Z"
+      },
+      {
+        "id": "d5c5e505-4a29-4808-846c-4ef35bad5853",
+        "no": "W0002",
+        "name": "造園工事",
+        "sortOrder": 20,
+        "status": "active",
+        "createdAt": "2026-09-28T00:00:00.000Z",
+        "updatedAt": "2026-09-28T00:00:00.000Z"
+      },
+      {
+        "id": "65226108-69f6-4c56-a78a-a8566e890bbd",
+        "no": "W0003",
+        "name": "外構工事",
+        "sortOrder": 30,
+        "status": "active",
+        "createdAt": "2026-09-28T00:00:00.000Z",
+        "updatedAt": "2026-09-28T00:00:00.000Z"
+      }
+    ],
+    "projectTypes": [
+      {
+        "id": "04e13e72-ba69-4451-a64c-4d042c7ef4c3",
+        "no": "C0001",
+        "name": "外構",
+        "sortOrder": 10,
+        "status": "active",
+        "createdAt": "2026-09-28T00:00:00.000Z",
+        "updatedAt": "2026-09-28T00:00:00.000Z"
+      },
+      {
+        "id": "6b5c7661-f926-4bc9-bf4a-37b2beb19d8e",
+        "no": "C0002",
+        "name": "造園",
+        "sortOrder": 20,
+        "status": "active",
+        "createdAt": "2026-09-28T00:00:00.000Z",
+        "updatedAt": "2026-09-28T00:00:00.000Z"
+      },
+      {
+        "id": "47334441-9a30-4476-bc02-a3f72766b90f",
+        "no": "C0003",
+        "name": "土木",
+        "sortOrder": 30,
+        "status": "active",
+        "createdAt": "2026-09-28T00:00:00.000Z",
+        "updatedAt": "2026-09-28T00:00:00.000Z"
+      }
+    ],
+    "partnerTypes": [
+      {
+        "id": "b89cb6c2-b6e1-4c25-8433-a946db87cd90",
+        "no": "R0001",
+        "name": "法人顧客",
+        "sortOrder": 10,
+        "status": "active",
+        "createdAt": "2026-09-28T00:00:00.000Z",
+        "updatedAt": "2026-09-28T00:00:00.000Z"
+      },
+      {
+        "id": "bfd9ff73-1c0a-4164-8052-cea43cf4bf4a",
+        "no": "R0002",
+        "name": "個人顧客",
+        "sortOrder": 20,
+        "status": "active",
+        "createdAt": "2026-09-28T00:00:00.000Z",
+        "updatedAt": "2026-09-28T00:00:00.000Z"
+      },
+      {
+        "id": "728e8a8b-9a2a-4770-a0c3-4943f5fda2d4",
+        "no": "R0003",
+        "name": "協力会社",
+        "sortOrder": 30,
+        "status": "active",
+        "createdAt": "2026-09-28T00:00:00.000Z",
+        "updatedAt": "2026-09-28T00:00:00.000Z"
+      },
+      {
+        "id": "6d0180f2-7ff3-4810-b3a3-fdc520f3fa54",
+        "no": "R0004",
+        "name": "仕入先",
+        "sortOrder": 40,
+        "status": "active",
+        "createdAt": "2026-09-28T00:00:00.000Z",
+        "updatedAt": "2026-09-28T00:00:00.000Z"
+      },
+      {
+        "id": "c51fecf9-6944-416c-bb74-822991e6fe36",
+        "no": "R0005",
+        "name": "その他",
+        "sortOrder": 50,
+        "status": "active",
+        "createdAt": "2026-09-28T00:00:00.000Z",
+        "updatedAt": "2026-09-28T00:00:00.000Z"
+      }
+    ],
+    "budgets": [],
+    "orders": [],
+    "contracts": [],
+    "supplierInvoices": [],
+    "supplierPayments": [],
+    "invoices": [],
+    "payments": []
+  }
+}
