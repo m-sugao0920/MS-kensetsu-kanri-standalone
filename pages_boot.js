@@ -4,7 +4,7 @@
  const originalFetch=window.fetch.bind(window),NativeXHR=window.XMLHttpRequest;
  const base=new URL('.',location.href),storageKey='mscm-pages-v2:'+base.pathname;
  const overlay=document.createElement('div');overlay.style.cssText='position:fixed;inset:0;z-index:99999;display:grid;place-items:center;background:#f3f8fc;color:#173f6b;font:18px Meiryo,sans-serif';
- const notice=document.createElement('div');notice.textContent='デモを準備しています…';overlay.append(notice);document.body.append(overlay);
+ const notice=document.createElement('div');notice.textContent=localStorage.getItem(storageKey)?'':'デモを準備しています…';overlay.append(notice);document.body.append(overlay);
  const script=url=>new Promise((resolve,reject)=>{const el=document.createElement('script');el.src=url;el.onload=resolve;el.onerror=()=>reject(Error('デモの実行環境を読み込めませんでした。接続を確認して再読み込みしてください。'));document.head.append(el);});
 
  async function unlock(){
@@ -24,7 +24,7 @@
    }catch(error){message.textContent='パスワードを確認できません。公開URLまたは確認用の起動ボタンから開いてください。';}
    finally{button.disabled=false;}
   };});
-  notice.textContent='62工事のデモを読み込んでいます…';
+  notice.textContent=localStorage.getItem(storageKey)?'':'デモを読み込んでいます…';
  }
  try{
   if(location.protocol==='file:')throw Error('この版はWeb上で開きます。公開前の確認には「デモを確認.bat」を使ってください。');
@@ -32,11 +32,12 @@
   let raw=localStorage.getItem(storageKey);
   if(!raw){const response=await originalFetch(new URL('demo_data.json.txt',base));if(!response.ok)throw Error('デモデータを読み込めません。');raw=JSON.stringify(await response.json());localStorage.setItem(storageKey,raw);}
   JSON.parse(raw);
-  notice.textContent='62工事のデモを読み込んでいます…';
+  notice.textContent=localStorage.getItem(storageKey)?'':'デモを読み込んでいます…';
   await script('https://cdn.jsdelivr.net/pyodide/v0.29.3/full/pyodide.js');
   const py=await loadPyodide({indexURL:'https://cdn.jsdelivr.net/pyodide/v0.29.3/full/'});
   py.FS.mkdirTree('/app');
-  for(const name of ['purchase_office','cost_ledger','office_validation','dispatch_validation','worker_reports','pages_backend']){const response=await originalFetch(new URL(name+'.py.txt',base));if(!response.ok)throw Error('集計処理を読み込めません。');py.FS.writeFile('/app/'+name+'.py',await response.text());}
+  await script(new URL('pages_code.js?v=20261012b',base).href);
+  for(const name of ['purchase_office','cost_ledger','office_validation','dispatch_validation','worker_reports','pages_backend']){const code=window.MSPagesCode&&window.MSPagesCode[name];if(!code)throw Error('集計処理が不足しています：'+name);py.FS.writeFile('/app/'+name+'.py',code);}
   py.runPython("import sys; sys.path.insert(0, '/app'); from pages_backend import request as pages_request");
   const request=py.globals.get('pages_request');
   function localRequest(url,method,body){
