@@ -1,14 +1,14 @@
 <!doctype html>
 <html lang="ja">
 <head>
-<script src="ms_password.js"></script>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>発注・下請請求管理（支払側）｜MS建設管理システム</title>
 <style id="ms-no-flicker">
 /* 初期データ反映前のテンプレートちらつき防止。レイアウト値は変更しない */
 html.ms-app-loading body{visibility:hidden}
+
 </style>
-<script id="ms-no-flicker-start">
+<script type="text/pages-deferred" id="ms-no-flicker-start">
 document.documentElement.classList.add('ms-app-loading');
 window.addEventListener('load',function(){
   requestAnimationFrame(function(){
@@ -276,55 +276,238 @@ button:focus-visible,summary:focus-visible,input:focus-visible,select:focus-visi
 #recordHistory .note{padding:10px;margin:8px 0}
 @media(max-width:1000px){.workspace .order-list tbody tr{grid-template-columns:repeat(3,minmax(0,1fr))}.workspace .order-list td:nth-child(1){grid-column:1/3}.workspace .order-list td:nth-child(2){grid-column:1/3;grid-row:2}.workspace .order-list td:nth-child(3){grid-column:1;grid-row:3}.workspace .order-list td:nth-child(4){grid-column:2;grid-row:3}.workspace .order-list td:nth-child(5){grid-column:3;grid-row:3}.workspace .order-list td:nth-child(6){grid-column:3;grid-row:1}.workspace .order-list td:nth-child(7){grid-column:3;grid-row:2}.workspace #invoiceBody tr{grid-template-columns:repeat(2,minmax(0,1fr))}.workspace #invoiceBody td:nth-child(n){grid-row:auto}.workspace #invoiceBody td:nth-child(3){grid-column:1}.workspace #invoiceBody td:nth-child(4){grid-column:2}}
 </style>
-</head>
+<style>
+/* Compact budget selection: two rows per item on desktop. */
+@media(min-width:1001px){.workspace{grid-template-columns:minmax(0,3fr) minmax(0,2fr);gap:18px}}
+.workspace-left{scroll-padding-bottom:100px}
+.workspace #addPanel{overflow:visible}
+.workspace .budget-pick{overflow:visible}
+.workspace .budget-pick .table-wrap{padding:8px}
+.workspace #budgetPick tr{
+ display:grid;grid-template-columns:22px repeat(3,minmax(0,1fr)) minmax(170px,1.7fr);
+ grid-template-rows:auto auto;gap:8px 10px;padding:10px;margin-bottom:7px;align-items:center;cursor:default;
+}
+.workspace #budgetPick tr:has(.budgetCheck:checked){background:#edf7ff;border-color:#176fa8}
+.workspace #budgetPick td:nth-child(n){grid-column:auto;grid-row:auto;line-height:1.5}
+.workspace #budgetPick td:nth-child(1){grid-column:1;grid-row:1}
+.workspace #budgetPick td:nth-child(2){grid-column:2/4;grid-row:1;font-weight:700}
+.workspace #budgetPick td:nth-child(3){grid-column:4/6;grid-row:1}
+.workspace #budgetPick td:nth-child(4){grid-column:2;grid-row:2}
+.workspace #budgetPick td:nth-child(5){grid-column:3;grid-row:2}
+.workspace #budgetPick td:nth-child(6){grid-column:4;grid-row:2}
+.workspace #budgetPick td:nth-child(7){grid-column:5;grid-row:2;display:flex;align-items:center;gap:6px}
+.workspace #budgetPick td:nth-child(-n+3)::before{display:none}
+.workspace #budgetPick td:nth-child(n+4)::before{display:inline;margin:0 5px 0 0;font-size:11px;white-space:nowrap}
+.workspace #budgetPick td:nth-child(7)::before{content:'税抜発注';margin:0}
+.workspace #budgetPick .allocationAmount{flex:1;min-width:0;width:100%!important;height:32px;padding:4px 6px;font-size:14px}
+.workspace #budgetPick .allocationAmount:disabled{background:#f3f5f7;color:#82909b}
+.workspace #budgetPick td[colspan]{grid-column:1/-1!important;grid-row:auto!important;display:block!important}
+.workspace #budgetPick td[colspan]::before{display:none}
+.workspace #budgetPick input[type=checkbox]{margin:0;vertical-align:middle;cursor:pointer}
+.workspace .budget-total{grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.workspace .budget-total span{display:block}.workspace .budget-total b{display:block;margin-top:3px}
+.order-submit-bar{position:sticky;bottom:0;z-index:20;background:#fff;border-top:1px solid #c9dbe8;box-shadow:0 -3px 10px #173f6b12;padding:10px!important;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.order-submit-bar .right{display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end}
+.order-submit-summary{font-size:12px;color:#426278}.order-submit-summary b{display:block;color:#173f6b;font-size:18px}
+@media(max-width:600px){
+ .workspace #budgetPick tr{grid-template-columns:22px repeat(3,minmax(0,1fr));grid-template-rows:auto auto auto;gap:7px}
+ .workspace #budgetPick td:nth-child(2){grid-column:2/4}.workspace #budgetPick td:nth-child(3){grid-column:4;overflow-wrap:anywhere}
+ .workspace #budgetPick td:nth-child(7){grid-column:2/5;grid-row:3}
+ .workspace #budgetPick td:nth-child(n+4)::before{display:block;margin:0;font-size:10px}
+ .workspace #budgetPick td:nth-child(7)::before{display:inline}
+ .workspace .budget-total{gap:6px}.order-submit-summary b{font-size:16px}
+}
+</style>
+<style>
+/* Expand the input column only while allocating an order from its budget. */
+@media(min-width:1001px){
+ .workspace[data-input-mode="budget"]{grid-template-columns:minmax(0,3fr) minmax(0,2fr)}
+ .workspace[data-input-mode="simple"],.workspace[data-input-mode="invoice"]{grid-template-columns:minmax(320px,7fr) minmax(0,13fr)}
+}
+.workspace[data-input-mode="closed"]{grid-template-columns:minmax(0,1fr)}
+.workspace[data-input-mode="closed"] .workspace-left{position:static;max-height:none;overflow:visible;padding-right:0}
+.workspace[data-input-mode="closed"] .workspace-left>.column-heading{display:none}
+.workspace[data-input-mode="closed"] .input-toolbar{max-width:480px}
+</style>
+<style id="compact-unlinked-invoices">
+/* Unmatched invoices: company/date, description/amount, matching controls. */
+.workspace #unlinkedInvoices tr{grid-template-columns:minmax(0,1fr) 150px;gap:5px 12px;padding:9px;cursor:default;align-items:center}
+.workspace #unlinkedInvoices td:nth-child(1){grid-column:1;grid-row:1;font-weight:700}
+.workspace #unlinkedInvoices td:nth-child(2){grid-column:2;grid-row:1;text-align:right}
+.workspace #unlinkedInvoices td:nth-child(3){grid-column:1;grid-row:2;overflow-wrap:anywhere}
+.workspace #unlinkedInvoices td:nth-child(4){grid-column:2;grid-row:2;text-align:right;font-size:15px;font-weight:800}
+.workspace #unlinkedInvoices td:nth-child(5){grid-column:1/-1;grid-row:3;display:flex;flex-wrap:nowrap;gap:7px;align-items:center}
+.workspace #unlinkedInvoices td[data-label]::before{display:none}
+.workspace #unlinkedInvoices td:nth-child(4)::before{content:'税抜 ';display:inline;font-size:10px;font-weight:400;color:#657986}
+.workspace #unlinkedInvoices select{flex:1;width:0;min-width:0;height:30px;padding:4px 6px;font-size:12px}
+.workspace #unlinkedInvoices .link-save{flex:none;white-space:nowrap}
+.workspace #unlinkedInvoices .action-menu{flex:none}
+@media(max-width:600px){.workspace #unlinkedInvoices tr{grid-template-columns:minmax(0,1fr) 110px}.workspace #unlinkedInvoices td:nth-child(5){flex-wrap:wrap}.workspace #unlinkedInvoices select{flex-basis:100%;width:100%}}
+</style>
+<style>/* Keep each currency pair on the value line below its label. */
+.workspace #orderList td.amount,.workspace #invoiceBody td.amount{white-space:nowrap!important;overflow-wrap:normal!important}
+.workspace #orderList td.amount small,.workspace #invoiceBody td.amount small{display:inline!important;margin-left:10px;font-size:12px;font-weight:400;color:#617786;white-space:nowrap}
+.workspace #invoiceBody tr{grid-template-columns:105px 255px minmax(0,1fr) 64px}
+@media(min-width:1001px){
+ .workspace #orderList tr{grid-template-columns:minmax(255px,1.5fr) minmax(115px,.8fr) minmax(115px,.8fr) 76px 64px}
+ .workspace #orderList td:nth-child(3){grid-column:1}
+ .workspace #orderList td:nth-child(4){grid-column:2}
+ .workspace #orderList td:nth-child(5){grid-column:3}
+}
+@media(max-width:1000px){.workspace #invoiceBody tr{grid-template-columns:minmax(105px,.7fr) minmax(255px,1.3fr)}}
+</style><style>
+.workspace #unlinkedInvoices tr{grid-template-columns:minmax(160px,1fr) 110px auto!important;grid-template-rows:auto auto;gap:4px 10px!important;padding:7px 9px!important;min-height:0!important}
+.workspace #unlinkedInvoices td:nth-child(1){grid-column:1!important;grid-row:1!important;font-size:13px!important}
+.workspace #unlinkedInvoices td:nth-child(2){grid-column:2!important;grid-row:1!important;font-size:12px!important;white-space:nowrap}
+.workspace #unlinkedInvoices td:nth-child(4){grid-column:3!important;grid-row:1!important;font-size:13px!important;white-space:nowrap}
+.workspace #unlinkedInvoices td:nth-child(4) small{display:inline!important;margin-left:8px;font-size:11px!important}
+.workspace #unlinkedInvoices td:nth-child(3){grid-column:1!important;grid-row:2!important;font-size:12px!important;line-height:1.4}
+.workspace #unlinkedInvoices td:nth-child(5){grid-column:2/4!important;grid-row:2!important;gap:5px!important;min-width:0}
+.workspace #unlinkedInvoices td{padding:0!important;margin:0!important}
+.workspace #unlinkedInvoices select{height:27px!important;padding:2px 5px!important}
+.workspace #unlinkedInvoices .link-save{font-size:11px!important;padding:5px 6px!important}
+.workspace #unlinkedInvoices .action-menu>summary{font-size:11px!important;padding:5px 6px!important}
+.field-supplier-picker{position:relative}.field-supplier-picker input{width:100%;height:32px;padding:4px 7px;border:1px solid #b8cdda;border-radius:5px;font:inherit;font-size:13px}
+.field-supplier-choices{position:absolute;top:100%;left:0;right:0;max-height:240px;overflow:auto;background:white;border:1px solid #9db8cb;box-shadow:0 4px 12px #0002;z-index:100;border-radius:5px}
+.field-supplier-choices button{display:block;width:100%;text-align:left;border:0;border-bottom:1px solid #edf2f5;padding:8px;background:white;color:#263f50;cursor:pointer;font:inherit;font-size:12px}
+.field-supplier-choices button.active{background:#e5f1fa}
+@media(max-width:650px){.workspace #unlinkedInvoices tr{grid-template-columns:minmax(0,1fr) auto!important}.workspace #unlinkedInvoices td:nth-child(2){grid-column:2!important}.workspace #unlinkedInvoices td:nth-child(4){grid-column:2!important;grid-row:2!important}.workspace #unlinkedInvoices td:nth-child(5){grid-column:1/-1!important;grid-row:3!important}}
+</style><style>
+/* ２行目の操作欄を広げ、操作メニューの文字を折り返さない。 */
+@media(min-width:801px){
+.workspace #unlinkedInvoices tr{grid-template-columns:minmax(180px,32%) minmax(0,1fr) auto!important}
+.workspace #unlinkedInvoices td:nth-child(5){width:100%;justify-content:flex-end}
+.workspace #unlinkedInvoices select{flex:1 1 auto!important;max-width:none!important}
+}
+.workspace #unlinkedInvoices .menu-items{width:390px;min-width:390px;max-width:calc(100vw - 40px);grid-template-columns:max-content max-content;justify-content:stretch;gap:7px}
+.workspace #unlinkedInvoices .menu-items button{white-space:nowrap!important;padding:6px 12px!important}
+@media(max-width:450px){.workspace #unlinkedInvoices .menu-items{width:280px;min-width:0;grid-template-columns:1fr}.workspace #unlinkedInvoices .menu-items button{text-align:left}}
+</style><link rel="stylesheet" href="field_invoice_list.css?v=single-line-20261006"><script type="text/pages-deferred" src="field_invoice_list.js?v=20261006"></script><style>[hidden]{display:none!important}.field-workflow{display:flex;gap:12px;align-items:center;flex-wrap:wrap;padding:12px;background:#edf5fa;border:1px solid #cbdbe6;border-radius:8px;margin:12px 0}.field-workflow label{font-size:13px}.field-workflow select{padding:8px}.workspace[data-input-mode="closed"]{grid-template-columns:1fr}.workspace[data-input-mode="closed"] .workspace-left{display:none}</style><script type="text/pages-deferred" src="field_invoice_registration.js?v=20261012"></script><style>#fieldDuplicateWarning h2{font-size:20px;color:#174d78}#fieldDuplicateWarning button{background:#174d78;color:#fff;border:0;border-radius:7px;padding:10px 14px;margin:6px 8px 0 0;cursor:pointer}</style><style id="compact-field-workflow-20261012">
+main,.head{max-width:1280px;padding-left:20px;padding-right:20px}
+.field-workflow{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;padding:14px}
+.field-workflow>label{grid-column:1;align-self:center;white-space:nowrap}
+.field-workflow>span{grid-column:2/4;font-size:13px;line-height:1.6}
+.field-workflow>.newbtn{grid-row:2;width:100%;min-height:48px;padding:12px 16px;font-size:16px;font-weight:700;border-radius:8px;line-height:1.5}
+.field-workflow>#simpleOpen{grid-column:1}
+.field-workflow>#newOrder{grid-column:2}
+.field-workflow>#directInvoiceOpen{grid-column:3}
+.field-workflow>.newbtn:hover{background:#145d8d}
+.metrics{grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.metric{padding:10px 12px}.metric .l{font-size:13px}.metric .v{font-size:19px}
+.review-filter-bar{grid-template-columns:170px 150px minmax(0,1fr)}
+.review-filter-bar input,.review-filter-bar select{height:36px;font-size:13px}
+@media(min-width:801px){
+.workspace #unlinkedInvoices tr.review-compact-row td.review-row-cell{grid-template-columns:minmax(0,1fr) auto auto;gap:7px 12px!important;padding:12px!important}
+.review-company{grid-column:1;grid-row:1}.review-net{grid-column:2;grid-row:1;font-size:15px!important}.review-gross{grid-column:3;grid-row:1;font-size:12px}
+.review-description{grid-column:1;grid-row:2;font-size:13px}.review-date-state{grid-column:2/4;grid-row:2;font-size:12px;text-align:right}
+.review-button-group{grid-column:1/-1;grid-row:3;max-width:480px;justify-self:end;width:100%;gap:8px}
+.workspace #unlinkedInvoices .review-button-group button{height:36px!important;font-size:13px!important;padding:7px!important}
+}
+@media(max-width:1000px){.workspace[data-input-mode="budget"],.workspace[data-input-mode="simple"],.workspace[data-input-mode="invoice"]{grid-template-columns:1fr}.workspace-left{position:static;max-height:none;overflow:visible}}
+@media(max-width:650px){main,.head{padding-left:12px;padding-right:12px}.field-workflow{grid-template-columns:1fr}.field-workflow>label,.field-workflow>span,.field-workflow>#simpleOpen,.field-workflow>#newOrder,.field-workflow>#directInvoiceOpen{grid-column:1;grid-row:auto}.metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.metric .v{font-size:16px}.review-filter-bar{grid-template-columns:1fr 1fr}.review-filter-bar>div:nth-child(3){grid-column:1/-1}}
+</style><style id="compact-open-input-cards">
+.input-toolbar:empty{display:none}
+.workspace:not([data-input-mode="closed"]) #orderList tr{grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.workspace:not([data-input-mode="closed"]) #orderList td:nth-child(1){grid-column:1/-1;grid-row:1}
+.workspace:not([data-input-mode="closed"]) #orderList td:nth-child(2){grid-column:1/-1;grid-row:2}
+.workspace:not([data-input-mode="closed"]) #orderList td:nth-child(3){grid-column:1;grid-row:3}
+.workspace:not([data-input-mode="closed"]) #orderList td:nth-child(4){grid-column:2;grid-row:3}
+.workspace:not([data-input-mode="closed"]) #orderList td:nth-child(5){grid-column:3;grid-row:3}
+.workspace:not([data-input-mode="closed"]) #orderList td:nth-child(6){grid-column:1/3;grid-row:4;text-align:left!important}
+.workspace:not([data-input-mode="closed"]) #orderList td:nth-child(7){grid-column:3;grid-row:4}
+.workspace:not([data-input-mode="closed"]) #orderList td.amount{white-space:normal!important;overflow-wrap:anywhere!important}
+.workspace:not([data-input-mode="closed"]) #orderList td.amount small{display:block!important;margin-left:0;white-space:normal}
+.workspace:not([data-input-mode="closed"]) .review-filter-bar{grid-template-columns:1fr 1fr}
+.workspace:not([data-input-mode="closed"]) .review-filter-bar>div:nth-child(3){grid-column:1/-1}
+.workspace:not([data-input-mode="closed"]) #invoiceBody tr{grid-template-columns:repeat(2,minmax(0,1fr))}
+</style><style id="equal-input-columns-20261012">
+@media(min-width:1001px){
+ .workspace[data-input-mode="budget"],
+ .workspace[data-input-mode="simple"],
+ .workspace[data-input-mode="invoice"]{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px}
+}
+</style><style id="invoice-actions-beside-amount-20261012">
+@media(min-width:1001px){
+.workspace #unlinkedInvoices tr.review-compact-row td.review-row-cell{grid-template-columns:minmax(0,1fr) auto auto 330px!important;gap:5px 10px!important;padding:9px 10px!important}
+.review-company{grid-column:1!important;grid-row:1!important}
+.review-net{grid-column:2!important;grid-row:1!important;font-size:14px!important}
+.review-gross{grid-column:3!important;grid-row:1!important;font-size:11px}
+.review-button-group{grid-column:4!important;grid-row:1!important;width:100%;max-width:none;gap:5px}
+.workspace #unlinkedInvoices .review-button-group button{height:32px!important;padding:5px!important;font-size:12px!important}
+.review-description{grid-column:1/4!important;grid-row:2!important;font-size:12px}
+.review-date-state{grid-column:4!important;grid-row:2!important;text-align:right;font-size:11px}
+.workspace:not([data-input-mode="closed"]) #unlinkedInvoices tr.review-compact-row td.review-row-cell{grid-template-columns:minmax(0,1fr) auto auto!important}
+.workspace:not([data-input-mode="closed"]) .review-button-group{grid-column:2/4!important;grid-row:2!important;width:270px}
+.workspace:not([data-input-mode="closed"]) .review-description{grid-column:1!important;grid-row:2!important}
+.workspace:not([data-input-mode="closed"]) .review-date-state{grid-column:1/-1!important;grid-row:3!important}
+}
+</style><style id="three-line-order-cards-20261012">
+.workspace #orderList tr,
+.workspace:not([data-input-mode="closed"]) #orderList tr{grid-template-columns:minmax(0,1.1fr) minmax(0,1.1fr) minmax(0,1fr) auto 64px!important;grid-template-rows:auto auto auto;gap:5px 8px!important;padding:9px!important;align-items:center}
+.workspace #orderList tr.selected{padding:8px!important}
+.workspace #orderList td:nth-child(1),.workspace:not([data-input-mode="closed"]) #orderList td:nth-child(1){grid-column:1/4!important;grid-row:1!important;font-weight:700}
+.workspace #orderList td:nth-child(6),.workspace:not([data-input-mode="closed"]) #orderList td:nth-child(6){grid-column:4!important;grid-row:1!important;text-align:right!important}
+.workspace #orderList td:nth-child(7),.workspace:not([data-input-mode="closed"]) #orderList td:nth-child(7){grid-column:5!important;grid-row:1!important;justify-content:flex-end}
+.workspace #orderList td:nth-child(2),.workspace:not([data-input-mode="closed"]) #orderList td:nth-child(2){grid-column:1/-1!important;grid-row:2!important;font-size:12px!important;line-height:1.4}
+.workspace #orderList td:nth-child(3),.workspace:not([data-input-mode="closed"]) #orderList td:nth-child(3){grid-column:1/3!important;grid-row:3!important}
+.workspace #orderList td:nth-child(4),.workspace:not([data-input-mode="closed"]) #orderList td:nth-child(4){grid-column:3!important;grid-row:3!important}
+.workspace #orderList td:nth-child(5),.workspace:not([data-input-mode="closed"]) #orderList td:nth-child(5){grid-column:4/6!important;grid-row:3!important}
+.workspace #orderList td[data-label]::before{display:inline!important;margin:0 5px 0 0;font-size:10px!important;line-height:1.4;color:#607887}
+.workspace #orderList td:nth-child(1)::before,.workspace #orderList td:nth-child(2)::before{display:none!important}
+.workspace #orderList td.amount,.workspace:not([data-input-mode="closed"]) #orderList td.amount{font-size:13px!important;white-space:normal!important;overflow-wrap:normal!important;line-height:1.5}
+.workspace #orderList td.amount small,.workspace:not([data-input-mode="closed"]) #orderList td.amount small{display:inline!important;margin-left:5px;font-size:10px!important;white-space:normal!important}
+.workspace #orderList td:nth-child(3)::before{content:'発注 '!important}.workspace #orderList td:nth-child(4)::before{content:'請求 '!important}.workspace #orderList td:nth-child(5)::before{content:'未請求 '!important}
+.workspace #orderList td:nth-child(6) .badge{font-size:10px;padding:3px 6px;white-space:nowrap}
+@media(max-width:500px){.workspace #orderList tr,.workspace:not([data-input-mode="closed"]) #orderList tr{gap:5px!important}.workspace #orderList td.amount{font-size:12px!important}.workspace #orderList td[data-label]::before{display:block!important}}
+</style><script src="pages_boot.js" defer></script></head>
 <body>
-<header><div class="head"><div><div class="brand">MS建設管理システム</div><div class="sub">発注・下請請求管理（支払側）　<span style="background:#fff3cd;color:#7a5600;padding:2px 7px;border-radius:10px;font-weight:900">簡易登録対応 v6.3</span></div></div><div class="head-right"><div class="nav"><button id="goBudget">実行予算へ</button><button id="goCarte">工事カルテへ</button></div></div></div></header>
+<header><div class="head"><div><div class="brand">MS建設管理システム</div><div class="sub">発注・下請請求管理（支払側）　<span style="background:#fff3cd;color:#7a5600;padding:2px 7px;border-radius:10px;font-weight:900">経理：請求書入力 ／ 現場監督：発注・原価確認</span></div></div><div class="head-right"><div class="nav"><button id="goBudget">実行予算へ</button><button id="goCarte">工事カルテへ</button></div></div></div></header>
 <main>
 <section class="project"><div><h1 id="projectTitle">工事を読み込み中...</h1><div class="meta" id="projectMeta"></div></div><b style="font-size:12px;color:#176fa8">発注・請求状況</b></section>
-<section class="metrics">
-<div class="metric b"><div class="l">受注金額</div><div class="v" id="mContract">0円</div></div>
-<div class="metric b"><div class="l">実行予算</div><div class="v" id="mBudget">0円</div></div>
+<div class="field-workflow"><label>予算管理 <select id="budgetManagement"><option value="">管理方法を選択</option><option value="none">予算管理しない</option><option value="enabled">予算管理する</option></select></label><span>予算の有無にかかわらず、発注書と請求を管理できます。</span><button type="button" class="newbtn" id="directInvoiceOpen">請求を直接登録</button></div><section class="metrics">
+<div class="metric b"><div class="l">受注金額（税抜）</div><div class="v" id="mContract">0円</div></div>
+<div class="metric b"><div class="l">実行予算（税抜）</div><div class="v" id="mBudget">0円</div></div>
 <div class="metric g"><div class="l">予定利益率</div><div class="v" id="mMargin">0.0％</div></div>
-<div class="metric o"><div class="l">発注済</div><div class="v" id="mOrdered">0円</div></div>
-<div class="metric g"><div class="l">未発注予算</div><div class="v" id="mUnordered">0円</div></div>
-<div class="metric o"><div class="l">未請求額</div><div class="v" id="mUnbilled">0円</div></div>
+<div class="metric o"><div class="l">発注済（税抜）</div><div class="v" id="mOrdered">0円</div></div>
+<div class="metric g"><div class="l">未発注予算（税抜）</div><div class="v" id="mUnordered">0円</div></div>
+<div class="metric o"><div class="l">未請求額（税抜）</div><div class="v" id="mUnbilled">0円</div></div>
 </section>
 <section class="panel" id="simplePanel" style="display:none">
-<div class="pt"><span>簡易登録</span><button class="back" id="simpleClose">閉じる</button></div>
-<div class="note">今ある情報から登録できます。請求書だけの登録は発注額・予算を作りません。後から発注に結び付けられます。</div>
+<div class="pt"><span>発注を簡易登録</span><button class="back" id="simpleClose">閉じる</button></div>
+<div class="note">発注の記録、または現場監督が受け取った請求を登録します。経理の登録済み請求がある場合は保存前にお知らせします。</div>
 <div class="grid" style="padding:10px">
-<div class="field"><label>登録するもの</label><select id="simpleKind"><option value="order">発注の記録</option><option value="invoice">届いた請求書</option></select></div>
+<div class="field"><label>登録するもの</label><select id="simpleKind" hidden style="display:none"><option value="order">発注の記録</option><option value="invoice">届いた請求書</option></select><div style="display:flex;gap:6px"><button type="button" class="newbtn" id="simpleKindOrder" style="flex:1">発注の記録</button><button type="button" class="newbtn" id="simpleKindInvoice" style="flex:1">届いた請求書</button></div></div>
 <div class="field"><label>業者</label><select id="simpleSupplier"></select></div>
 <div class="field span2"><label>内容</label><input id="simpleContent" placeholder="例：外構工事、材料代"></div>
-<div class="field"><label>金額（通常の登録と同じ金額基準）</label><input id="simpleAmount" class="money" inputmode="numeric"></div>
-<div class="field"><label id="simpleDateLabel">発注日</label><input id="simpleDate" type="date"></div>
-<div class="field span2"><label>請求書番号・備考</label><input id="simpleMemo"></div>
+<div class="field"><label>金額（税抜）</label><input id="simpleAmount" class="money" inputmode="numeric"><label>税率（％）</label><input id="simpleTaxRate" type="number" min="0" max="100" step="0.1" value="10"></div>
+<div class="field span2" id="simpleTaxSummary" aria-live="polite"></div><div class="field"><label id="simpleDateLabel">発注日</label><input id="simpleDate" type="date"></div>
+<div class="field span2"><label>請求書番号・備考</label><input id="simpleMemo"></div><div class="field span2" id="simpleSubjectField" hidden><label>原価の科目</label><select id="simpleSubject"></select></div>
 </div><div class="actions"><div></div><button class="save" id="simpleSave">保存</button></div></section>
-<section class="panel"><div class="pt"><span>発注未確認の請求書</span></div><div class="note">発注を確認し、同じ業者の発注に結び付けてください。予算は自動で書き換えません。</div>
+<section class="panel"><div class="pt"><span>届いた請求の確認</span></div><div class="note">経理から届いた請求と、現場で直接登録した請求を現場監督が確認します。発注書がある場合は対応付け、ない場合は「発注書なし・確認済み」にします。請求内容を再入力する必要はありません。</div>
 <div class="table-wrap"><table><thead><tr><th>業者</th><th>請求日</th><th>内容・備考</th><th>請求額</th><th>確認・操作</th></tr></thead><tbody id="unlinkedInvoices"></tbody></table></div></section>
 <section class="panel">
-<div class="pt"><span>この工事の発注先一覧</span><div><button class="newbtn" id="simpleOpen">簡易登録</button> <button class="newbtn" id="newOrder">登録</button></div></div>
-<div class="table-wrap"><table class="order-list" style="table-layout:fixed"><thead><tr><th class="supplier-col">発注先</th><th>発注内容</th><th class="num" style="width:125px">発注額</th><th class="num" style="width:125px">請求累計</th><th class="num" style="width:125px">未請求額</th><th style="width:90px">状態</th><th class="action-col">操作</th></tr></thead><tbody id="orderList"></tbody></table></div>
-<div class="note">「簡易登録」は今ある発注・請求を記録します。「登録」は予算明細から発注します。どちらも同じ工事に保存されます。</div>
+<div class="pt"><span>この工事の発注先一覧</span><div><button class="newbtn" id="simpleOpen">発注を簡易登録</button> <button class="newbtn" id="newOrder">発注を詳細登録</button></div></div>
+<div class="table-wrap"><table class="order-list" style="table-layout:fixed"><thead><tr><th class="supplier-col">発注先</th><th>発注内容</th><th class="num" style="width:125px">発注額（税抜）</th><th class="num" style="width:125px">請求累計</th><th class="num" style="width:125px">未請求額</th><th style="width:90px">状態</th><th class="action-col">操作</th></tr></thead><tbody id="orderList"></tbody></table></div>
+<div class="note">「発注を簡易登録」は今ある発注の記録です。詳細登録では、予算があれば明細から選び、なければ金額を直接入力して発注書を作成できます。届いた請求は上の確認欄で対応付けます。</div>
 </section>
 <section class="panel" id="addPanel" style="display:none">
 <div class="pt"><span>実行予算から発注</span><button class="back" id="closeAdd" style="border:0;border-radius:5px;padding:5px 10px;font-weight:900">閉じる</button></div>
-<div class="flow-note">実行予算の工種を選び、各工種の「今回発注額」を入力します。複数工種を1社へまとめる場合も、工種ごとの内訳を指定できます。</div>
+<div class="flow-note">実行予算の工種を選び、各工種の「今回発注額（税抜）」を入力します。複数工種を1社へまとめる場合も、工種ごとの内訳を指定できます。</div>
 <div class="grid">
 <div class="field span2 supplier-field"><label>発注先</label>
 <div class="supplier-combo">
-<input id="supplierSearch" type="text" autocomplete="off" placeholder="会社名・ふりがな・略称で検索">
+<input id="supplierSearch" type="text" autocomplete="off" placeholder="業者番号・名称・ふりがなで検索">
 <span class="supplier-arrow">▼</span>
 <div id="supplierCandidates" class="supplier-candidates"></div>
 </div>
 <select id="supplier" style="display:none"><option value="">選択してください</option></select>
 </div>
 <div class="field span2"><label>発注内容</label><input id="newContent"></div>
-<div class="field"><label>発注合計</label><input id="newAmount" class="money" inputmode="numeric" readonly></div>
+<div class="field"><label>発注合計（税抜）</label><input id="newAmount" class="money" inputmode="numeric" readonly></div>
 <div class="field"><label>発注日</label><input id="orderDate" type="date"></div>
 </div>
 <div class="budget-pick"><div class="pt" style="font-size:12px"><span>実行予算から発注する工種を選択</span><span>複数選択可</span></div>
-<div class="table-wrap"><table><thead><tr><th style="width:55px">選択</th><th style="width:190px">工種</th><th>内容</th><th class="num" style="width:115px">実行予算</th><th class="num" style="width:115px">発注済</th><th class="num" style="width:115px">未発注</th><th class="num" style="width:145px">今回発注額</th></tr></thead><tbody id="budgetPick"></tbody></table></div>
+<div class="table-wrap"><table><thead><tr><th style="width:55px">選択</th><th style="width:190px">工種</th><th>内容</th><th class="num" style="width:115px">実行予算（税抜）</th><th class="num" style="width:115px">発注済</th><th class="num" style="width:115px">未発注</th><th class="num" style="width:145px">今回発注額（税抜）</th></tr></thead><tbody id="budgetPick"></tbody></table></div>
 <div class="budget-total"><span>選択予算残　<b id="selectedBudget">0円</b></span><span>発注金額　<b id="enteredOrder">0円</b></span><span>発注後予算残　<b id="afterBudget">0円</b></span></div></div>
 <div class="contract-collapsed">
 <button type="button" class="contract-toggle" id="contractToggle">
@@ -352,27 +535,27 @@ button:focus-visible,summary:focus-visible,input:focus-visible,select:focus-visi
 <div class="field"><label>契約不適合責任期間</label><input id="ccDefect" value="個別協議"></div>
 <div class="field"><label>運送費</label><input id="ccFreight" value="受注者負担"></div>
 <div class="field"><label>建設リサイクル法</label><select id="ccRecycle"><option>対象外</option><option>対象</option></select></div>
-<div class="field"><label>消費税率</label><select id="ccTax"><option value="10">10％</option><option value="8">8％</option><option value="0">0％</option></select></div>
+<div class="field"><label>消費税率</label><input id="ccTax" type="number" min="0" max="100" step="0.1"></div>
 <div class="field wide"><label>特約・補足</label><input id="ccSpecial"></div>
 </div>
 </div>
 
 </div>
 </div>
-<div class="actions" style="padding:0 10px 10px"><div></div><div class="right"><button type="button" class="save" id="registerOrder">発注を登録</button><button class="doc" id="issueOrder">発注書を発行</button></div></div>
+<div class="actions order-submit-bar"><div class="order-submit-summary">発注合計（税抜）<b id="compactOrderTotal">0円</b></div><div class="right"><button type="button" class="save" id="registerOrder">発注を登録</button><button class="doc" id="issueOrder">発注書を発行</button></div></div>
 </section>
 <section class="panel" id="billingPanel" style="display:none">
 <button class="pay-toggle" id="payToggle"><span><span class="arrow" id="payArrow">▼</span><span id="payTitle">請求管理</span></span><span>未請求額　<b id="invoiceRemain">0円</b></span></button>
-<div class="pay-body open" id="payBody"><div class="pay-summary" style="grid-template-columns:repeat(3,1fr)"><div class="pay-card"><div class="l">発注額</div><div class="v" id="sumOrder">0円</div></div><div class="pay-card"><div class="l">請求累計</div><div class="v" id="sumBilled">0円</div></div><div class="pay-card"><div class="l">未請求額</div><div class="v" id="sumRemain">0円</div></div></div>
+<div class="pay-body open" id="payBody"><div class="pay-summary" style="grid-template-columns:repeat(3,1fr)"><div class="pay-card"><div class="l">発注額</div><div class="v" id="sumOrder">0円</div></div><div class="pay-card"><div class="l">請求累計</div><div class="v" id="sumBilled">0円</div></div><div class="pay-card"><div class="l">未請求額（税抜）</div><div class="v" id="sumRemain">0円</div></div></div>
 <div class="ledger invoice" style="margin:10px"><div class="ledger-head"><span>下請請求 登録・履歴</span><span>下請け・仕入先から請求書が来たら登録</span></div>
 <div class="ledger-form"><input type="date" id="invoiceDate"><input class="money" id="invoiceAmount" inputmode="numeric" placeholder="請求額"><input class="wide" id="invoiceMemo" placeholder="請求書番号・備考"><button id="invoiceSave">下請請求を登録</button></div>
 <div class="table-wrap"><table><thead><tr><th style="width:120px">請求日</th><th class="num" style="width:140px">請求額</th><th>請求書番号・備考</th><th style="width:120px">操作</th></tr></thead><tbody id="invoiceBody"></tbody></table></div><div class="ledger-total">請求累計　<b id="invoiceTotal">0円</b></div></div>
 <div class="pay-warning" id="invoiceWarning"><b>請求チェック：</b> 発注額の範囲内です。</div></div></section>
 <div class="actions"><div class="left"><button class="back" id="backBudget">実行予算へ戻る</button></div></div>
 </main>
-<script src="shared_storage.js"></script>
-<script src="ms_data.js"></script>
-<script>
+<script type="text/pages-deferred" src="shared_storage.js"></script>
+<script type="text/pages-deferred" src="tax.js?v=20261004net"></script><script type="text/pages-deferred" src="ms_data.js?v=tax20261003"></script>
+<script type="text/pages-deferred">
 (()=>{
 const $=id=>document.getElementById(id), n=v=>Number(String(v??'').replace(/[^\d.-]/g,''))||0, yen=v=>n(v).toLocaleString('ja-JP')+'円';
 function formatMoneyInput(el){
@@ -420,30 +603,31 @@ function esc(s){return String(s??'').replace(/[&<>\"]/g,c=>({'&':'&amp;','<':'&l
 function supplierName(o){return o.supplierName||'—'}
 function billed(orderId){return invoices.filter(x=>x.orderId===orderId).reduce((s,x)=>s+n(x.amount),0)}
 function renderHead(){const no=project.legacyProjectNo||project.no||'—';$('projectTitle').textContent=no+'　'+(project.name||'');$('projectMeta').textContent='発注者：'+(project.clientName||'—')+'　｜　工期：'+(project.startDate||'—')+' ～ '+(project.endDate||'—')+'　｜　担当：'+(project.projectPerson||project.sitePerson||'—');}
-function recalcBudgetOrdered(){items.forEach((it,i)=>{it.orderedAmount=orders.reduce((s,o)=>s+(Array.isArray(o.allocations)?o.allocations.filter(a=>Number(a.itemIndex)===i).reduce((q,a)=>q+n(a.amount),0):0),0)});if(budget){budget=MSData.save('budgets',{...budget,items,updatedAt:new Date().toISOString()});}}
+function recalcBudgetOrdered(){items.forEach((it,i)=>{it.orderedAmount=orders.reduce((s,o)=>s+(Array.isArray(o.allocations)?o.allocations.filter(a=>Number(a.itemIndex)===i).reduce((q,a)=>q+n(a.amount),0):0),0)});}
+function budgetManaged(){return project.budgetManagement?project.budgetManagement==='enabled':!!budget;}
 function metrics(){
- const bt=items.reduce((q,x)=>q+n(x.amount),0)+n(budget&&budget.reserveAmount), ord=orders.reduce((q,x)=>q+n(x.amount),0), c=contract();
+ const bt=items.reduce((q,x)=>q+n(x.amount),0)+n(budget&&budget.reserveAmount), ord=orders.reduce((q,x)=>q+n(x.amount),0), grossOrders=orders.reduce((q,x)=>q+MSTax.gross(x),0), c=contract();
  const inv=invoices.filter(x=>orders.some(o=>o.id===x.orderId)).reduce((q,x)=>q+n(x.amount),0);
- const known=!!budget,unlinked=invoices.filter(x=>!orders.some(o=>o.id===x.orderId));
+ const known=budgetManaged()&&!!budget,unlinked=invoices.filter(x=>x.reviewStatus!=='noOrderRequired'&&!orders.some(o=>o.id===x.orderId));
  const unallocated=orders.filter(o=>!Array.isArray(o.allocations)||!o.allocations.length);
  $('mContract').textContent=MSData.contractValue(project)===null?'未登録':yen(c);
- $('mBudget').textContent=known?yen(bt):'予算未登録';
+ $('mBudget').textContent=known?yen(bt):(budgetManaged()?'予算未登録':'予算管理なし');
  $('mMargin').textContent=known&&c>0?((c-bt)/c*100).toFixed(1)+'％':'未算定';
  $('mOrdered').textContent=yen(ord);
  const available=items.reduce((q,x)=>q+n(x.amount)+n(x.reserveUsed),0);
  $('mUnordered').textContent=known?(unallocated.length?'予算との対応未確認':yen(available-ord)):'予算未登録';
- $('mUnbilled').textContent=yen(ord-inv)+(unlinked.length?'（発注未確認 '+unlinked.length+'件）':'');
+ $('mUnbilled').textContent=yen(ord-invoices.filter(x=>orders.some(o=>o.id===x.orderId)).reduce((a,x)=>a+invoiceNet(x),0))+(unlinked.length?'（発注未確認 '+unlinked.length+'件）':'');
 }
 function renderOrders(){
  const tb=$('orderList');tb.innerHTML='';
  if(!orders.length)tb.innerHTML='<tr><td colspan="7" style="text-align:center;color:#71838e;padding:14px">発注はまだありません。</td></tr>';
  orders.forEach(o=>{
-  const b=billed(o.id),r=n(o.amount)-b,tr=document.createElement('tr'),issued=!!o.orderIssuedAt;
+  const b=billed(o.id),r=MSTax.gross(o)-b,tr=document.createElement('tr'),issued=!!o.orderIssuedAt;
   tr.dataset.id=o.id;
   const ops=issued
    ?'<span class="row-locked">発注書発行済</span>'
    :'<div class="row-actions"><button type="button" class="row-edit">編集</button><button type="button" class="row-delete">削除</button></div>';
-  tr.innerHTML='<td class="supplier-col">'+esc(supplierName(o))+'</td><td>'+esc(o.content||'')+'</td><td class="num amount">'+yen(o.amount)+'</td><td class="num amount">'+yen(b)+'</td><td class="num amount">'+yen(r)+'</td><td><span class="badge '+(r<=0?'done':'wait')+'">'+(!o.allocations?.length?'予算未対応':(r<=0?'請求済':(b<=0?'未請求':'請求途中')))+'</span></td><td class="action-col">'+ops+'</td>';
+  tr.innerHTML='<td class="supplier-col">'+esc(supplierName(o))+'</td><td>'+esc(o.content||'')+'</td><td class="num amount">'+yen(o.amount)+'<small style="display:block;font-weight:400">'+esc('税込 '+yen(MSTax.gross(o)))+'</small></td><td class="num amount">'+yen(invoices.filter(x=>x.orderId===o.id).reduce((a,x)=>a+invoiceNet(x),0))+'</td><td class="num amount">'+yen(n(o.amount)-invoices.filter(x=>x.orderId===o.id).reduce((a,x)=>a+invoiceNet(x),0))+'</td><td><span class="badge '+(r<=0?'done':'wait')+'">'+(budgetManaged()&&!o.allocations?.length?'予算との対応を確認':(r<=0?'請求済':(b<=0?'未請求':'請求途中')))+'</span></td><td class="action-col">'+ops+'</td>';
   tr.onclick=()=>selectOrder(o.id);
   const eb=tr.querySelector('.row-edit');if(eb)eb.onclick=e=>{e.stopPropagation();editOrder(o.id)};
   const db=tr.querySelector('.row-delete');if(db)db.onclick=e=>{e.stopPropagation();deleteOrder(o.id)};
@@ -458,7 +642,7 @@ function defaultConditions(){
   progress:'95％', retention:'5％', retentionRelease:'最終請求後1か月',
   advance:'なし', closing:'月末', payDay:'翌月末', payMethod:'銀行振込',
   workers:'注文者負担', delay:'14.6％', overpay:'14.6％',
-  defect:'個別協議', freight:'受注者負担', recycle:'対象外', tax:'10', special:''
+  defect:'個別協議', freight:'受注者負担', recycle:'対象外', tax:String(MSTax.rateOn()), special:''
  };
 }
 function supplierById(sid){return supplierRows.find(x=>String(x.id||supplierLabel(x))===String(sid))||null}
@@ -524,10 +708,12 @@ function deleteOrder(oid){
  orders=orders.filter(x=>x.id!==oid);
  if(currentOrderId===oid){currentOrderId='';$('billingPanel').style.display='none'}
  recalcBudgetOrdered();renderBudgetPick();renderOrders();
+
+
 }
 let supplierRows=[],supplierActive=-1;
 function supplierLabel(x){return x.name||x.companyName||x.partnerName||''}
-function supplierSearchText(x){return [supplierLabel(x),x.kana,x.nameKana,x.companyKana,x.shortName,x.abbreviation,x.code].filter(Boolean).join(' ').toLowerCase()}
+function supplierSearchText(x){return [x.no,x.code,supplierLabel(x),x.kana,x.nameKana,x.companyKana,x.shortName,x.abbreviation].filter(Boolean).join(' ').toLowerCase()}
 function loadSuppliers(){
  try{
   supplierRows=MSData.all('partners').filter(x=>{
@@ -547,7 +733,7 @@ function renderSupplierCandidates(q=''){
  if(!rows.length){box.innerHTML='<div class="supplier-empty">該当する発注先がありません</div>';box.classList.add('open');return}
  rows.forEach((x,i)=>{
   const d=document.createElement('div');d.className='supplier-option'+(i===supplierActive?' active':'');
-  d.dataset.id=x.id||supplierLabel(x);d.dataset.name=supplierLabel(x);d.textContent=supplierLabel(x);
+  d.dataset.id=x.id||supplierLabel(x);d.dataset.name=supplierLabel(x);d.textContent=[x.no||x.code,supplierLabel(x)].filter(Boolean).join(' ｜ ');
   d.onmousedown=e=>{e.preventDefault();chooseSupplier(d.dataset.id,d.dataset.name)};
   box.appendChild(d)
  });
@@ -581,7 +767,7 @@ function oldAllocation(i){
 function availableBudget(i){return Math.max(0,n(items[i]?.amount)+n(items[i]?.reserveUsed)-n(items[i]?.orderedAmount)+oldAllocation(i));}
 function renderBudgetPick(){
  const tb=$('budgetPick');tb.innerHTML='';
- if(!items.length){tb.innerHTML='<tr><td colspan="7" style="text-align:center;color:#8a5a28;padding:16px">予算明細が未登録です。予算から登録する場合は実行予算を作成してください。今ある発注・請求は「簡易登録」で記録できます。</td></tr>';return;}
+ if(!items.length){tb.innerHTML='<tr><td colspan="7" style="text-align:center;color:#8a5a28;padding:16px">予算明細が未登録です。予算から登録する場合は実行予算を作成してください。今ある発注は「発注を簡易登録」で記録できます。請求は事務入力から登録します。</td></tr>';return;}
  items.forEach((it,i)=>{
   const remain=Math.max(0,n(it.amount)+n(it.reserveUsed)-n(it.orderedAmount));
   const available=availableBudget(i);
@@ -597,7 +783,7 @@ function renderBudgetPick(){
  });
  updatePick(false);refreshPresentation();
 }
-function updatePick(){
+function updatePick(){if(!budgetManaged()){$('enteredOrder').textContent=yen(n($('newAmount').value));return;}
  let availableTotal=0,orderTotal=0,names=[];
  document.querySelectorAll('.budgetCheck:checked').forEach(c=>{
   const i=+c.dataset.i, inp=document.querySelector('.allocationAmount[data-i="'+i+'"]');
@@ -617,13 +803,13 @@ function renderInvoices(){
  xs.forEach(x=>{
   total+=n(x.amount);
   const tr=document.createElement('tr');
-  tr.innerHTML='<td>'+esc(x.invoiceDate||'')+'</td><td class="num amount">'+yen(x.amount)+'</td><td>'+esc([x.content,x.memo].filter(Boolean).join(' ／ '))+'</td><td><div class="row-actions"><button type="button" class="row-edit">編集</button><button type="button" class="row-delete">削除</button></div></td>';
+  tr.innerHTML='<td>'+esc(x.invoiceDate||'')+'</td><td class="num amount">'+yen(invoiceNet(x))+'<small style="display:block">税込 '+yen(x.amount)+'</small></td><td>'+esc([x.content,x.memo].filter(Boolean).join(' ／ '))+'</td><td><div class="row-actions"><button type="button" class="row-edit">編集</button><button type="button" class="row-delete">削除</button></div></td>';
   tr.querySelector('.row-edit').onclick=()=>editInvoice(x.id);
   tr.querySelector('.row-delete').onclick=()=>deleteInvoice(x.id);
   const hb=document.createElement('button');hb.textContent='履歴';hb.onclick=()=>showHistory(x);tr.lastElementChild.appendChild(hb);
   tb.appendChild(tr);
  });
- const rem=n(o.amount)-total;$('sumOrder').textContent=yen(o.amount);$('sumBilled').textContent=yen(total);$('sumRemain').textContent=yen(rem);$('invoiceRemain').textContent=yen(rem);$('invoiceTotal').textContent=yen(total);
+ const netTotal=xs.reduce((a,x)=>a+invoiceNet(x),0),rem=n(o.amount)-netTotal;$('sumOrder').textContent=yen(o.amount);$('sumBilled').textContent=yen(netTotal);$('sumRemain').textContent=yen(rem);$('invoiceRemain').textContent=yen(rem);$('invoiceTotal').textContent=yen(netTotal);
  const w=$('invoiceWarning');if(rem<0){w.innerHTML='<b>請求超過：</b> 発注額を '+yen(-rem)+' 超えています。追加発注・増額変更を確認してください。';w.style.background='#fff0f0';w.style.color='#8b3333'}else{w.innerHTML='<b>請求チェック：</b> 発注額の範囲内です。現在の未請求額は '+yen(rem)+' です。';w.style.background='#fff7ec';w.style.color='#805323'}
  refreshPresentation();
 }
@@ -640,7 +826,7 @@ function editInvoice(iid){
  $('simpleOpen').setAttribute('aria-pressed','false');$('newOrder').setAttribute('aria-pressed','false');
  editingInvoiceId=x.id;
  $('invoiceDate').value=x.invoiceDate||today();
- $('invoiceAmount').value=n(x.amount)?n(x.amount).toLocaleString('ja-JP'):'';
+ $('invoiceAmount').value=invoiceNet(x).toLocaleString('ja-JP');$('invoiceTaxRate').value=x.taxRate??MSTax.rateOn(x.invoiceDate);syncInvoiceTax();
  $('invoiceMemo').value=x.memo||'';
  $('invoiceSave').textContent='下請請求を更新';
  $('invoiceAmount').focus();
@@ -661,8 +847,9 @@ $('invoiceSave').onclick=()=>{
  const old=editingInvoiceId?invoices.find(x=>String(x.id)===String(editingInvoiceId)):null;
  if(old&&invoiceHasPayment(old)){alert('この請求には支払データがあります。先に支払データを訂正してください。');return}
  const past=billed(o.id)-(old?n(old.amount):0);
- if(past+a>n(o.amount)&&!confirm('請求累計が発注額を '+yen(past+a-n(o.amount))+' 超えます。登録を続けますか？'))return;
- const rec=MSData.save('supplierInvoices',{...(old||{}),projectId:id,dataSide:'purchase',orderId:o.id,supplierId:o.supplierId||'',supplierName:o.supplierName||'',invoiceDate:d,amount:a,memo:$('invoiceMemo').value.trim(),status:'active',updatedAt:new Date().toISOString()});
+ const gross=MSTax.calc(a,$('invoiceTaxRate').value,MSTax.policy().rounding).gross;
+ if(past+gross>MSTax.gross(o)&&!confirm('請求累計が発注額を '+yen(past+gross-MSTax.gross(o))+' 超えます。登録を続けますか？'))return;
+ const rec=MSData.save('supplierInvoices',{...(old||{}),projectId:id,dataSide:'purchase',orderId:o.id,supplierId:o.supplierId||'',supplierName:o.supplierName||'',invoiceDate:d,netAmount:a,taxRate:n($('invoiceTaxRate').value),memo:$('invoiceMemo').value.trim(),status:'active',updatedAt:new Date().toISOString()});
  if(old){invoices=invoices.map(x=>String(x.id)===String(old.id)?rec:x)}else{invoices.push(rec)}
  editingInvoiceId='';$('invoiceSave').textContent='請求登録';$('invoiceAmount').value='';$('invoiceMemo').value='';renderInvoices();renderOrders();
 };
@@ -698,15 +885,15 @@ function saveCurrentOrder(openDocument=false){
    const sname=(supplierOpt&&supplierOpt.dataset.name)||$('supplierSearch').value.trim();
    const content=$('newContent').value.trim();
    const orderDate=$('orderDate').value;
-   const rows=selectedAllocations();
-   const amount=rows.reduce((q,r)=>q+n(r.amount),0);
+   const rows=budgetManaged()?selectedAllocations():[];
+   const amount=budgetManaged()?rows.reduce((q,r)=>q+n(r.amount),0):n($('newAmount').value);
 
    if(!sid||!sname){alert('発注先を選択してください。');$('supplierSearch').focus();return null;}
-   if(!rows.length){alert('実行予算から発注する工種を1つ以上選択してください。');return null;}
-   if(rows.some(r=>r.amount<=0)){alert('選択した工種ごとに「今回発注額」を入力してください。');return null;}
+   if(budgetManaged()&&!rows.length){alert('実行予算から発注する工種を1つ以上選択してください。');return null;}
+   if(rows.some(r=>r.amount<=0)){alert('選択した工種ごとに「今回発注額（税抜）」を入力してください。');return null;}
    const over=rows.find(r=>r.amount>r.available);
-   if(over){alert((items[over.itemIndex]?.trade||items[over.itemIndex]?.name||'選択工種')+' の今回発注額が未発注予算を '+yen(over.amount-over.available)+' 超えています。');return null;}
-   if(amount<=0){alert('今回発注額を入力してください。');return null;}
+   if(over){alert((items[over.itemIndex]?.trade||items[over.itemIndex]?.name||'選択工種')+' の今回発注額（税抜）が未発注予算を '+yen(over.amount-over.available)+' 超えています。');return null;}
+   if(amount<=0){alert('今回発注額（税抜）を入力してください。');return null;}if(!budgetManaged()&&!content){alert('発注内容を入力してください。');return null;}
    if(!orderDate){alert('発注日を入力してください。');$('orderDate').focus();return null;}
 
    const allocations=rows.map(r=>({itemIndex:r.itemIndex,amount:r.amount}));
@@ -724,8 +911,8 @@ function saveCurrentOrder(openDocument=false){
      amount,
      orderDate,
      allocations,
-     entryMode:old?.entryMode||'standard',
-     budgetConfirmedAt:new Date().toISOString(),
+     entryMode:budgetManaged()?(old?.entryMode||'standard'):'simple',
+     budgetConfirmedAt:budgetManaged()?new Date().toISOString():null,
      contractConditions:conditionValues(),
      status:'active',
      updatedAt:new Date().toISOString()
@@ -777,8 +964,9 @@ bindMoneyInputs();
 };$('closeAdd').onclick=()=>{editingOrderId='';$('registerOrder').textContent='発注を登録';$('addPanel').style.display='none'};$('newContent').oninput=e=>e.target.dataset.auto='0';$('invoiceAmount').onblur=()=>{const a=n($('invoiceAmount').value);$('invoiceAmount').value=a?a.toLocaleString('ja-JP'):''};$('payToggle').onclick=()=>{const b=$('payBody'),open=b.classList.toggle('open');$('payArrow').textContent=open?'▼':'▶'};
 $('issueOrder').onclick=()=>{
  if($('addPanel').style.display!=='none'){
-   saveCurrentOrder(true);
-   return;
+   if(!editingOrderId){alert('新しい発注は先に「発注を登録」で保存してください。');return;}
+   alert('保存済みの内容で発注書を表示します。編集中の変更は保存されません。');
+   location.href='hacchu_chumonsho.html?orderId='+encodeURIComponent(editingOrderId)+'&id='+encodeURIComponent(id);return;
  }
  const o=currentOrderId?orders.find(x=>String(x.id)===String(currentOrderId)):null;
  if(!o){alert('発注一覧から発注を選択してください。');return}
@@ -787,13 +975,43 @@ $('issueOrder').onclick=()=>{
  location.href='hacchu_chumonsho.html?orderId='+encodeURIComponent(o.id)+'&id='+encodeURIComponent(id);
 };$('goBudget').onclick=$('backBudget').onclick=()=>go('jikko_yosan.html');$('goCarte').onclick=()=>go('kouji_carte.html');
 let simpleEditingId='';
+function syncSimpleKind(){
+ const invoice=$('simpleKind').value==='invoice';
+ $('simpleDateLabel').textContent=invoice?'請求日':'発注日';
+ const tax=$('simpleTaxRate');tax.style.display='';
+ if(tax.previousElementSibling)tax.previousElementSibling.style.display='';
+ [['simpleKindOrder',!invoice],['simpleKindInvoice',invoice]].forEach(([key,active])=>{
+   const button=$(key);button.setAttribute('aria-pressed',String(active));
+   button.style.background=active?'#173f6b':'#e3f1fc';button.style.color=active?'#fff':'#155880';
+   button.disabled=$('simpleKind').disabled;
+ });
+}
+function invoiceNet(rec){return rec.netAmount!==undefined?n(rec.netAmount):Math.round(n(rec.amount)/(1+n(rec.taxRate??MSTax.rateOn(rec.invoiceDate))/100));}
+function syncInvoiceTax(){
+ const simple=MSTax.calc(n($('simpleAmount').value),$('simpleTaxRate').value,MSTax.policy().rounding);
+ $('simpleTaxSummary').textContent='消費税 '+yen(simple.tax)+' ／ 合計（税込） '+yen(simple.gross);
+ const linked=MSTax.calc(n($('invoiceAmount').value),$('invoiceTaxRate').value,MSTax.policy().rounding);
+ $('invoiceTaxSummary').textContent='消費税 '+yen(linked.tax)+' ／ 請求総額（税込） '+yen(linked.gross);
+}
+function chooseSimpleKind(kind){
+ if($('simpleKind').disabled)return;
+ $('simpleKind').value=kind;syncSimpleKind();
+}
 function setupSimple(){
  $('simpleSupplier').innerHTML=$('supplier').innerHTML;
  $('simpleDate').value=today();
- $('simpleKind').onchange=()=>{$('simpleDateLabel').textContent=$('simpleKind').value==='order'?'発注日':'請求日';};
- $('simpleOpen').onclick=()=>openSimple();
+ ['simpleAmount','simpleTaxRate','invoiceAmount','invoiceTaxRate'].forEach(key=>{$(key).addEventListener('input',syncInvoiceTax);$(key).addEventListener('change',syncInvoiceTax);});
+ $('simpleKind').onchange=syncSimpleKind;
+ $('simpleKindOrder').onclick=()=>chooseSimpleKind('order');
+ $('simpleKindInvoice').onclick=()=>chooseSimpleKind('invoice');
+ $('simpleOpen').onclick=()=>{
+   $('addPanel').style.display='none';$('invoiceEntry').style.display='none';
+   $('simplePanel').style.display='block';
+   $('simpleOpen').setAttribute('aria-pressed','true');$('newOrder').setAttribute('aria-pressed','false');
+   syncSimpleKind();
+ };
  $('simpleClose').onclick=()=>{$('simplePanel').style.display='none';simpleEditingId='';};
- $('simpleSave').onclick=()=>{
+ $('simpleSave').onclick=async()=>{
    const kind=$('simpleKind').value,sid=$('simpleSupplier').value;
    const opt=$('simpleSupplier').selectedOptions[0],name=opt?.dataset.name||opt?.textContent||'';
    const content=$('simpleContent').value.trim(),amount=n($('simpleAmount').value),date=$('simpleDate').value,memo=$('simpleMemo').value.trim();
@@ -805,10 +1023,10 @@ function setupSimple(){
      if(old&&kind==='invoice'&&invoiceHasPayment(old)){alert('支払データがある請求は変更できません。');return;}
      const rec={...(old||{}),projectId:id,dataSide:'purchase',supplierId:sid,supplierName:name,content,amount,memo,entryMode:'simple',status:'active'};
      if(kind==='order'){rec.orderDate=date;rec.allocations=old?.allocations||[];rec.contractConditions=old?.contractConditions||defaultConditions();}
-     else{rec.invoiceDate=date;rec.orderId=old?.orderId||'';rec.reviewStatus=rec.orderId?'linked':'orderUnconfirmed';rec.receivedAt=old?.receivedAt||new Date().toISOString();}
-     const saved=MSData.save(entity,rec);
+     else{rec.netAmount=amount;rec.taxRate=n($('simpleTaxRate').value);rec.invoiceDate=date;rec.orderId=old?.orderId||'';rec.reviewStatus=rec.orderId?'linked':'orderUnconfirmed';rec.receivedAt=old?.receivedAt||new Date().toISOString();}
+     const saved=kind==='invoice'?await FieldInvoiceRegistration.save(rec,$('simpleSubject').value,viewInvoiceContent):MSData.save(entity,rec);if(!saved)return;
      if(kind==='order'){orders=old?orders.map(o=>o.id===old.id?saved:o):orders.concat(saved);recalcBudgetOrdered();}
-     else invoices=old?invoices.map(i=>i.id===old.id?saved:i):invoices.concat(saved);
+     else invoices=MSData.all('supplierInvoices').filter(i=>String(i.projectId)===String(id)&&i.status!=='inactive');
      simpleEditingId='';openSimple(kind,null,true);renderOrders();
      if(currentOrderId)renderInvoices();
      let notice=$('saveNotice');if(!notice){notice=document.createElement('div');notice.id='saveNotice';notice.className='flow-note';notice.setAttribute('role','status');document.querySelector('main').prepend(notice);}notice.textContent=kind==='order'?'発注を記録しました。予算との対応は後から確認できます。':'請求書を記録しました。発注内容は後から確認できます。';
@@ -821,9 +1039,9 @@ function openSimple(kind='order',rec=null,noScroll=false){
  $('simpleKind').value=kind;$('simpleKind').disabled=!!rec;
  $('simpleSupplier').value=rec?.supplierId||'';
  $('simpleContent').value=rec?.content||'';
- $('simpleAmount').value=rec?n(rec.amount).toLocaleString('ja-JP'):'';
+ $('simpleAmount').value=rec?(kind==='invoice'?invoiceNet(rec):n(rec.amount)).toLocaleString('ja-JP'):'';$('simpleTaxRate').value=rec?.taxRate??rec?.contractConditions?.tax??MSTax.rateOn();
  $('simpleDate').value=(kind==='order'?rec?.orderDate:rec?.invoiceDate)||today();
- $('simpleMemo').value=rec?.memo||'';$('simpleKind').onchange();
+ $('simpleMemo').value=rec?.memo||'';$('simpleKind').onchange();syncInvoiceTax();
  $('simplePanel').style.display='block';if(!noScroll)$('simplePanel').scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 function showHistory(rec){
@@ -842,23 +1060,23 @@ function showHistory(rec){
  $('historyClose').onclick=()=>panel.style.display='none';panel.style.display='block';panel.scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 function renderUnlinked(){
- const pending=invoices.filter(i=>!orders.some(o=>o.id===i.orderId));
+ const pending=invoices.filter(i=>i.reviewStatus!=='noOrderRequired'&&!orders.some(o=>o.id===i.orderId));
  const tb=$('unlinkedInvoices');tb.innerHTML='';
  if(!pending.length){tb.innerHTML='<tr><td colspan="5">発注未確認の請求書はありません。</td></tr>';}
  pending.forEach(inv=>{
    const row=document.createElement('tr');
    const choices=orders.filter(o=>o.supplierId===inv.supplierId);
-   row.innerHTML='<td>'+esc(inv.supplierName)+'</td><td>'+esc(inv.invoiceDate)+'</td><td>'+esc([inv.content,inv.memo].filter(Boolean).join(' ／ '))+'</td><td class="num">'+yen(inv.amount)+'</td><td><select class="link-choice" style="max-width:210px"><option value="">対応する発注を選択</option>'+choices.map(o=>'<option value="'+esc(o.id)+'">'+esc((o.orderDate||'')+' '+(o.content||'')+' '+yen(o.amount))+'</option>').join('')+'</select> <button class="link-save">結び付ける</button> <button class="simple-edit">編集</button> <button class="simple-delete">削除</button> <button class="history">履歴</button></td>';
+   row.innerHTML='<td>'+esc(inv.supplierName)+'</td><td>'+esc(inv.invoiceDate)+'</td><td>'+esc([inv.content,inv.memo].filter(Boolean).join(' ／ '))+'</td><td class="num">'+yen(invoiceNet(inv))+'<small style="display:block">税込 '+yen(inv.amount)+'</small></td><td><select class="link-choice" style="max-width:210px"><option value="">対応する発注を選択</option>'+choices.map(o=>'<option value="'+esc(o.id)+'">'+esc((o.orderDate||'')+' '+(o.content||'')+' '+yen(MSTax.gross(o)))+'</option>').join('')+'</select> <button class="link-save">発注と対応付ける</button> <button class="no-order-needed">発注書なし・確認済み</button> <button class="simple-edit">編集</button> <button class="simple-delete">削除</button> <button class="history">履歴</button></td>';
    row.querySelector('.link-save').onclick=()=>{
      const oid=row.querySelector('select').value,o=orders.find(o=>o.id===oid&&o.supplierId===inv.supplierId);
      if(!o){alert('同じ業者の発注を選択してください。発注がなければ先に発注を登録してください。');return;}
      if(invoiceHasPayment(inv)){alert('支払データがある請求は、支払内容を確認してから訂正してください。');return;}
      if(!confirm('この請求書を「'+o.content+'」の発注に結び付けますか？'))return;
-     if(billed(oid)+n(inv.amount)>n(o.amount)&&!confirm('請求累計が発注額を超えます。発注額を確認したうえで続けますか？'))return;
-     const saved=MSData.save('supplierInvoices',{...inv,orderId:oid,reviewStatus:'linked',linkedAt:new Date().toISOString()});
-     invoices=invoices.map(x=>x.id===inv.id?saved:x);renderOrders();selectOrder(oid);
+     if(billed(oid)+n(inv.amount)>MSTax.gross(o)&&!confirm('請求累計が発注額を超えます。発注額を確認したうえで続けますか？'))return;
+     try{fieldReview(inv,'link',oid);selectOrder(oid);}catch(err){alert(err.message);}
    };
-   row.querySelector('.simple-edit').onclick=()=>openSimple('invoice',inv);
+   row.querySelector('.no-order-needed').onclick=()=>{if(!confirm('この請求を発注書なし・確認済みにしますか？'))return;try{fieldReview(inv,'noOrderRequired');}catch(err){alert(err.message);}};
+   row.querySelector('.simple-edit').onclick=()=>viewInvoiceContent(inv);
    row.querySelector('.simple-delete').onclick=()=>deleteInvoice(inv.id);
    row.querySelector('.history').onclick=()=>showHistory(inv);
    tb.appendChild(row);
@@ -883,11 +1101,15 @@ function mountWorkspace(){
  const panels=[...main.children].filter(el=>el.classList.contains('panel'));
  panels.forEach(el=>{if(el.id==='billingPanel'||el.querySelector('#unlinkedInvoices')||el.querySelector('#orderList'))right.append(el);});
  $('invoiceEntry').append(document.querySelector('.ledger-form'));
+ const taxControls=document.createElement('div');taxControls.style.padding='9px';
+ taxControls.innerHTML='<label>税率（％） <input id="invoiceTaxRate" type="number" min="0" max="100" step="0.1" style="width:80px"></label><div id="invoiceTaxSummary" aria-live="polite"></div>';
+ $('invoiceEntry').append(taxControls);$('invoiceTaxRate').value=MSTax.rateOn();
+
  main.insertBefore(workspace,document.querySelector('main > .actions'));
- [['invoiceDate','請求日'],['invoiceAmount','請求額'],['invoiceMemo','請求書番号・備考']].forEach(([id,text])=>{
+ [['invoiceDate','請求日'],['invoiceAmount','請求額（税抜）'],['invoiceMemo','請求書番号・備考']].forEach(([id,text])=>{
    const input=$(id),label=document.createElement('label');label.textContent=text;input.before(label);label.append(input);
  });
- document.querySelector('.ledger-head').innerHTML='<span>下請請求の明細</span><span>入力は左側で行います</span>';
+ document.querySelector('.ledger-head').innerHTML='<span>下請請求の明細</span><span>請求入力は事務入力で行います</span>';
 }
 function annotateRows(body,labels){
  [...body.children].forEach(row=>[...row.children].forEach((cell,i)=>{if(cell.colSpan===1)cell.dataset.label=labels[i]||'';}));
@@ -910,15 +1132,107 @@ function operationMenu(cell){
  menu.addEventListener('click',()=>{details.open=false;});
 }
 function refreshPresentation(){
- annotateRows($('orderList'),['業者','内容','発注額','請求累計','未請求額','状態','']);
- annotateRows($('unlinkedInvoices'),['業者','請求日','内容・備考','請求額','確認・操作']);
- annotateRows($('invoiceBody'),['請求日','請求額','内容・備考','']);
- annotateRows($('budgetPick'),['選択','工種','内容','予算','発注済','未発注','今回発注額']);
+ annotateRows($('orderList'),['業者','内容','発注額（税抜）','請求累計（税抜）','未請求額（税抜）','状態','']);
+ annotateRows($('unlinkedInvoices'),['業者','請求日','内容・備考','請求額（税抜）','確認・操作']);
+ annotateRows($('invoiceBody'),['請求日','請求額（税抜）','内容・備考','']);
+ annotateRows($('budgetPick'),['選択','工種','内容','予算','発注済','未発注','今回発注額（税抜）']);
  document.querySelectorAll('#orderList tr[data-id],#invoiceBody tr').forEach(row=>operationMenu(row.lastElementChild));
- document.querySelectorAll('#unlinkedInvoices tr').forEach(row=>{if(row.querySelector('button'))operationMenu(row.lastElementChild);});
+ document.querySelectorAll('#unlinkedInvoices tr:not(.review-compact-row)').forEach(row=>{if(row.querySelector('button'))operationMenu(row.lastElementChild);});
 }
 
-mountWorkspace();renderHead();loadSuppliers();setupSimple();recalcBudgetOrdered();renderBudgetPick();renderOrders();$('orderDate').value=today();fillConditions(null,'');$('invoiceDate').value=today();bindMoneyInputs();openSimple('order',null,true);
+mountWorkspace();renderHead();loadSuppliers();setupSimple();
+function openOfficeInvoice(iid='',supplierId=''){
+ location.href='supplier_cost_entry.html?'+new URLSearchParams({invoiceId:iid,supplierId});
+}
+editInvoice=function(iid){openOfficeInvoice(iid)};
+deleteInvoice=function(iid){openOfficeInvoice(iid)};
+const originalOpenSimple=openSimple;
+openSimple=function(kind,rec,quiet){const result=originalOpenSimple(kind,rec,quiet);$('simpleSubjectField').hidden=kind!=='invoice';$('simplePanel').querySelector('.pt span').textContent=kind==='invoice'?'請求を直接登録':'発注を簡易登録';return result;};
+$('simpleKindInvoice').textContent='請求を直接登録';$('simpleKindInvoice').onclick=()=>{chooseSimpleKind('invoice');$('simpleSubjectField').hidden=false;$('simplePanel').querySelector('.pt span').textContent='請求を直接登録';};$('simpleKindOrder').addEventListener('click',()=>{$('simpleSubjectField').hidden=true;$('simplePanel').querySelector('.pt span').textContent='発注を簡易登録';});
+$('directInvoiceOpen').onclick=()=>openSimple('invoice',null,false);
+$('invoiceSave').onclick=()=>{const o=orders.find(x=>x.id===currentOrderId);openOfficeInvoice('',o?.supplierId||'');};
+document.getElementById('invoiceEntry').style.display='none';
+document.querySelector('.ledger-form').style.display='none';
+document.querySelector('.ledger-head').innerHTML='<span>下請請求の明細</span><a href="supplier_cost_entry.html">事務入力で登録・修正</a>';
+const originalRenderInvoices=renderInvoices;
+renderInvoices=function(){originalRenderInvoices();document.getElementById('invoiceEntry').style.display='none';document.querySelectorAll('#invoiceBody .row-edit').forEach(b=>b.textContent='事務入力で修正');document.querySelectorAll('#invoiceBody .row-delete').forEach(b=>b.hidden=true);};
+function invoiceSourceLabel(inv){try{const entry=JSON.parse(MSShared.getItem('mscm:costEntries:v1')||'[]').find(e=>e.id===inv.costEntryId);if(entry?.inputSource==='field')return '現場直接登録';if(entry&&(!(entry.legacyInvoiceIds||[]).length||entry.inputSource==='office'))return '経理登録';}catch(e){}return '既存の請求';}
+const originalRenderUnlinked=renderUnlinked;
+function viewInvoiceContent(inv){
+ try{
+ const x=new XMLHttpRequest();x.open('GET','/api/purchase/list',false);x.send();if(x.status!==200)throw Error('請求内容を取得できませんでした。');const state=JSON.parse(x.responseText),current=state.invoices.find(i=>i.id===inv.id&&i.status!=='inactive');if(!current)throw Error('請求が変更されています。画面を更新してください。');const entry=state.entries.find(e=>e.id===current.costEntryId);
+ let dialog=document.getElementById('invoiceReadOnly');if(dialog)dialog.remove();dialog=document.createElement('dialog');dialog.id='invoiceReadOnly';dialog.style.cssText='width:min(760px,90vw);max-height:85vh;overflow:auto;padding:20px;border:1px solid #b8cdda;border-radius:10px;color:#263f50';
+ const make=(tag,text)=>{const el=document.createElement(tag);el.textContent=text;return el;};const heading=make('h2','請求内容の閲覧');heading.style.cssText='margin:0 0 12px;font-size:18px';dialog.append(heading,make('p','業者：'+current.supplierName),make('p','請求日：'+current.invoiceDate+' ／ 請求書番号・備考：'+(entry?.invoiceNo||current.memo||'なし')),make('p','この工事分：税抜 '+yen(current.netAmount)+' ／ 消費税 '+yen(current.taxAmount||0)+' ／ 税込 '+yen(current.amount)));
+ const lines=(entry?.allocations||[]).filter(l=>l.projectId===current.projectId&&(l.orderId||'')===(current.orderId||''));
+ if(lines.length){const table=document.createElement('table');table.style.cssText='width:100%;border-collapse:collapse';const header=document.createElement('tr');for(const title of ['工種','内容','科目','税抜金額'])header.append(make('th',title));table.append(header);for(const line of lines){const tr=document.createElement('tr');for(const value of [line.workType||'—',line.content||'—',line.subject||'—',yen(line.netAmount)]){const td=make('td',value);td.style.cssText='padding:8px;border-bottom:1px solid #d9e6ef';tr.append(td);}table.append(tr);}dialog.append(table);}else dialog.append(make('p','内容：'+(current.content||'—')));
+ const history=document.createElement('details');history.className='review-read-history';history.append(make('summary','履歴を見る'));const records=current.history||[];if(!records.length)history.append(make('p','履歴はまだありません。'));for(const record of [...records].reverse()){history.append(make('p',new Date(record.at).toLocaleString('ja-JP')+' ／ '+record.action+(record.after?.reviewStatus?' ／ '+({linked:'発注対応済み',noOrderRequired:'発注書なし・確認済み',orderUnconfirmed:'未確認'}[record.after.reviewStatus]||record.after.reviewStatus):'')));}dialog.append(history);dialog.append(make('p','閲覧専用です。請求内容の修正は事務員が事務入力で行います。'));const close=make('button','閉じる');close.type='button';close.onclick=()=>dialog.close();dialog.append(close);document.body.append(dialog);dialog.showModal();close.focus();
+ }catch(err){alert(err.message);}
+}
+function fieldReview(inv,action,orderId=''){
+ function api(url,body){const x=new XMLHttpRequest();x.open(body?'POST':'GET',url,false);if(body)x.setRequestHeader('Content-Type','application/json');x.send(body?JSON.stringify(body):null);let result;try{result=JSON.parse(x.responseText);}catch(e){throw Error('サーバーを再起動して画面を更新してください。');}if(x.status!==200)throw Error(result.error||'保存できませんでした。');return result;}
+ const latest=api('/api/purchase/list');api('/api/purchase/review',{invoiceId:inv.id,action,orderId,previousOrderId:inv.orderId||'',previousUpdatedAt:inv.updatedAt||'',expected:latest.versions});
+ const after=api('/api/purchase/list');orders=after.orders.filter(o=>String(o.projectId)===String(id)&&o.status!=='inactive');invoices=after.invoices.filter(i=>String(i.projectId)===String(id)&&i.status!=='inactive');renderOrders();
+}
+let reviewPage=1;
+function reviewNode(tag,text,className){const el=document.createElement(tag);if(text!==undefined)el.textContent=text;if(className)el.className=className;return el;}
+function ensureReviewFilters(){
+ if($('fieldReviewFilters'))return;
+ const wrap=reviewNode('div');wrap.id='fieldReviewFilters';wrap.innerHTML='<div class="review-filter-bar"><div><label for="reviewStatusFilter">確認状態</label><select id="reviewStatusFilter"><option value="pending">未確認</option><option value="linked">発注対応済み</option><option value="noOrderRequired">発注書なし・確認済み</option><option value="all">すべて</option></select></div><div><label for="reviewPeriodFilter">期間</label><select id="reviewPeriodFilter"><option value="all">全期間</option><option value="month">月別</option><option value="custom">日付を指定</option></select></div><div><label for="reviewSupplierFilter">業者番号・名称</label><input id="reviewSupplierFilter" placeholder="空欄で全業者"></div><div id="reviewPeriodFields" class="review-period-fields" hidden><input id="reviewMonth" type="month" aria-label="請求月"><input id="reviewStart" type="date" aria-label="開始日"><span id="reviewDateSeparator">～</span><input id="reviewEnd" type="date" aria-label="終了日"></div></div><div id="reviewFilterError" class="review-filter-error" role="alert"></div><div id="reviewListSummary" class="review-list-summary" aria-live="polite"></div>';
+ const tableWrap=$('unlinkedInvoices').closest('.table-wrap');tableWrap.before(wrap);const pager=reviewNode('div',undefined,'review-pager');pager.id='reviewPager';tableWrap.after(pager);
+ $('reviewMonth').value=PurchaseReviewMonth();$('reviewStart').value=$('reviewMonth').value+'-01';$('reviewEnd').value=new Date().toLocaleDateString('sv-SE');
+ wrap.addEventListener('input',()=>{reviewPage=1;renderUnlinked();});wrap.addEventListener('change',()=>{reviewPage=1;renderUnlinked();});
+}
+function PurchaseReviewMonth(){const now=new Date();return now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');}
+function openFieldLink(inv){
+ let dialog=$('fieldLinkDialog');if(dialog)dialog.remove();dialog=reviewNode('dialog',undefined,'review-link-dialog');dialog.id='fieldLinkDialog';dialog.append(reviewNode('h2','発注と対応付ける'),reviewNode('p',inv.supplierName+' ／ 税抜 '+yen(invoiceNet(inv))));
+ const choices=orders.filter(o=>o.supplierId===inv.supplierId&&o.status!=='inactive'),select=reviewNode('select');select.setAttribute('aria-label','対応する発注');select.add(new Option('対応する発注を選択',''));choices.forEach(o=>select.add(new Option([o.no,o.content,'税抜 '+yen(o.amount)].filter(Boolean).join(' ／ '),o.id)));select.value=inv.orderId||'';dialog.append(select);
+ const message=reviewNode('p',choices.length?'':'同じ業者の発注がありません。左の簡易登録か詳細登録で発注を登録してから対応付けてください。','review-link-error'),save=reviewNode('button','対応付けを保存','primary'),close=reviewNode('button','閉じる');save.type=close.type='button';save.disabled=!choices.length;
+ save.onclick=()=>{const order=choices.find(o=>o.id===select.value);if(!order){message.textContent='対応する発注を選択してください。';return;}if(inv.orderId!==order.id&&billed(order.id)+n(inv.amount)>MSTax.gross(order)&&!confirm('請求累計が発注額を超えます。確認して対応付けますか？'))return;try{fieldReview(inv,'link',order.id);dialog.close();}catch(err){message.textContent=err.message;}};close.onclick=()=>dialog.close();dialog.append(message,save,close);document.body.append(dialog);dialog.showModal();select.focus();
+}
+renderUnlinked=function(){
+ ensureReviewFilters();const f={status:$('reviewStatusFilter').value,period:$('reviewPeriodFilter').value,month:$('reviewMonth').value,start:$('reviewStart').value,end:$('reviewEnd').value,supplier:$('reviewSupplierFilter').value};
+ $('reviewPeriodFields').hidden=f.period==='all';$('reviewMonth').hidden=f.period!=='month';for(const id of ['reviewStart','reviewEnd','reviewDateSeparator'])$(id).hidden=f.period!=='custom';
+ if(f.period==='month'&&!f.month||f.period==='custom'&&(!f.start||!f.end||f.start>f.end)){$('reviewFilterError').textContent='期間を正しく指定してください。前回の一覧を表示しています。';return;}$('reviewFilterError').textContent='';
+ const partners=MSData.all('partners')||[],all=FieldInvoiceList.select(invoices,orders,partners,f),page=FieldInvoiceList.page(all,reviewPage);reviewPage=page.current;const counts=invoices.filter(i=>i.status!=='inactive'&&FieldInvoiceList.status(i,orders)==='pending');
+ $('reviewListSummary').replaceChildren(reviewNode('strong','全期間の未確認 '+counts.length+'件 ／ 税抜 '+yen(counts.reduce((s,i)=>s+invoiceNet(i),0))),reviewNode('span','表示条件：'+page.total+'件 ／ 税抜 '+yen(page.net)));
+ const tb=$('unlinkedInvoices');tb.replaceChildren();tb.closest('table').querySelector('thead').hidden=true;
+ if(!page.rows.length){const tr=reviewNode('tr',undefined,'review-compact-row'),td=reviewNode('td','条件に合う請求書はありません。','review-row-cell');td.colSpan=5;tr.append(td);tb.append(tr);}
+ for(const inv of page.rows){const status=FieldInvoiceList.status(inv,orders),tr=reviewNode('tr',undefined,'review-compact-row'),td=reviewNode('td',undefined,'review-row-cell');td.colSpan=5;const top=reviewNode('div',undefined,'review-main-line'),bottom=reviewNode('div',undefined,'review-action-line');
+ top.append(reviewNode('span',inv.supplierName,'review-company'),reviewNode('strong','税抜 '+yen(invoiceNet(inv)),'review-net'),reviewNode('span','税込 '+yen(inv.amount),'review-gross'),reviewNode('span',inv.invoiceDate+' ／ '+(status==='pending'?'未確認':status==='linked'?'発注対応済み':'発注書なし・確認済み'),'review-date-state'));
+ const buttons=reviewNode('div',undefined,'review-button-group');for(const [text,run] of [[status==='linked'?'対応変更':'発注対応',()=>openFieldLink(inv)],[status==='noOrderRequired'?'確認を戻す':'発注書なし',()=>{const action=status==='noOrderRequired'?'reopen':'noOrderRequired';if(!confirm(action==='reopen'?'発注未確認に戻しますか？':'発注書なし・確認済みにしますか？'))return;try{fieldReview(inv,action);}catch(err){alert(err.message);}}],['内容を見る',()=>viewInvoiceContent(inv)]]){const button=reviewNode('button',text);button.type='button';button.onclick=run;buttons.append(button);}
+ bottom.append(reviewNode('span',[invoiceSourceLabel(inv),inv.content,inv.memo].filter(Boolean).join(' ／ ')||'—','review-description'),buttons);td.append(top,bottom);tr.append(td);tb.append(tr);}
+ const pager=$('reviewPager');pager.replaceChildren();const prev=reviewNode('button','前へ'),next=reviewNode('button','次へ');prev.type=next.type='button';prev.disabled=page.current===1;next.disabled=page.current===page.pages;prev.onclick=()=>{reviewPage--;renderUnlinked();};next.onclick=()=>{reviewPage++;renderUnlinked();};pager.append(prev,reviewNode('span',page.current+' / '+page.pages+'ページ（10件ずつ）'),next);
+};
+const originalSelectOrder=selectOrder;
+selectOrder=function(oid){originalSelectOrder(oid);document.getElementById('invoiceEntry').style.display='none';};
+recalcBudgetOrdered();renderBudgetPick();renderOrders();$('orderDate').value=today();fillConditions(null,'');$('invoiceDate').value=today();bindMoneyInputs();$('simplePanel').style.display='none';
+const modeSelect=$('budgetManagement');modeSelect.value=project.budgetManagement||(budget?'enabled':'');
+function displayBudgetMode(){const orderHeading=$('addPanel').querySelector('.pt span');if(orderHeading)orderHeading.textContent=budgetManaged()?'予算から発注を登録':'発注を詳細登録';const directButton=$('directInvoiceOpen');if($('simpleOpen').parentElement!==directButton.parentElement)directButton.before($('simpleOpen'),$('newOrder'));$('newAmount').readOnly=budgetManaged();document.querySelectorAll('.budget-pick').forEach(e=>e.hidden=!budgetManaged());const flow=document.querySelector('.flow-note');if(flow)flow.textContent=budgetManaged()?'予算明細を選び、今回の発注額を入力します。':'予算を作らずに、発注先・内容・金額を入力して発注書を作成できます。';['mBudget','mMargin','mUnordered'].forEach(key=>$(key).closest('.metric').hidden=!budgetManaged());$('newOrder').textContent=budgetManaged()?'予算から発注を登録':'発注を詳細登録';document.querySelectorAll('.map-budget').forEach(b=>b.hidden=!budgetManaged());}
+modeSelect.onchange=()=>{if(!modeSelect.value)return;try{const saved=MSData.save('projects',{...project,budgetManagement:modeSelect.value});Object.assign(project,saved);metrics();renderOrders();displayBudgetMode();}catch(e){modeSelect.value=project.budgetManagement||(budget?'enabled':'');alert(e.message);}};
+const subjectState=(()=>{const r=new XMLHttpRequest();r.open('GET','/api/purchase/list',false);r.send();if(r.status!==200)return [];return JSON.parse(r.responseText).subjects||[];})();
+subjectState.filter(s=>s.status!=='inactive').forEach(s=>$('simpleSubject').add(new Option(s.name,s.name)));if([...$('simpleSubject').options].some(o=>o.value==='外注工事費'))$('simpleSubject').value='外注工事費';
+const budgetModeRenderOrders=renderOrders;renderOrders=function(){budgetModeRenderOrders();displayBudgetMode();};displayBudgetMode();
+})();
+
+// Mirror the existing computed total; never changes amounts or save handlers.
+(function(){const total=document.getElementById('enteredOrder'),display=document.getElementById('compactOrderTotal');if(total&&display){const sync=()=>{const amount=Number(total.textContent.replace(/[^0-9.-]/g,''))||0;display.textContent=MSTax.yen(amount);};document.getElementById('ccTax').addEventListener('change',sync);new MutationObserver(sync).observe(total,{childList:true,characterData:true,subtree:true});sync();}})();
+
+// React to all existing open/close paths without changing registration handlers.
+(function(){
+ const workspace=document.querySelector('.workspace');
+ const panels=['addPanel','simplePanel','invoiceEntry'].map(id=>document.getElementById(id));
+ const isOpen=panel=>panel&&panel.style.display!=='none';
+ function syncInputMode(){
+   workspace.dataset.inputMode=isOpen(panels[0])?'budget':isOpen(panels[1])?'simple':isOpen(panels[2])?'invoice':'closed';
+ }
+ if(!workspace)return;
+ const observer=new MutationObserver(syncInputMode);
+ panels.forEach(panel=>{if(panel)observer.observe(panel,{attributes:true,attributeFilter:['style']});});
+ syncInputMode();
 })();
 </script>
-</body></html>
+<script type="text/pages-deferred" src="field_supplier_picker.js?v=20261006"></script></body></html>
+
+
+
+

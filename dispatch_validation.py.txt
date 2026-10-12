@@ -1,0 +1,143 @@
+"""Validate planning records independently from actual daily cost records."""
+import datetime
+import json
+import math
+import re
+
+KEY = 'mscm:dispatch:v1'
+RESOURCE_KEY = 'mscm:resources:v1'
+
+def load(store, key, default):
+    return json.loads(store.get(key, json.dumps(default)))
+
+def minute(value):
+    if not isinstance(value, str) or not re.fullmatch(r'(?:[01]\d|2[0-3]):[0-5]\d', value):
+        raise ValueError('開始・終了時刻を入力してください。')
+    h, m = map(int, value.split(':'))
+    return h * 60 + m
+
+def segments_hours(segments):
+    if not isinstance(segments, list) or not 1 <= len(segments) <= 100:
+        raise ValueError('作業時間を入力してください。')
+    ranges, total = [], 0
+    for s in segments:
+        if not isinstance(s, dict):
+            raise ValueError('時間帯の内容を確認してください。')
+        start, end = minute(s.get('start')), minute(s.get('end'))
+        pause = s.get('breakMinutes', 0)
+        if type(pause) not in (int, float) or not math.isfinite(pause) or not 0 <= pause < end-start:
+            raise ValueError('終了は開始より後、休憩は作業時間より短く入力してください。')
+        if any(start < b and end > a for a, b in ranges):
+            raise ValueError('同じ作業員の時間帯が重なっています。')
+        ranges.append((start, end))
+        total += end-start-pause
+    return total/60
+
+def text(value, limit, required=False):
+    if not isinstance(value, str) or len(value) > limit or (required and not value.strip()):
+        raise ValueError('名称・備考の入力内容を確認してください。')
+
+def resources(value):
+    rows = json.loads(value)
+    if not isinstance(rows, list) or len(rows) > 10000:
+        raise ValueError('資源マスターの内容を確認してください。')
+    ids, names = set(), set()
+    for r in rows:
+        if not isinstance(r, dict) or r.get('kind') not in ('vehicle', 'heavy', 'machine') or r.get('status') not in ('active', 'inactive'):
+            raise ValueError('区分・状態を確認してください。')
+        text(r.get('id'), 100, True)
+        text(r.get('name'), 200, True)
+        text(r.get('note', ''), 1000)
+        pair = (r['kind'], r['name'])
+        if r['id'] in ids or pair in names:
+            raise ValueError('資源の管理番号・名称が重複しています。')
+        ids.add(r['id'])
+        names.add(pair)
+    return json.dumps(rows, ensure_ascii=False)
+
+def plan_valid(plan, store, confirming=False):
+    if not isinstance(plan, dict):
+        raise ValueError('班割の内容を確認してください。')
+    slots, projects, assignments, notes = (plan.get(k) for k in ('slots', 'projects', 'assignments', 'notes'))
+    if not isinstance(slots, list) or not 1 <= len(slots) <= 48 or not isinstance(projects, list) or len(projects) > 1000 or not isinstance(assignments, list) or len(assignments) > 20000 or not isinstance(notes, dict):
+        raise ValueError('班割の内容を確認してください。')
+    project_map = {p['id']:p for p in load(store, 'mscm:v1:projects', [])}
+    resource_map = {('worker', w['id']):w for w in load(store, 'mscm:v1:workers', []) if w.get('companyId') == '__SELF__'}
+    resource_map.update({(r['kind'], r['id']):r for r in load(store, RESOURCE_KEY, [])})
+    if not all(isinstance(p, str) for p in projects) or len(set(projects)) != len(projects):
+        raise ValueError('工事が重複しています。')
+    slot_map = {}
+    for s in slots:
+        if not isinstance(s, dict):
+            raise ValueError('時間帯を確認してください。')
+        text(s.get('id'), 100, True)
+        text(s.get('name'), 100, True)
+        start, end = minute(s.get('start')), minute(s.get('end'))
+        if start >= end or s['id'] in slot_map:
+            raise ValueError('時間帯の開始・終了・重複を確認してください。')
+        slot_map[s['id']] = (start, end)
+    seen, ids = [], set()
+    for a in assignments:
+        if not isinstance(a, dict):
+            raise ValueError('配置を確認してください。')
+        text(a.get('id'), 100, True)
+        text(a.get('resourceId'), 100, True)
+        text(a.get('name'), 200, True)
+        if a.get('kind') not in ('worker', 'vehicle', 'heavy', 'machine') or a.get('slotId') not in slot_map or a.get('projectId') not in projects or a['id'] in ids:
+            raise ValueError('配置先・時間帯を確認してください。')
+        ids.add(a['id'])
+        start, end = slot_map[a['slotId']]
+        for previous in seen:
+            if previous[0] == (a['kind'], a['resourceId']) and start < previous[2] and end > previous[1]:
+                raise ValueError(a['name'] + 'が同じ時間帯に二重配置されています。')
+        seen.append(((a['kind'], a['resourceId']), start, end))
+        if confirming:
+            resource, project = resource_map.get((a['kind'], a['resourceId'])), project_map.get(a['projectId'])
+            if not resource or resource.get('status') == 'inactive' or not project or project.get('status') == 'inactive':
+                raise ValueError('使用停止・未登録の作業員、車両・機械、工事があります。')
+    for key, note in notes.items():
+        if key not in projects:
+            raise ValueError('作業指示の工事を確認してください。')
+        text(note, 10000)
+    if confirming and not assignments:
+        raise ValueError('配置を１件以上入力してください。')
+
+def dispatch(value, store, restoring=False):
+    days = json.loads(value)
+    if not isinstance(days, list) or len(days) > 50000:
+        raise ValueError('班割の保存内容を確認してください。')
+    old = {d['date']:d for d in load(store, KEY, [])}
+    dates, instruction_ids = set(), set()
+    for day in days:
+        if not isinstance(day, dict):
+            raise ValueError('班割の日付を確認してください。')
+        datetime.date.fromisoformat(day['date'])
+        if day['date'] in dates:
+            raise ValueError('班割の日付が重複しています。')
+        dates.add(day['date'])
+        plan_valid(day.get('draft'), store)
+        instructions = day.get('instructions', [])
+        previous = [] if restoring else old.get(day['date'], {}).get('instructions', [])
+        if not isinstance(instructions, list) or (not restoring and (instructions[:len(previous)] != previous or len(instructions) > len(previous)+1)):
+            raise ValueError('確定済み指示書の変更・削除はできません。新しい版を作成してください。')
+        for index, ins in enumerate(instructions):
+            if not isinstance(ins, dict):
+                raise ValueError('指示書の内容を確認してください。')
+            text(ins.get('id'), 100, True)
+            if ins['id'] in instruction_ids:
+                raise ValueError('指示書番号が重複しています。')
+            instruction_ids.add(ins['id'])
+            if index >= len(previous):
+                if ins.get('revision') != index+1 or (not restoring and ins.get('plan') != day['draft']):
+                    raise ValueError('最新の配置案から指示書を作成してください。')
+                plan_valid(ins['plan'], store, not restoring)
+                text(ins.get('confirmedAt'), 100, True)
+                names = ins.get('projectNames')
+                if not isinstance(names, dict) or set(names) != set(ins['plan']['projects']):
+                    raise ValueError('指示書の工事名を確認してください。')
+                for p in names.values():
+                    text(p.get('name'), 500, True)
+                    text(p.get('no', ''), 100)
+    if not restoring and not set(old).issubset(dates):
+        raise ValueError('保存済みの班割は削除できません。')
+    return json.dumps(days, ensure_ascii=False)

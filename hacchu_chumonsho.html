@@ -1,12 +1,11 @@
 <!doctype html>
-<html lang="ja"><head>
-<script src="ms_password.js"></script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>注文書・注文請書｜MS建設管理システム</title>
 <style id="ms-no-flicker">
 /* 初期データ反映前のテンプレートちらつき防止。レイアウト値は変更しない */
 html.ms-app-loading body{visibility:hidden}
 </style>
-<script id="ms-no-flicker-start">
+<script type="text/pages-deferred" id="ms-no-flicker-start">
 document.documentElement.classList.add('ms-app-loading');
 window.addEventListener('load',function(){
   requestAnimationFrame(function(){
@@ -35,7 +34,7 @@ window.addEventListener('load',function(){
 .error{max-width:210mm;margin:10px auto;background:#fff0f0;border:1px solid #d99;padding:10px;color:#8a2020;display:none}
 @page{size:A4 portrait;margin:0}
 @media print{body{background:#fff}.toolbar,.notice,.editor,.error{display:none!important}.page{display:none;margin:0;box-shadow:none;width:210mm;height:297mm;min-height:297mm;page-break-after:always}.page.printing{display:block}.page.printing:last-child{page-break-after:auto}}
-</style></head><body>
+</style><script src="pages_boot.js" defer></script></head><body>
 <div class="toolbar"><b>注文書・注文請書　第3案</b><button class="sub" onclick="history.back()">戻る</button><button class="save" id="saveBtn">契約条件を保存</button><button class="pri" onclick="printSet('order')">注文書を印刷</button><button class="pri" onclick="printSet('accept')">注文請書を印刷</button></div>
 <div class="notice">第3案：旧帳票の情報量を残し、表面をカード型の現代的なレイアウトへ変更。約款は簡略15項目を廃止し、標準下請契約約款の主要論点を網羅する構成へ拡張しました。</div>
 <div class="error" id="error"></div>
@@ -105,26 +104,26 @@ window.addEventListener('load',function(){
 </div><div class="signbox"><span class="seal">印</span>上記事項及び工事下請基本契約条件を承諾し、この工事を請け負います。<br>請書日　　年　　月　　日<br><b data-v="supplierName"></b>　代表者 <span data-v="supplierRep"></span></div>
 <div class="foot"><span>MS建設管理システム</span><span>1 / 2</span></div></section>
 
-<script src="shared_storage.js"></script><script src="ms_data.js"></script>
-<script>
+<script type="text/pages-deferred" src="shared_storage.js"></script><script type="text/pages-deferred" src="tax.js?v=20261003"></script><script type="text/pages-deferred" src="ms_data.js?v=tax20261003"></script>
+<script type="text/pages-deferred">
 (()=>{const $=id=>document.getElementById(id),q=new URLSearchParams(location.search),oid=q.get('orderId')||q.get('id')||sessionStorage.getItem('mscm:selectedOrderId')||'';
 const yen=v=>'¥'+Number(v||0).toLocaleString('ja-JP'),fmt=v=>{if(!v)return'';let a=String(v).slice(0,10).split('-');return a.length===3?`${a[0]}年${+a[1]}月${+a[2]}日`:v};
 const esc=v=>String(v??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));function set(k,v){document.querySelectorAll(`[data-v="${k}"]`).forEach(e=>e.tagName==='TBODY'?e.innerHTML=v:e.textContent=v??'')}
 function fail(s){$('error').style.display='block';$('error').textContent=s}if(!window.MSData){fail('共通データを読み込めません。');return}
 let orders=MSData.all('orders'),o=orders.find(x=>String(x.id)===String(oid))||orders.filter(x=>x.status!=='inactive'&&x.dataSide==='purchase').slice(-1)[0];if(!o){fail('発注データがありません。');return}
 let p=MSData.get('projects',o.projectId)||{},s=MSData.get('partners',o.supplierId)||{},our=(MSData.all('companySettings')||[]).find(x=>x.status!=='inactive')||{};
-let c=Object.assign({start:p.startDate||'',end:p.endDate||'',noDay:'',noTime:'',progress:'95％',retention:'5％',retentionRelease:'最終請求後1か月',advance:'なし',closing:'月末',payDay:'翌月末',payMethod:s.paymentTerms||'銀行振込',workers:'注文者負担',delay:'約款による',overpay:'約款による',defect:'個別協議',freight:'受注者負担',recycle:'対象外',tax:10,special:''},o.contractConditions||{});
+let c=Object.assign({start:p.startDate||'',end:p.endDate||'',noDay:'',noTime:'',progress:'95％',retention:'5％',retentionRelease:'最終請求後1か月',advance:'なし',closing:'月末',payDay:'翌月末',payMethod:s.paymentTerms||'銀行振込',workers:'注文者負担',delay:'約款による',overpay:'約款による',defect:'個別協議',freight:'受注者負担',recycle:'対象外',tax:MSTax.rateOn(),special:''},o.contractConditions||{});
 const ids={start:'cStart',end:'cEnd',noDay:'cNoDay',noTime:'cNoTime',progress:'cProgress',retention:'cRetention',retentionRelease:'cRetentionRelease',advance:'cAdvance',closing:'cClosing',payDay:'cPayDay',payMethod:'cPayMethod',workers:'cWorkers',delay:'cDelay',overpay:'cOverpay',defect:'cDefect',freight:'cFreight',recycle:'cRecycle',tax:'cTax',special:'cSpecial'};
 Object.entries(ids).forEach(([k,id])=>$(id).value=c[k]??'');function read(){Object.entries(ids).forEach(([k,id])=>c[k]=$(id).value.trim());return c}
-function render(){read();set('orderNo',o.no||o.id||'');set('orderDate',fmt(o.orderDate));set('supplierName',o.supplierName||s.name||s.companyName||'');set('supplierPostal',s.zipcode||s.postal||'');set('supplierAddress',s.address||'');set('supplierRep',s.representative||s.representativeName||'');set('ourPostal',our.postal||'');set('ourAddress',our.address||'');set('ourCompany',our.companyName||'');set('ourRepTitle',our.representativeTitle||'');set('ourRep',our.representativeName||'');set('ourTel',our.tel||'');set('ourFax',our.fax||'');set('projectName',p.name||p.projectName||'');set('projectAddress',p.address||p.projectAddress||'');set('content',o.content||'');set('start',fmt(c.start));set('end',fmt(c.end));set('noDay',c.noDay||'定めなし');set('noTime',c.noTime||'定めなし');set('amount',yen(o.amount));
-let r=Number(c.tax)||0,t=r?Math.round(Number(o.amount||0)*r/(100+r)):0;set('taxAmount',r?yen(t):'―');set('base',r?yen(Number(o.amount||0)-t):yen(o.amount));
+function render(){read();set('orderNo',o.no||o.id||'');set('orderDate',fmt(o.orderDate));set('supplierName',o.supplierName||s.name||s.companyName||'');set('supplierPostal',s.zipcode||s.postal||'');set('supplierAddress',s.address||'');set('supplierRep',s.representative||s.representativeName||'');set('ourPostal',our.postal||'');set('ourAddress',our.address||'');set('ourCompany',our.companyName||'');set('ourRepTitle',our.representativeTitle||'');set('ourRep',our.representativeName||'');set('ourTel',our.tel||'');set('ourFax',our.fax||'');set('projectName',p.name||p.projectName||'');set('projectAddress',p.address||p.projectAddress||'');set('content',o.content||'');set('start',fmt(c.start));set('end',fmt(c.end));set('noDay',c.noDay||'定めなし');set('noTime',c.noTime||'定めなし');set('amount',yen(MSTax.gross(o)));
+let r=Number(c.tax)||0,q=MSTax.calc(o.amount,r,o.taxRounding||MSTax.policy().rounding);set('taxAmount',yen(q.tax));set('base',yen(q.net));set('amount',yen(q.gross));
 ['progress','retention','retentionRelease','closing','payDay','payMethod','workers','delay','overpay','defect','freight','recycle','special'].forEach(k=>set(k,c[k]||'―'));
 let budget=(MSData.all('budgets')||[]).find(b=>String(b.projectId)===String(o.projectId)),items=budget&&Array.isArray(budget.items)?budget.items:[];let rows=(o.allocations||[]).map(a=>{let it=items[+a.itemIndex]||{};return `<tr><td>${esc(it.trade||it.name||o.content||'')}</td><td class="right">${esc(yen(a.amount))}</td></tr>`}).join('');set('allocRows',rows||`<tr><td>${esc(o.content||'')}</td><td class="right">${esc(yen(o.amount))}</td></tr>`);
 const detailCount=(o.allocations||[]).length||1;
 ['orderFront','acceptFront'].forEach(id=>$(id).classList.toggle('detail-compact',detailCount>=3));}
 Object.values(ids).forEach(id=>$(id).addEventListener('input',render));$('saveBtn').onclick=()=>{render();o=MSData.save('orders',{...o,contractConditions:{...c},updatedAt:new Date().toISOString()});alert('この発注の契約条件を保存しました。')};
 window.printSet=type=>{render();document.querySelectorAll('.page').forEach(x=>x.classList.remove('printing'));if(type==='order'){$('orderFront').classList.add('printing')}else{$('acceptFront').classList.add('printing')}$('termsAll').classList.add('printing');setTimeout(()=>print(),60)};render();
-})();</script></body></html>
+})();</script><script type="text/pages-deferred">document.addEventListener('DOMContentLoaded',()=>{const q=new URLSearchParams(location.search),pid=q.get('id')||q.get('projectId')||sessionStorage.getItem('mscm:selectedProjectId'),project=pid?MSData.get('projects',pid):null;const order=q.get('orderId')?MSData.get('orders',q.get('orderId')):null;if((order||project)&&!(order||project).moneyBasis){const note=document.createElement('div');note.style.cssText='padding:12px;background:#fff4df;color:#754c15;margin:10px;font-size:13px';note.textContent='金額基準が未確認の既存記録です。入力額を税抜として仮計算しています。受注・契約または発注の編集画面で、金額と税率を確認して保存してから帳票・請求を確定してください。';(document.querySelector('main')||document.body).prepend(note);}});</script></body></html>
 <style>
 .terms{padding-top:10mm}
 .terms h1{margin-top:0}
@@ -335,7 +334,7 @@ window.printSet=type=>{render();document.querySelectorAll('.page').forEach(x=>x.
 .ms-printbar-title{font-weight:900;white-space:nowrap}
 .ms-printbar-actions{margin-left:auto;display:flex;gap:8px;flex-wrap:nowrap}
 </style>
-<script>
+<script type="text/pages-deferred">
 document.addEventListener('DOMContentLoaded',()=>{
   /* 開発用説明と警告だけを個別に消す */
   [...document.querySelectorAll('body *')].forEach(el=>{
@@ -477,7 +476,7 @@ document.addEventListener('DOMContentLoaded',()=>{
 }
 </style>
 
-<script id="ms-final-print-js">
+<script type="text/pages-deferred" id="ms-final-print-js">
 (function(){
   function removeOldRoot(){
     const old=document.getElementById('msPrintRoot');
@@ -504,6 +503,7 @@ document.addEventListener('DOMContentLoaded',()=>{
     const root=document.createElement('div');
     root.id='msPrintRoot';
     root.appendChild(makeSheet(order));
+    root.appendChild(makeSheet(terms));
     root.appendChild(makeSheet(accept));
     root.appendChild(makeSheet(terms));
     document.body.appendChild(root);
@@ -682,13 +682,13 @@ document.addEventListener('DOMContentLoaded',()=>{
 /* v21: 注文書・約款はv4のまま。注文請書だけ下端を安全圏へ収める */
 @media print{
   /* 2枚目（注文請書）だけ、文字サイズ・帯・横寸法を変えず縦間隔を詰める */
-  #msPrintRoot .print-sheet:nth-child(2) .party{margin-top:4mm!important;}
-  #msPrintRoot .print-sheet:nth-child(2) .moneyhero{margin:4mm 0 3mm!important;}
-  #msPrintRoot .print-sheet:nth-child(2) .cards{margin-top:2mm!important;}
-  #msPrintRoot .print-sheet:nth-child(2) .section{margin:2.5mm 0 1mm!important;}
-  #msPrintRoot .print-sheet:nth-child(2) .notes{margin-top:1.5mm!important;padding-top:1mm!important;}
-  #msPrintRoot .print-sheet:nth-child(2) .notes.notice-list .ni{padding:.30mm 0!important;}
-  #msPrintRoot .print-sheet:nth-child(2) .signbox{margin:1.5mm 0 0 auto!important;}
+  #msPrintRoot .print-sheet:nth-child(3) .party{margin-top:4mm!important;}
+  #msPrintRoot .print-sheet:nth-child(3) .moneyhero{margin:4mm 0 3mm!important;}
+  #msPrintRoot .print-sheet:nth-child(3) .cards{margin-top:2mm!important;}
+  #msPrintRoot .print-sheet:nth-child(3) .section{margin:2.5mm 0 1mm!important;}
+  #msPrintRoot .print-sheet:nth-child(3) .notes{margin-top:1.5mm!important;padding-top:1mm!important;}
+  #msPrintRoot .print-sheet:nth-child(3) .notes.notice-list .ni{padding:.30mm 0!important;}
+  #msPrintRoot .print-sheet:nth-child(3) .signbox{margin:1.5mm 0 0 auto!important;}
 }
 </style>
 
@@ -696,13 +696,13 @@ document.addEventListener('DOMContentLoaded',()=>{
 /* v22: 注文書・約款は変更しない。請書の署名枠とページ番号の重なりだけ解消 */
 @media print{
   /* 2枚目の署名枠だけ少し上へ。文字サイズ・枠サイズ・帯は変更しない */
-  #msPrintRoot .print-sheet:nth-child(2) .signbox{
+  #msPrintRoot .print-sheet:nth-child(3) .signbox{
     position:relative!important;
     transform:translateY(-6mm)!important;
     margin-bottom:6mm!important;
   }
   /* 2枚目のフッターは署名枠より下、ただし印刷安全域内に固定 */
-  #msPrintRoot .print-sheet:nth-child(2) .foot{
+  #msPrintRoot .print-sheet:nth-child(3) .foot{
     bottom:7mm!important;
     z-index:2!important;
   }
@@ -712,12 +712,12 @@ document.addEventListener('DOMContentLoaded',()=>{
 <style id="ms-v23-accept-page-number-only">
 /* v23: v6を維持し、注文請書のページ番号だけ署名枠から離す */
 @media print{
-  #msPrintRoot .print-sheet:nth-child(2) .foot{
+  #msPrintRoot .print-sheet:nth-child(3) .foot{
     left:14mm!important;
     right:14mm!important;
     bottom:7mm!important;
   }
-  #msPrintRoot .print-sheet:nth-child(2) .foot span:last-child{
+  #msPrintRoot .print-sheet:nth-child(3) .foot span:last-child{
     position:absolute!important;
     right:0!important;
     bottom:0!important;
@@ -729,7 +729,7 @@ document.addEventListener('DOMContentLoaded',()=>{
 <style id="ms-v24-accept-signbox-height-only">
 /* v24: 注文書・約款は変更しない。注文請書の署名枠だけ上下余白を縮める */
 @media print{
-  #msPrintRoot .print-sheet:nth-child(2) .signbox{
+  #msPrintRoot .print-sheet:nth-child(3) .signbox{
     min-height:29mm!important;
     padding:2mm 4mm!important;
     font-size:9.5px!important;
@@ -750,21 +750,21 @@ document.addEventListener('DOMContentLoaded',()=>{
 @media print{
   /* 印刷専用コピーにも同じ文字拡大だけを適用 */
   #msPrintRoot .print-sheet:nth-child(1) .row,
-  #msPrintRoot .print-sheet:nth-child(2) .row{font-size:11.2px!important;}
+  #msPrintRoot .print-sheet:nth-child(3) .row{font-size:11.2px!important;}
   #msPrintRoot .print-sheet:nth-child(1) .detail,
-  #msPrintRoot .print-sheet:nth-child(2) .detail{font-size:11px!important;}
+  #msPrintRoot .print-sheet:nth-child(3) .detail{font-size:11px!important;}
   #msPrintRoot .print-sheet:nth-child(1) .issuer,
-  #msPrintRoot .print-sheet:nth-child(2) .issuer{font-size:10.2px!important;}
+  #msPrintRoot .print-sheet:nth-child(3) .issuer{font-size:10.2px!important;}
   #msPrintRoot .print-sheet:nth-child(1) .cap,
-  #msPrintRoot .print-sheet:nth-child(2) .cap{font-size:9.2px!important;}
+  #msPrintRoot .print-sheet:nth-child(3) .cap{font-size:9.2px!important;}
   #msPrintRoot .print-sheet:nth-child(1) .partyname,
-  #msPrintRoot .print-sheet:nth-child(2) .partyname{font-size:17px!important;}
+  #msPrintRoot .print-sheet:nth-child(3) .partyname{font-size:17px!important;}
 
   /* 注意事項はv8の大きさを明示的に維持 */
   #msPrintRoot .print-sheet:nth-child(1) .notes.notice-list,
-  #msPrintRoot .print-sheet:nth-child(2) .notes.notice-list{font-size:8.2px!important;line-height:1.30!important;}
+  #msPrintRoot .print-sheet:nth-child(3) .notes.notice-list{font-size:8.2px!important;line-height:1.30!important;}
   /* 署名欄もv8のまま */
-  #msPrintRoot .print-sheet:nth-child(2) .signbox{font-size:9.5px!important;line-height:1.7!important;}
+  #msPrintRoot .print-sheet:nth-child(3) .signbox{font-size:9.5px!important;line-height:1.7!important;}
 }
 </style>
 
@@ -785,15 +785,15 @@ document.addEventListener('DOMContentLoaded',()=>{
 }
 @media print{
   #msPrintRoot .print-sheet:nth-child(1) .cards .row,
-  #msPrintRoot .print-sheet:nth-child(2) .cards .row,
+  #msPrintRoot .print-sheet:nth-child(3) .cards .row,
   #msPrintRoot .print-sheet:nth-child(1) .cards .row .k,
-  #msPrintRoot .print-sheet:nth-child(2) .cards .row .k,
+  #msPrintRoot .print-sheet:nth-child(3) .cards .row .k,
   #msPrintRoot .print-sheet:nth-child(1) .detail,
-  #msPrintRoot .print-sheet:nth-child(2) .detail,
+  #msPrintRoot .print-sheet:nth-child(3) .detail,
   #msPrintRoot .print-sheet:nth-child(1) .detail th,
-  #msPrintRoot .print-sheet:nth-child(2) .detail th,
+  #msPrintRoot .print-sheet:nth-child(3) .detail th,
   #msPrintRoot .print-sheet:nth-child(1) .detail td,
-  #msPrintRoot .print-sheet:nth-child(2) .detail td{
+  #msPrintRoot .print-sheet:nth-child(3) .detail td{
     color:#000!important;
   }
 }

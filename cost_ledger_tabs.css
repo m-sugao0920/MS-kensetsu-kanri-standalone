@@ -1,0 +1,8 @@
+[hidden]{display:none!important}
+.ledger-tabs{display:flex;gap:10px;margin:16px 0;border-bottom:2px solid #c9dbe8;padding-bottom:10px}
+.ledger-tabs button{min-width:180px;min-height:46px;padding:10px 24px;font:inherit;font-size:16px;font-weight:700;border:1px solid #b8cdda;border-radius:8px;background:#fff;color:#285b7b;cursor:pointer}
+.ledger-tabs button[aria-selected=true]{background:#176fa8;color:#fff;border-color:#176fa8}
+.ledger-tabs button:focus-visible{outline:3px solid #80b9dc;outline-offset:3px}
+#ledgerViewPanel>.ledger-controls{background:#f3f8fc;border:1px solid #c9dbe8;border-radius:9px;padding:12px;margin-bottom:16px}
+@media(max-width:600px){.ledger-tabs button{flex:1;min-width:0}.ledger-controls{flex-wrap:wrap}}
+@media print{#ledgerViewPanel{display:block!important}.ledger-tabs{display:none!important}}

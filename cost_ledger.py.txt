@@ -1,0 +1,58 @@
+import json, math
+SUBJECTS={'材料費':'material','外注労務費':'labor','外注工事費':'outsourced','外注機械費':'outsourced','自社機械費':'expense','修繕費':'expense','リース機械費':'expense','燃料費':'expense','経費':'expense','交通費':'expense','処分費':'expense','駐車場':'expense','雑材':'expense','通信':'expense','保証料':'expense'}
+def load(d,k,f):return json.loads(d.get(k,json.dumps(f)))
+def invoice_net(i):
+ n=i.get('netAmount')
+ return n if type(n) in (int,float) and math.isfinite(n) and n>=0 else None
+def active(i):return i.get('status') not in ('cancelled','canceled','void','inactive','deleted')
+def validate_entries(value,d,u):
+ records=json.loads(value);projects={p['id']:p for p in load(d,'mscm:v1:projects',[])};suppliers={p['id']:p for p in load(d,'mscm:v1:partners',[])};invoices={p['id']:p for p in load(d,'mscm:v1:supplierInvoices',[]) if active(p)}
+ if not isinstance(records,list):raise ValueError()
+ ids=set();sources=set();numbers=set()
+ for r in records:
+  if not isinstance(r,dict) or not isinstance(r.get('id'),str) or r['id'] in ids or r.get('supplierId') not in suppliers:raise ValueError()
+  ids.add(r['id']);__import__('datetime').date.fromisoformat(r['date']);src=r.get('supplierInvoiceId','')
+  for k in ('netAmount','taxAmount'):
+   if type(r.get(k)) is not int or not 0<=r[k]<=100000000000:raise ValueError()
+  if r['netAmount']<=0:raise ValueError()
+  if not isinstance(r.get('invoiceNo',''),str) or len(r.get('invoiceNo',''))>100:raise ValueError()
+  if src:
+   i=invoices.get(src)
+   if src in sources or not i or i.get('supplierId')!=r['supplierId'] or invoice_net(i)!=r['netAmount']:raise ValueError()
+   sources.add(src)
+  elif r.get('invoiceNo'):
+   n=(r['supplierId'],r['invoiceNo'])
+   if n in numbers:raise ValueError()
+   numbers.add(n)
+  lines=r.get('allocations')
+  if not isinstance(lines,list) or not 1<=len(lines)<=500:raise ValueError()
+  total=0
+  for line in lines:
+   if not isinstance(line,dict) or line.get('projectId') not in projects or line.get('subject') not in SUBJECTS or type(line.get('netAmount')) is not int or line['netAmount']<=0:raise ValueError()
+   if src and line['projectId']!=invoices[src].get('projectId'):raise ValueError()
+   if not isinstance(line.get('workType',''),str) or len(line.get('workType',''))>200:raise ValueError()
+   line['category']=SUBJECTS[line['subject']];line['projectName']=projects[line['projectId']]['name'];line['projectNo']=projects[line['projectId']].get('no','');total+=line['netAmount']
+  if total!=r['netAmount']:raise ValueError()
+  r['supplierName']=suppliers[r['supplierId']]['name'];r['grossAmount']=r['netAmount']+r['taxAmount']
+ return json.dumps(records,ensure_ascii=False)
+def ledger(d,project_id):
+ rows=[];warnings=[];entries=load(d,'mscm:costEntries:v1',[]);invoices=load(d,'mscm:v1:supplierInvoices',[]);invoice_map={i['id']:i for i in invoices};linked=set()
+ for r in entries:
+  src=r.get('supplierInvoiceId')
+  if src:
+   linked.add(src);i=invoice_map.get(src)
+   if not i or not active(i):continue
+   if invoice_net(i)!=r['netAmount'] or any(l['projectId']!=i.get('projectId') for l in r['allocations']):
+    if i.get('projectId')==project_id:warnings.append('既存の下請請求が変更されています。科目の振り分けを再確認してください。')
+    linked.discard(src);continue
+  for l in r['allocations']:
+   if l['projectId']==project_id:rows.append({'date':r['date'],'source':'既存下請請求の科目登録' if src else '仕入・下請請求','supplier':r.get('supplierName',''),'subject':l['subject'],'category':SUBJECTS[l['subject']],'workType':l.get('workType',''),'amount':l['netAmount']})
+ for i in invoices:
+  if i.get('projectId')!=project_id or not active(i) or i['id'] in linked:continue
+  net=invoice_net(i)
+  if net is None:warnings.append('税抜金額未確認の既存下請請求があります。金額確認後に集計へ反映します。');continue
+  rows.append({'date':i.get('invoiceDate',''),'source':'既存下請請求','supplier':i.get('supplierName',''),'subject':'科目未分類','category':'unclassified','workType':i.get('content',''),'amount':net})
+ for report in load(d,'mscm:dailyReports:v1',[]):
+  if report['projectId']==project_id:rows.append({'date':report['date'],'source':'自社日報','supplier':'自社','subject':'自社労務費','category':'labor','workType':report.get('workNote',''),'amount':report['laborTotal']})
+ totals={k:sum(r['amount'] for r in rows if r['category']==k) for k in ('material','labor','outsourced','expense','unclassified')}
+ return {'rows':sorted(rows,key=lambda r:r['date']),'totals':totals,'total':sum(totals.values()),'warnings':list(dict.fromkeys(warnings))}

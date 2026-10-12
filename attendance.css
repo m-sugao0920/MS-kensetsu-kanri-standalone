@@ -1,0 +1,45 @@
+.filters{display:flex;align-items:end;gap:12px;flex-wrap:wrap;background:#f7fbfe;border:1px solid #c9dbe8;border-radius:12px;padding:12px;margin:16px 0}.filters label{font-size:14px}.filters select,.filters input{font-size:15px}.filters .check{display:flex;gap:6px;align-items:center;padding:10px}.check input{width:auto;margin:0}.note{font-size:14px;color:#536875}.attendance-scroll{overflow:auto}#attendanceTable{table-layout:fixed;min-width:1100px;font-size:15px}#attendanceTable th,#attendanceTable td{padding:6px 4px;text-align:right}#attendanceTable th:first-child,#attendanceTable td:first-child{text-align:left;width:180px}.calendar #attendanceTable{min-width:1650px}.calendar #attendanceTable th:first-child{width:140px}.calendar #attendanceTable th{width:42px}.calendar #attendanceTable .total-col{width:85px}.calendar #attendanceTable .money{width:110px}#attendanceTable tfoot{border-top:2px solid #88969e}h2{font-size:20px}.weekend{background:#f1f3f4}.attendance-scroll .money{background:#fff1f5}.top .brand,.home-btn{font-weight:400}@page{size:A3 landscape;margin:25mm}@media print{main{padding:0}h1{font-size:16pt}.note,#summary{font-size:8pt}.attendance-scroll{overflow:visible}#attendanceTable,.calendar #attendanceTable{min-width:0;width:100%;font-size:7pt}#attendanceTable th,#attendanceTable td{padding:2px 1px}.calendar #attendanceTable th,.calendar #attendanceTable .total-col,.calendar #attendanceTable .money{width:auto}.calendar #attendanceTable th:first-child{width:22mm}.attendance-scroll .money{background:#fff}thead{display:table-header-group}tr{break-inside:avoid}}
+
+body:not(.calendar) #attendanceTable th:first-child,body:not(.calendar) #attendanceTable td:first-child{width:52%}
+
+#attendanceTable{background:#fff}
+
+.calendar #attendanceTable{min-width:1850px}.calendar #attendanceTable th:first-child,.calendar #attendanceTable td:first-child{width:155px;text-align:left}.calendar #attendanceTable th:nth-child(2),.calendar #attendanceTable td:nth-child(2){width:240px;text-align:left}.worker-start td{border-top:2px solid #88969e}.worker-subtotal td{background:#edf0f2}.worker-gap td{height:12px;padding:0;border-left:0;border-right:0;background:#fff}.day-button{display:block;width:100%;padding:2px 0;border:0;border-radius:0;background:transparent;color:#315d70;text-decoration:underline;font:inherit;cursor:pointer}.day-button:focus-visible{outline:2px solid #315d70}.day-details{background:#fff;border:1px solid #c9dbe8;border-radius:8px;padding:12px;margin:14px 0}.day-heading{display:flex;justify-content:space-between;align-items:center}.day-heading h2{margin:0 0 10px}.day-details table{font-size:15px}.day-details th:nth-child(1){width:20%}.day-details th:nth-child(2){width:45%}.calendar-help{font-size:14px;color:#536875}body:not(.calendar) .calendar-help{display:none}@media print{.calendar #attendanceTable{min-width:0}.calendar #attendanceTable th:first-child,.calendar #attendanceTable td:first-child{width:25mm}.calendar #attendanceTable th:nth-child(2),.calendar #attendanceTable td:nth-child(2){width:42mm}.day-button{color:#000;text-decoration:none;padding:0}.worker-gap td{height:2mm}.worker-subtotal td{background:#fff}}
+@media screen{.calendar #attendanceTable th{width:36px}.calendar #attendanceTable th:first-child{width:155px}.calendar #attendanceTable th:nth-child(2){width:240px}.calendar #attendanceTable .total-col{width:85px}.calendar #attendanceTable .money{width:110px}}
+
+.detail #attendanceTable{min-width:1100px;font-size:15px}.detail #attendanceTable th,.detail #attendanceTable td{text-align:left;vertical-align:top}.detail #attendanceTable th:nth-child(1),.detail #attendanceTable td:nth-child(1){width:12%}.detail #attendanceTable th:nth-child(2){width:14%}.detail #attendanceTable th:nth-child(3){width:29%}.detail #attendanceTable th:nth-child(4){width:5%}.detail #attendanceTable th:nth-child(5){width:7%}.detail #attendanceTable th:nth-child(6){width:7%}.detail #attendanceTable th:nth-child(7){width:18%}.detail #attendanceTable th:nth-child(8){width:8%}.detail #attendanceTable .money{text-align:right}.detail-subtotal th,.detail-subtotal td{background:#edf0f2;border-top:2px solid #88969e}.detail #attendanceTable .detail-subtotal th{width:auto;text-align:left}.detail #attendanceTable .detail-subtotal td{width:auto}.detail #attendanceTable thead th{position:sticky;top:0;z-index:1}.detail .attendance-scroll{max-height:65vh}.filters select{max-width:450px}@media print{.detail .attendance-scroll{max-height:none}.detail #attendanceTable{min-width:0;font-size:9pt}.detail #attendanceTable th,.detail #attendanceTable td{padding:3px}.detail #attendanceTable thead th{position:static}.detail-subtotal th,.detail-subtotal td{background:#fff}}
+body.detail #attendanceTable th:first-child,body.detail #attendanceTable td:first-child{width:12%}body.detail #attendanceTable .detail-subtotal th{width:auto}
+
+/* 工事一覧・原価台帳と共通の検索書式 */
+.top .brand{font-weight:950}.home-btn{font-weight:900}.print-title{display:none}.filters{display:block;max-width:1392px;margin:0 auto 16px;padding:0;overflow:hidden;border-radius:12px;box-shadow:0 7px 18px rgba(23,63,107,.08)}.attendance-search-row{display:grid;grid-template-columns:1.1fr .8fr .7fr 1.2fr 1.6fr 1fr;gap:9px;padding:12px;background:#f7fbfe;border-bottom:1px solid #dbe8f1}.filters label{font-size:11px;font-weight:900;color:#456477}.filters select,.filters input:not([type=checkbox]){width:100%;max-width:none;height:35px;border:1px solid #b9cedc;border-radius:7px;background:#fff;padding:5px 9px;font-size:12px;font-weight:400;margin-top:4px}.attendance-search-actions{display:flex;gap:9px;align-items:center;padding:0 12px 12px;background:#f7fbfe}.filters .check{font-weight:400;font-size:13px;padding:9px 0;margin-right:auto}.attendance-search-actions button,.day-heading button{height:35px;border:1px solid #a9bfce;border-radius:7px;background:#fff;color:#355f78;font-weight:900;font-size:13px;padding:0 13px}.attendance-scroll{border:1px solid #c9dbe8;border-radius:8px;overflow:auto}#attendanceTable th{background:#eaf3f9;color:#315a73;font-size:12px;font-weight:400}#attendanceTable td{font-size:13px}.note{font-size:12px;color:#617786}#caption{font-size:20px;color:#173f6b}#summary{font-size:13px;color:#617786}@media(max-width:1100px){.attendance-search-row{grid-template-columns:repeat(3,1fr)}}@media(max-width:650px){.attendance-search-row{grid-template-columns:repeat(2,1fr)}}@media print{.print-title{display:block}.attendance-scroll{border:0;border-radius:0}#attendanceTable th,#attendanceTable td{font-size:7pt}.detail #attendanceTable th,.detail #attendanceTable td{font-size:9pt}.note,#summary{font-size:8pt}}
+
+@media screen{.top-inner{max-width:1950px;padding-left:16px;padding-right:16px}.page-head{max-width:none}.filters{max-width:none}.attendance-search-row{grid-template-columns:1.1fr .8fr .7fr 1.2fr 1.6fr 1fr}}
+@media screen and (max-width:1100px){.attendance-search-row{grid-template-columns:repeat(3,1fr)}}@media screen and (max-width:650px){.attendance-search-row{grid-template-columns:repeat(2,1fr)}}
+/* 画面幅を共通画面に揃え、出面明細は折り返さず表示する */
+@media screen {
+  main { max-width:1440px; padding:16px 24px; }
+  .top-inner { max-width:1440px; padding-left:24px; padding-right:24px; }
+  .attendance-search-row { grid-template-columns:repeat(3,minmax(0,1fr)); }
+  .attendance-search-row label { min-width:0; }
+  .detail #attendanceTable { table-layout:auto; min-width:1250px; }
+  body.detail #attendanceTable th,body.detail #attendanceTable td { width:auto; white-space:nowrap; overflow-wrap:normal; padding:5px 6px; }
+  body.detail #attendanceTable th:nth-child(3) { min-width:330px; }
+  body.detail #attendanceTable th:nth-child(7) { min-width:160px; }
+}
+@media screen and (max-width:650px) {
+  main { padding:12px; }
+  .top-inner { padding-left:12px; padding-right:12px; }
+  .attendance-search-row { grid-template-columns:repeat(2,minmax(0,1fr)); }
+}
+/* 月別出面表を画面幅に収める */
+@media screen {
+  .calendar #attendanceTable { min-width:0; width:100%; table-layout:fixed; }
+  .calendar #attendanceTable th,.calendar #attendanceTable td { width:auto; padding:5px 1px; font-size:11px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; overflow-wrap:normal; }
+  .calendar #attendanceTable th:first-child,.calendar #attendanceTable td:first-child { width:11%; }
+  .calendar #attendanceTable th:nth-child(2),.calendar #attendanceTable td:nth-child(2) { width:20%; }
+  .calendar #attendanceTable .total-col { width:5%; }
+  .calendar #attendanceTable .money { width:8%; }
+  .calendar #attendanceTable th { text-align:center; }
+  .calendar #attendanceTable .day-button { padding:2px 0; }
+  .calendar #attendanceTable .worker-gap td { height:8px; padding:0; }
+}

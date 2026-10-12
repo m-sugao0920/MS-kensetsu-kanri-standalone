@@ -1,0 +1,4 @@
+#laborRows .worker-times{min-width:330px}#laborRows .time-segment{display:grid;grid-template-columns:85px 85px 75px auto;gap:5px;align-items:end;margin-bottom:5px}#laborRows .time-segment label{margin:0}#laborRows .time-segment input{min-width:0;width:100%}#laborRows .hours[readonly]{background:#f2f8fc}.actual-check{display:flex;gap:8px;align-items:center;margin:12px 0;color:var(--deep)}.actual-check input{width:auto;height:auto}#laborRows .dayRate{background:var(--money)}
+
+#laborRows .time-segment input{font-weight:400;font-family:inherit}
+
