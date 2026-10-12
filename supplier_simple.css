@@ -1,0 +1,2 @@
+.simple-invoice #allocationRows td:nth-child(6),.simple-invoice #allocationRows td:nth-child(7){display:none}.simple-invoice #allocationRows td:nth-child(5){grid-column:span 12}.simple-invoice #grossInput{background:#fff2dc;font-size:19px;font-weight:700;height:42px}.draft-summary p:last-child{display:none}#splitInvoice{margin-bottom:8px}.simple-invoice #allocationRows td:nth-child(2),.simple-invoice #allocationRows td:nth-child(3){opacity:.85}
+

@@ -3,7 +3,7 @@
 /* 初期データ反映前のテンプレートちらつき防止。レイアウト値は変更しない */
 html.ms-app-loading body{visibility:hidden}
 </style>
-<script id="ms-no-flicker-start">
+<script type="text/pages-deferred" id="ms-no-flicker-start">
 document.documentElement.classList.add('ms-app-loading');
 window.addEventListener('load',function(){
   requestAnimationFrame(function(){
@@ -25,7 +25,7 @@ window.addEventListener('load',function(){
 .viewtabs{display:flex;gap:8px;margin-top:14px}.viewtabs button{background:#dfeaf1;color:#31566d}.viewtabs button.active{background:var(--blue);color:#fff}
 .num{text-align:right;font-variant-numeric:tabular-nums}.linkname{color:var(--blue);font-weight:800;text-decoration:underline}
 @media(max-width:1000px){.kpis{grid-template-columns:repeat(2,1fr)}.analysis{grid-template-columns:1fr}}
-</style></head><body>
+</style><script src="pages_boot.js" defer></script></head><body>
 <header><div class="top"><div class="brand">MS建設管理システム　／　取引先</div><button onclick="location.href='index.html'">メイン画面に戻る</button></div></header><main>
 <div class="title"><div><h1>取引先一覧</h1><div class="note">取引先を検索し、連絡先・取引区分・取引状況を確認します。会社名を選ぶと取引先マスターを開きます。</div></div><a class="btn" href="torihikisaki_master.html">＋ 新規登録</a></div>
 
@@ -53,8 +53,8 @@ window.addEventListener('load',function(){
 
 
 <div class="foot">※この画面は取引先の検索・確認用です。工事の集計・経営分析は「工事一覧・集計」で確認します。</div>
-</main><script src="shared_storage.js"></script>
-<script src="ms_data.js"></script><script>
+</main><script type="text/pages-deferred" src="shared_storage.js"></script>
+<script type="text/pages-deferred" src="tax.js?v=20261003"></script><script type="text/pages-deferred" src="ms_data.js?v=tax20261003"></script><script type="text/pages-deferred">
 const $=id=>document.getElementById(id),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const yen=n=>Number(n||0).toLocaleString('ja-JP')+'円', n=x=>Number(String(x??0).replace(/,/g,''))||0;
 let partners=[],projects=[],employees=[],empMap=new Map(),stats=new Map(),current=[],view='partners',periodProjects=[],prevProjects=[];

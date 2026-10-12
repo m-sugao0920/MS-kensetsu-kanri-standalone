@@ -1,11 +1,10 @@
-<!doctype html><html lang="ja"><head>
-<script src="ms_password.js"></script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>システム・データ設定｜MS建設管理システム</title>
 <style id="ms-no-flicker">
 /* 初期データ反映前のテンプレートちらつき防止。レイアウト値は変更しない */
 html.ms-app-loading body{visibility:hidden}
 </style>
-<script id="ms-no-flicker-start">
+<script type="text/pages-deferred" id="ms-no-flicker-start">
 document.documentElement.classList.add('ms-app-loading');
 window.addEventListener('load',function(){
   requestAnimationFrame(function(){
@@ -22,47 +21,33 @@ button{border:0;border-radius:7px;background:var(--b);color:#fff;padding:8px 14p
 main{max-width:1250px;margin:auto;padding:20px 22px}h1{margin:0;color:var(--b);font-size:27px}.lead{color:#6f818e;font-size:12px;margin:5px 0 16px}.box{background:#fff;border:1px solid var(--l);border-radius:11px;margin:0 0 13px;overflow:hidden}.box h2{font-size:17px;color:var(--b);background:#edf5fa;margin:0;padding:10px 13px}.body{padding:12px 14px;line-height:1.7;font-size:13px}
 table{width:100%;border-collapse:collapse;font-size:12px}th,td{border-bottom:1px solid #e1e9ee;padding:8px;text-align:left}th{background:#f7fafc;color:#526c7d}.ok{background:var(--g);padding:10px;border-radius:8px}.warn{background:var(--y);padding:10px;border-radius:8px}.actions{display:flex;gap:8px;flex-wrap:wrap}.file{display:none}.mono{font-family:Consolas,monospace}
 @media(max-width:700px){table{min-width:720px}.scroll{overflow:auto}}
-</style></head><body>
+</style><style>
+main{max-width:1100px;padding:24px 28px}.top{max-width:1380px;padding:18px 28px}.settings-tabs{display:flex;gap:8px;flex-wrap:wrap;border-bottom:1px solid #cbdbe6;padding-bottom:12px;margin-bottom:20px}.settings-tabs button{border:1px solid #a8c0d2;background:#fff;color:#174d78;padding:11px 18px;border-radius:8px}.settings-tabs [aria-selected=true]{background:#174d78;color:#fff}[role=tabpanel][hidden]{display:none!important}.spec-details{background:#fff;border:1px solid #cbdbe6;border-radius:12px;padding:16px}.spec-details summary{font-weight:700;color:#174d78;cursor:pointer}.spec-details[open] summary{margin-bottom:16px}iframe{display:block;border:0;width:100%;height:650px;background:transparent}.box{border-radius:12px}.box h2{padding:13px 18px}.body{padding:18px}.lead{font-size:13px;line-height:1.7}@media(max-width:700px){main{padding:20px 16px}.top{padding:16px;flex-wrap:wrap;gap:12px}.settings-tabs button{flex:1;font-size:13px;padding:10px}.brand{font-size:18px}}
+</style><script src="pages_boot.js" defer></script></head><body>
 <header><div class="top"><div class="brand">MS建設管理システム ／ システム・データ設定</div><button onclick="location.href='kanri_settei.html'">管理・設定へ戻る</button></div></header>
-<main><h1>共通データ仕様 Ver.1</h1><div class="lead">アプリを更新しても業務データを継続利用できるよう、番号・内部ID・保存・移行・バックアップのルールを共通化します。</div>
-<section class="box"><h2>運用モード</h2><div class="body">
-<div id="modeBox" class="ok"><b id="modeText"></b><br><span id="modeHelp"></span></div>
-</div></section>
-<section class="box"><h2>基本方針</h2><div class="body"><div class="ok"><b>アプリとデータを分離します。</b> 画面HTMLを入れ替えても、工事・取引先・社員・実行予算・発注・請求・支払のデータは別管理とします。データ形式にはバージョン番号を持たせ、将来の変更時は旧形式から新形式へ順番に変換します。</div></div></section>
-<section class="box"><h2>登録番号と内部ID</h2><div class="body scroll"><table><thead><tr><th>種類</th><th>表示番号</th><th>次回番号</th><th>内部識別</th><th>ルール</th></tr></thead><tbody>
-<tr><td>工事</td><td>K000001</td><td id="pProject"></td><td>UUID</td><td>登録時に自動採番・再利用しない</td></tr>
-<tr><td>取引先</td><td>T000001</td><td id="pPartner"></td><td>UUID</td><td>登録時に自動採番・再利用しない</td></tr>
-<tr><td>社員</td><td>S000001</td><td id="pEmployee"></td><td>UUID</td><td>登録時に自動採番・退職後も保持</td></tr>
-<tr><td>発注</td><td>H000001</td><td id="pOrder"></td><td>UUID</td><td>発注登録時に自動採番</td></tr>
-<tr><td>請求</td><td>Q000001</td><td id="pInvoice"></td><td>UUID</td><td>請求登録時に自動採番</td></tr>
-<tr><td>支払</td><td>P000001</td><td id="pPayment"></td><td>UUID</td><td>支払登録時に自動採番</td></tr>
-</tbody></table></div></section>
-<section class="box"><h2>保存場所の段階</h2><div class="body"><b>現在の試作版：</b>ブラウザ内の共通データ領域。<br><b>次段階：</b>Windows上の管理プログラム＋SQLite。<br><b>将来：</b>サーバーAPI＋データベース。PC・iPad・スマートフォンはブラウザから同じデータへ接続します。<div class="warn" style="margin-top:9px">共有フォルダ上のSQLiteを複数PCから直接開く方式にはしません。同時登録時の採番競合やネットワーク切断に強くするため、採番・保存は将来サーバー側で一元管理します。</div></div></section>
-<section class="box"><h2>データ更新・削除ルール</h2><div class="body">工事名や会社名を変更しても内部IDは変更しません。番号も原則変更しません。発注・請求などの履歴があるデータは物理削除せず、<b>完了・休止・退職・取消・無効</b>などの状態で保持します。番号を欠番にしても再利用しません。</div></section>
-<section class="box"><h2>試作データをリセットして本番開始</h2><div class="body">
-<div class="warn"><b>本番開始時に消すもの</b><br>取引先・社員・工事・実行予算・発注・請求・支払、およびそれらの試作番号。</div>
-<div class="ok" style="margin-top:9px"><b>残すもの</b><br>工種マスター・工事区分マスター・取引先区分マスターは残します。社員マスターは試作データとしてリセットします。</div>
-<p><label><input type="checkbox" id="keepWorkTypes" checked> 工種マスターを残す</label></p>
-<div class="actions"><button id="productionBtn" onclick="startProduction()">試作データをリセットして本番開始</button></div>
-<p style="font-size:12px;color:#6f818e">本番開始後、このボタンは使用できません。本番データは通常の「無効・取消・完了」で履歴を残します。</p>
-</div></section>
-<section class="box"><h2>旧版PCデータの共有版への移行</h2><div class="body"><p>これまでPC①のブラウザ内に保存していたデータを、複数台共有データへ移すための初回移行です。</p><div class="actions"><button onclick="location.href='import_old_data.html'">旧版データを取り込む</button></div></div></section>
-
-</main><script src="shared_storage.js"></script>
-<script src="ms_data.js"></script><script>
-function refresh(){
-pProject.textContent=MSData.peekNo('projects');pPartner.textContent=MSData.peekNo('partners');pEmployee.textContent=MSData.peekNo('employees');pOrder.textContent=MSData.peekNo('orders');pInvoice.textContent=MSData.peekNo('invoices');pPayment.textContent=MSData.peekNo('payments');
-const trial=MSData.getMode()==='trial';
-modeText.textContent=trial?'試作モード':'本番運用';
-modeHelp.textContent=trial?'現在はテストデータを自由に登録できます。完成時に業務データをリセットして番号を1番から本番開始できます。':'本番開始済みです。試作リセットは使用できません。';
-productionBtn.disabled=!trial; productionBtn.style.opacity=trial?'1':'.45';
-}
-function startProduction(){
-if(MSData.getMode()!=='trial'){alert('すでに本番運用です。');return}
-if(!confirm('【1回目の確認】\n試作の取引先・社員・工事・実行予算・発注・請求・支払を削除し、業務番号を1番から開始します。\n\n続けますか？'))return;
-if(!confirm('【最終確認】\nこの操作は本番開始処理です。先にバックアップを書き出すことをおすすめします。\n\n本当に実行しますか？'))return;
-MSData.productionStartReset({keepWorkTypes:keepWorkTypes.checked});
-refresh();alert('本番運用へ切り替えました。業務番号は1番から開始します。');
-}
-refresh();
+<main><h1>システム・データ設定</h1><p class="lead">消費税の設定、データのバックアップ・復元を行います。</p><div class="settings-tabs" role="tablist" aria-label="システム設定の分類"><button role="tab" type="button" id="tab-tax" aria-controls="panel-tax" aria-selected="false" data-panel="tax">消費税・端数処理</button><button role="tab" type="button" id="tab-backup" aria-controls="panel-backup" aria-selected="false" data-panel="backup">バックアップ・復元</button></div><section role="tabpanel" id="panel-tax" aria-labelledby="tab-tax" hidden><div class="box"><h2>消費税率・端数処理</h2><div class="body"><iframe id="frame-tax" title="消費税率・端数処理" data-src="tax_settings.html" loading="lazy"></iframe></div></div></section><section role="tabpanel" id="panel-backup" aria-labelledby="tab-backup" hidden><section class="box"><h2>バックアップ・復元</h2><div class="body"><p>工事・取引先・請求・入金・日報などの業務データと各種設定を、バックアップファイルとして保存します。更新前や定期的な保管にご利用ください。添付PDFはこのバックアップには含まれません。必要なPDFは別途保存してください。</p><div class="actions"><button onclick="MSData.downloadBackup()">バックアップを書き出す</button><button class="sub" onclick="document.getElementById('restore').click()">バックアップを復元</button><input class="file" id="restore" type="file" accept=".json,application/json"></div></div></section></section></main><script type="text/pages-deferred" src="shared_storage.js?v=backup20261011"></script>
+<script type="text/pages-deferred" src="tax.js?v=20261003"></script><script type="text/pages-deferred" src="ms_data.js?v=backup20261011"></script><script type="text/pages-deferred">
+function refresh(){document.querySelectorAll('iframe[src]').forEach(frame=>frame.contentWindow.location.reload());}
+restore.addEventListener('change',async e=>{const f=e.target.files[0];if(!f)return;if(!confirm('現在のデータをバックアップ内容で置き換えます。復元しますか？'))return;try{await MSData.restoreFile(f);alert('復元しました。');refresh()}catch(err){alert('復元できませんでした。\\n'+err.message)}e.target.value=''});
+</script><script type="text/pages-deferred">
+(()=>{
+ const tabs=[...document.querySelectorAll('[role=tab]')];
+ function setupFrame(frame){frame.addEventListener('load',()=>{
+  const doc=frame.contentDocument;if(!doc)return;
+  const style=doc.createElement('style');style.textContent='[hidden]{display:none!important}body{margin:0;background:transparent;color:#263f50;font:14px -apple-system,BlinkMacSystemFont,"Segoe UI","Yu Gothic",Meiryo,sans-serif}header,main>h1{display:none!important}main{max-width:none;margin:0;padding:0;background:transparent}.box{border:1px solid #cbdbe6;border-radius:10px;padding:16px;margin:0 0 16px}h2{color:#174d78}button,a.btn{background:#174d78;color:white;border:0;border-radius:8px;padding:10px 16px}input,select{border:1px solid #b9cbd8;border-radius:6px;padding:9px;font:inherit}table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:10px;border-bottom:1px solid #e1e9ee}th{background:#edf4f9}.row{grid-template-columns:minmax(0,1fr) 130px}@media(max-width:600px){.row{grid-template-columns:1fr}table input{max-width:150px}}';doc.head.append(style);
+  doc.querySelectorAll('a[href="kanri_settei.html"],button[onclick]').forEach(e=>{if(e.tagName==='A'||(e.getAttribute('onclick')||'').includes("location.href='kanri_settei.html'"))e.hidden=true;});
+  const main=doc.querySelector('main');
+  if(frame.id==='frame-network'&&main){const sections=[...main.querySelectorAll('section.box')];if(sections.length>1){const advanced=doc.createElement('details');advanced.style.cssText='border:1px solid #cbdbe6;border-radius:10px;padding:16px';const summary=doc.createElement('summary');summary.textContent='接続先・ポートの変更';summary.style.cssText='color:#174d78;font-weight:700;cursor:pointer';advanced.append(summary);main.append(advanced);sections.slice(1).forEach(section=>advanced.append(section));}}
+  function resize(){if(main)frame.style.height=Math.ceil(main.getBoundingClientRect().height+30)+'px';}
+  new ResizeObserver(resize).observe(main||doc.body);resize();
+ });}
+ document.querySelectorAll('iframe').forEach(setupFrame);
+ function select(key){if(!['tax','backup'].includes(key))key='tax';
+  tabs.forEach(t=>{const selected=t.dataset.panel===key;t.setAttribute('aria-selected',String(selected));t.tabIndex=selected?0:-1;document.getElementById('panel-'+t.dataset.panel).hidden=!selected;});
+  const frame=document.getElementById('frame-'+key);if(frame&&!frame.getAttribute('src'))frame.src=frame.dataset.src;
+  history.replaceState(null,'','#'+key);
+ }
+ tabs.forEach((t,i)=>{t.onclick=()=>select(t.dataset.panel);t.onkeydown=e=>{let next;if(e.key==='ArrowRight')next=(i+1)%tabs.length;if(e.key==='ArrowLeft')next=(i+tabs.length-1)%tabs.length;if(e.key==='Home')next=0;if(e.key==='End')next=tabs.length-1;if(next!==undefined){e.preventDefault();tabs[next].click();tabs[next].focus();}};});
+ select(location.hash.slice(1)||'tax');
+})();
 </script></body></html>

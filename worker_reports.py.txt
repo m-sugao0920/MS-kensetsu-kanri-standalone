@@ -1,0 +1,95 @@
+"""Worker instructions and actual reports; deliberately omit every pricing field."""
+import json,datetime,uuid,math
+import dispatch_validation as dv
+import office_validation
+KEY='mscm:workerReports:v1'
+DAILY='mscm:dailyReports:v1'
+FIELDS={'lease':['company','name','quantity','time','note'],'transport':['company','name','from','to','time','note'],'purchase':['company','name','quantity','unit','delivery','time','note']}
+def text(value,limit=10000,required=False):
+    if not isinstance(value,str) or len(value)>limit or (required and not value.strip()):raise ValueError('入力内容を確認してください。')
+    return value.strip()
+def arrangements(value):
+    if not isinstance(value,dict):raise ValueError('手配内容を確認してください。')
+    out={}
+    for kind,fields in FIELDS.items():
+        rows=value.get(kind,[])
+        if not isinstance(rows,list) or len(rows)>100:raise ValueError('手配の行数を確認してください。')
+        out[kind]=[]
+        for row in rows:
+            if not isinstance(row,dict):raise ValueError('手配内容を確認してください。')
+            clean={k:text(str(row.get(k,'')),500) for k in fields};clean['id']=text(str(row.get('id','')),100)
+            if clean.get('time'):dv.minute(clean['time'])
+            if clean.get('quantity'):
+                q=float(clean['quantity'])
+                if not math.isfinite(q) or q<0:raise ValueError('数量を確認してください。')
+            if kind=='purchase' and clean['delivery'] not in ('','yes','no'):raise ValueError('配達区分を確認してください。')
+            out[kind].append(clean)
+    return out
+
+def clean_instruction(ins):
+    plan=ins['plan']
+    return {'id':ins['id'],'confirmedAt':ins['confirmedAt'],'projectNames':{k:{'no':v.get('no',''),'name':v['name']} for k,v in ins['projectNames'].items()},'plan':{
+        'projects':plan['projects'], 'slots':[{k:s[k] for k in ('id','name','start','end')} for s in plan['slots']],
+        'assignments':[{k:a[k] for k in ('id','kind','resourceId','name','no','slotId','projectId','vehiclePurpose') if k in a} for a in plan['assignments']],
+        'notes':{k:str(v) for k,v in plan.get('notes',{}).items()},'directives':{k:str(v) for k,v in plan.get('directives',{}).items()},
+        'arrangements':{k:arrangements(v) for k,v in plan.get('arrangements',{}).items()}}}
+
+def view(store,date):
+    datetime.date.fromisoformat(date)
+    day=next((d for d in dv.load(store,dv.KEY,[]) if d['date']==date),{})
+    ins=(day.get('instructions') or [None])[-1]
+    people=[{k:w.get(k,'') for k in ('id','name','no')} for w in dv.load(store,'mscm:v1:workers',[]) if w.get('companyId')=='__SELF__' and w.get('status')!='inactive']
+    reports=[r for r in dv.load(store,KEY,[]) if r['date']==date]
+    # Records in this key are themselves an allowlisted, price-free schema.
+    return {'instruction':clean_instruction(ins) if ins else None,'workers':people,'reports':reports}
+
+def submit(store,body):
+    date=text(body.get('date'),10,True);datetime.date.fromisoformat(date);pid=text(body.get('projectId'),100,True)
+    day=next((d for d in dv.load(store,dv.KEY,[]) if d['date']==date),{})
+    ins=(day.get('instructions') or [None])[-1]
+    if not ins or pid not in ins['plan']['projects'] or body.get('instructionId')!=ins['id']:raise ValueError('指示書が更新されています。画面を更新し、最新の指示書を確認してください。')
+    if any(r['date']==date and r['projectId']==pid for r in dv.load(store,DAILY,[])):raise ValueError('事務で日報登録済みです。訂正は事務員に連絡してください。')
+    reports=dv.load(store,KEY,[]);old=next((r for r in reports if r['date']==date and r['projectId']==pid),None)
+    if old and old['status']!='submitted':raise ValueError('事務確認済みの報告です。訂正は事務員に連絡してください。')
+    if (old.get('version') if old else None)!=body.get('expectedVersion'):raise ValueError('報告が更新されています。画面を更新して確認してください。')
+    people={w['id']:w for w in dv.load(store,'mscm:v1:workers',[]) if w.get('companyId')=='__SELF__'}
+    source=body.get('workers');workers=[];seen=set();ranges={}
+    if not isinstance(source,list) or not 1<=len(source)<=300:raise ValueError('作業員を１人以上入力してください。')
+    for row in source:
+        wid=row.get('workerId')
+        if wid not in people or wid in seen:raise ValueError('作業員の選択・重複を確認してください。')
+        seen.add(wid);segments=row.get('segments')
+        hours=dv.segments_hours(segments)
+        if not 0<hours<=24:raise ValueError('作業時間を確認してください。')
+        workers.append({'workerId':wid,'workerName':people[wid]['name'],'workerNo':people[wid].get('no',''),'segments':[{k:s[k] for k in ('start','end','breakMinutes')} for s in segments],'hours':hours})
+        ranges[wid]=[(dv.minute(s['start']),dv.minute(s['end'])) for s in segments]
+    for r in reports:
+        if r['date']!=date or r['projectId']==pid:continue
+        for w in r['workers']:
+            for s in w['segments']:
+                if any(dv.minute(s['start'])<end and dv.minute(s['end'])>start for start,end in ranges.get(w['workerId'],[])):raise ValueError('同じ作業員の報告時刻が別の現場と重なっています。')
+    machines=body.get('machines',[])
+    if not isinstance(machines,list) or len(machines)>200:raise ValueError('機械の内容を確認してください。')
+    clean=[]
+    for m in machines:
+        hours=m.get('hours')
+        if type(hours) not in (int,float) or not math.isfinite(hours) or not 0<hours<=24:raise ValueError('機械・車両の使用時間を確認してください。')
+        clean.append({'name':text(m.get('name'),200,True),'hours':hours})
+    now=datetime.datetime.now(datetime.timezone.utc).isoformat()
+    r={'id':old['id'] if old else uuid.uuid4().hex,'date':date,'projectId':pid,'projectNo':ins['projectNames'][pid].get('no',''),'projectName':ins['projectNames'][pid]['name'],'instructionId':ins['id'],'reporter':text(body.get('reporter'),100,True),'workers':workers,'machines':clean,'workNote':text(body.get('workNote','')),'extraNote':text(body.get('extraNote','')),'arrangements':arrangements(body.get('arrangements',{})),'status':'submitted','version':uuid.uuid4().hex,'createdAt':old['createdAt'] if old else now,'updatedAt':now}
+    updated=dict(store);updated[KEY]=json.dumps([x for x in reports if x['id']!=r['id']]+[r],ensure_ascii=False)
+    return updated,r
+
+def register(store,body):
+    reports=dv.load(store,KEY,[]);report=next((r for r in reports if r['id']==body.get('reportId')),None)
+    if not report or report['status']!='submitted' or report['version']!=body.get('reportVersion'):raise ValueError('報告が更新済み、または日報登録済みです。報告一覧を更新してください。')
+    record=body.get('record')
+    if not isinstance(record,dict) or record.get('date')!=report['date'] or record.get('projectId')!=report['projectId'] or record.get('instructionId')!=report['instructionId']:raise ValueError('報告と日報の工事・日付・指示書が一致しません。報告を読み込み直してください。')
+    daily=dv.load(store,DAILY,[])
+    if any(r['date']==report['date'] and r['projectId']==report['projectId'] for r in daily):raise ValueError('この工事・日付の日報は登録済みです。')
+    record=dict(record);record['workerReportId']=report['id'];record['arrangements']=report['arrangements'];record['reportedBy']=report['reporter']
+    updated=dict(store);updated[DAILY]=office_validation.validate_office_value(DAILY,json.dumps(daily+[record],ensure_ascii=False),store,{'id':'office'})
+    report['status']='registered';report['dailyReportId']=record['id'];report['version']=uuid.uuid4().hex;report['reviewedAt']=datetime.datetime.now(datetime.timezone.utc).isoformat()
+    updated[KEY]=json.dumps(reports,ensure_ascii=False)
+    saved=next(r for r in json.loads(updated[DAILY]) if r['id']==record['id'])
+    return updated,saved
