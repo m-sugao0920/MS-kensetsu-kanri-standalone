@@ -36,7 +36,9 @@
   await unlock();
   let raw=localStorage.getItem(storageKey);
   if(!raw){const response=await originalFetch(new URL('demo_data.json.txt',base));if(!response.ok)throw Error('デモデータを読み込めません。');raw=JSON.stringify(await response.json());localStorage.setItem(storageKey,raw);}
-  JSON.parse(raw);
+  const savedData=JSON.parse(raw),companyKey='mscm:v1:companySettings';
+  if(savedData[companyKey]){const company=JSON.parse(savedData[companyKey]);if(company&&typeof company==='object'&&!Array.isArray(company)){savedData[companyKey]=JSON.stringify([{id:company.id||'demo-company',status:'active',...company}]);raw=JSON.stringify(savedData);localStorage.setItem(storageKey,raw);}}
+
   notice.textContent=localStorage.getItem(storageKey)?'':'デモを読み込んでいます…';
   await script('https://cdn.jsdelivr.net/pyodide/v0.29.3/full/pyodide.js');
   const py=await loadPyodide({indexURL:'https://cdn.jsdelivr.net/pyodide/v0.29.3/full/'});
