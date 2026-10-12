@@ -1,11 +1,16 @@
 /* GitHub Pages demo: all business processing and user data stay in this browser. */
 (async()=>{
  'use strict';
+ const shell=document.documentElement.dataset.demoShell==='true';
+ if(window!==window.top&&shell){location.replace(new URL('demo_home.html',location.href).href);return;}
+ if(window===window.top&&!shell){location.replace(new URL('index.html#'+encodeURIComponent(location.pathname.split('/').pop()+location.search+location.hash),location.href).href);return;}
  const originalFetch=window.fetch.bind(window),NativeXHR=window.XMLHttpRequest;
  const base=new URL('.',location.href),storageKey='mscm-pages-v2:'+base.pathname;
  const overlay=document.createElement('div');overlay.style.cssText='position:fixed;inset:0;z-index:99999;display:grid;place-items:center;background:#f3f8fc;color:#173f6b;font:18px Meiryo,sans-serif';
  const notice=document.createElement('div');notice.textContent=localStorage.getItem(storageKey)?'':'デモを準備しています…';overlay.append(notice);document.body.append(overlay);
  const script=url=>new Promise((resolve,reject)=>{const el=document.createElement('script');el.src=url;el.onload=resolve;el.onerror=()=>reject(Error('デモの実行環境を読み込めませんでした。接続を確認して再読み込みしてください。'));document.head.append(el);});
+
+ if(window!==window.top&&parent.MSPagesBridge){window.MSPagesBridge=parent.MSPagesBridge;window.XMLHttpRequest=parent.MSPagesBridge.XHR;window.fetch=parent.MSPagesBridge.fetch;try{await startPage();}catch(error){notice.textContent=error.message;}return;}
 
  async function unlock(){
   const key='mscm-demo-login:'+base.pathname;
@@ -78,6 +83,15 @@
    else result=special(apiURL(url))||localRequest(apiURL(url),init.method||'GET',init.body);
    return new Response(JSON.stringify(result.data),{status:result.status,headers:{'Content-Type':'application/json'}});
   };
+  if(shell){
+   window.MSPagesBridge={XHR:LocalXHR,fetch:window.fetch,storageKey};
+   const frame=document.createElement('iframe');frame.title='MS建設管理';frame.style.cssText='position:fixed;inset:0;width:100%;height:100%;border:0;background:white';document.body.append(frame);
+   function route(){let page;try{page=decodeURIComponent(location.hash.slice(1))||'demo_home.html';}catch(e){page='demo_home.html';}if(page==='index.html')page='demo_home.html';const dest=new URL(page,base);if(dest.origin!==location.origin||!dest.pathname.startsWith(base.pathname)||!dest.pathname.endsWith('.html'))return;const current=frame.contentWindow?.location.href;if(current!==dest.href)frame.src=dest.href;}
+   frame.addEventListener('load',()=>{try{const u=new URL(frame.contentWindow.location.href);if(u.origin!==location.origin)return;const page=u.pathname.split('/').pop()+u.search+u.hash;const hash='#'+encodeURIComponent(page);if(location.hash!==hash)history.replaceState(null,'',hash);}catch(e){}});
+   window.addEventListener('hashchange',route);route();overlay.remove();
+  }else await startPage();
+ }catch(error){document.documentElement.classList.remove('ms-app-loading');notice.textContent=error.message+' 再読み込みしてお試しください。';console.error(error);}
+ async function startPage(){
   const pending=[],loadPending=[],docAdd=document.addEventListener.bind(document),winAdd=window.addEventListener.bind(window);
   document.addEventListener=function(type,listener,options){if(type==='DOMContentLoaded')pending.push(listener);else docAdd(type,listener,options);};
   window.addEventListener=function(type,listener,options){if(type==='load')loadPending.push(listener);else winAdd(type,listener,options);};
@@ -92,5 +106,7 @@
   document.documentElement.classList.remove('ms-app-loading');
   const banner=document.createElement('aside');banner.className='no-print';banner.style.cssText='padding:8px 16px;background:#fff4cf;color:#493b13;font:13px Meiryo,sans-serif';banner.textContent='デモ版・架空62工事 ／ 入力内容はこのブラウザーだけに保存されます。';document.body.prepend(banner);
   window.MSPagesDemo={ready:true,storageKey};overlay.remove();
- }catch(error){document.documentElement.classList.remove('ms-app-loading');notice.textContent=error.message+' 再読み込みしてお試しください。';console.error(error);}
+
+ }
+
 })();
