@@ -1,5 +1,4 @@
-<!doctype html><html lang="ja"><head>
-<script src="ms_password.js"></script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>年賀・贈答管理｜MS建設管理システム</title><style>
 :root{--b:#174d78;--l:#cbdbe6;--bg:#f3f7fa;--t:#263f50}*{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Yu Gothic","Meiryo",sans-serif;color:var(--t);background:var(--bg)}
 header{background:#fff;border-bottom:1px solid var(--l)}.top{max-width:1380px;margin:auto;padding:16px 26px;display:flex;justify-content:space-between;align-items:center}.brand{font-size:21px;font-weight:800;color:var(--b)}
@@ -10,7 +9,7 @@ main{max-width:1380px;margin:auto;padding:20px 26px 40px}h1{font-size:27px;color
 .summary{display:flex;gap:12px;margin-bottom:12px}.sum{background:#eef5f9;border:1px solid #d8e5ed;border-radius:9px;padding:9px 14px;min-width:145px}.sum b{display:block;font-size:19px;color:var(--b)}
 .wrap{overflow:auto;max-height:520px;border:1px solid var(--l);border-radius:9px}table{width:100%;border-collapse:collapse;background:#fff}th,td{border-bottom:1px solid #dbe5eb;padding:9px 8px;text-align:left;font-size:13px}th{background:#eef4f7;color:#36586c;position:sticky;top:0}.c{text-align:center}.r{text-align:right}.empty{text-align:center;color:#82939e;padding:25px}.badge{padding:3px 7px;border-radius:10px;background:#e7f0f5;font-size:11px}.partner-link{color:var(--b);font-weight:700;text-decoration:underline;cursor:pointer;background:none;border:0;padding:0}.mini{padding:5px 9px;font-size:11px;border-radius:6px}
 @media(max-width:900px){.form{grid-template-columns:repeat(2,1fr)}}@media print{header,.tabs,.actions{display:none!important}main{padding:0}.box{border:0}.wrap{max-height:none;overflow:visible}th{position:static}}
-</style></head><body>
+</style><script src="pages_boot.js" defer></script></head><body>
 <header><div class="top"><div class="brand">MS建設管理システム　／　年賀・贈答管理</div><button onclick="location.href='kanri_settei.html'">管理・設定に戻る</button></div></header><main>
 <h1>年賀・贈答管理</h1><div class="lead">送付先の選定、贈答品の発注、受領記録、履歴をまとめて管理します。</div>
 <div class="tabs"><button class="tab active" data-tab="send">送付管理</button><button class="tab" data-tab="order">贈答品発注</button><button class="tab" data-tab="receive">受領管理</button><button class="tab" data-tab="history">履歴</button><button class="tab" data-tab="productMaster">贈答品マスター</button></div>
@@ -55,7 +54,7 @@ main{max-width:1380px;margin:auto;padding:20px 26px 40px}h1{font-size:27px;color
  </div>
 </section>
 <datalist id="items"></datalist><datalist id="vendors"></datalist><datalist id="companies"></datalist>
-</main><script src="shared_storage.js"></script><script src="ms_data.js"></script><script>
+</main><script type="text/pages-deferred" src="shared_storage.js"></script><script type="text/pages-deferred" src="tax.js?v=20261003"></script><script type="text/pages-deferred" src="ms_data.js?v=tax20261003"></script><script type="text/pages-deferred">
 const KEY='mscm:gifts:v1',$=x=>document.getElementById(x),now=new Date(),CY=now.getFullYear();let ps=[],rs=[],its=[],vs=[],masters=[];
 ['sy','oy','hy'].forEach(x=>$(x).value=CY);$('sd').value=$('rd').value=now.toISOString().slice(0,10);
 function e(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}function m(n){return Number(n||0).toLocaleString('ja-JP')+'円'}

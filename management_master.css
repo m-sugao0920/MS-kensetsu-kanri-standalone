@@ -1,0 +1,25 @@
+/* 管理・設定のマスター共通レイアウト */
+:root{--deep:#174d78;--blue:#174d78;--line:#cbdbe6;--text:#263f50;--muted:#71818c}
+body{margin:0;background:#f3f7fa;color:#263f50;font:15px -apple-system,BlinkMacSystemFont,"Segoe UI","Yu Gothic","Meiryo",sans-serif}
+header{background:#fff;color:#174d78;padding:0;border-bottom:1px solid #cbdbe6}
+.master-top{max-width:1380px;margin:auto;padding:18px 28px;display:flex;align-items:center;justify-content:space-between;gap:18px}
+.master-brand{font-size:22px;font-weight:900!important;color:#174d78}
+.master-top a{background:#174d78;color:#fff;border:0;border-radius:8px;padding:10px 16px;font-size:13px;font-weight:800!important;text-decoration:none;white-space:nowrap}
+main,.wrap{max-width:1100px;margin:0 auto;padding:24px 28px}
+h1{font-size:28px;color:#174d78;margin:0 0 8px;font-weight:800!important}
+.master-lead{font-size:13px;color:#71818c;line-height:1.7;margin:0 0 20px}
+.panel,.card{background:#fff;border:1px solid #cbdbe6;border-radius:12px;margin-bottom:18px;box-shadow:none;overflow:hidden}
+.panel{padding:18px}
+.panel h2,.hd{background:#edf4f9;color:#174d78;padding:13px 18px;font-size:16px;font-weight:800!important;border-bottom:1px solid #d9e6ef;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.panel h2{margin:-18px -18px 18px;border-radius:0}.bd{padding:18px}
+button,button.primary{background:#174d78;color:#fff;border:0;border-radius:8px;padding:10px 16px;margin-right:0;font-size:14px;font-weight:800!important;line-height:1.4}
+button.sub,.resource-card button{background:#fff;color:#174d78;border:1px solid #a8c0d2}
+.actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:16px;border-top:1px solid #e1eaf0;padding-top:16px}
+input,select,textarea{border:1px solid #b9cbd8;border-radius:6px;font-size:15px;padding:8px;height:auto}
+input:focus-visible,select:focus-visible,button:focus-visible,a:focus-visible{outline:2px solid #4287b9;outline-offset:2px}
+table,.draft-table{width:100%;border-collapse:collapse}.draft-table th,th{background:#edf4f9;color:#174d78;font-size:14px;padding:12px;text-align:left}.draft-table td,td{padding:12px;border-bottom:1px solid #dfe6e9;font-size:14px}.draft-table td:nth-child(2){text-align:left;font-weight:400;white-space:normal}.draft-table td:nth-child(3){width:auto;white-space:normal}
+.scroll,.table-scroll{overflow:auto;max-height:400px}.scroll table{min-width:700px}.muted,.note{font-size:13px;line-height:1.7;color:#607583}#message,#resourceStatus{font-size:13px;line-height:1.7}
+.resource-columns{gap:12px;margin:0}.resource-column{background:#f7fafc;border-radius:10px;padding:12px}.resource-column h3{font-size:17px;font-weight:800!important;color:#174d78}.resource-column h3 span{font-size:13px}.resource-card{border-radius:8px;padding:10px}.resource-card button{font-size:13px;font-weight:700!important;padding:4px 5px}.resource-column .add-resource{padding:10px;font-size:14px;font-weight:800!important}.show-deleted{font-size:13px;margin:0 0 14px}.master-tools{display:flex;gap:10px;align-items:center}.master-tools button{font-size:13px;padding:8px 14px}
+@media(max-width:760px){.master-top{padding:16px;flex-wrap:wrap;align-items:flex-start}.master-brand{font-size:18px}main,.wrap{padding:20px 16px}h1{font-size:24px}.resource-columns{grid-template-columns:1fr}.panel h2,.hd{flex-wrap:wrap}.master-tools{flex-wrap:wrap}}
+
+#masterForm .draft-table{table-layout:fixed}#masterForm th:nth-child(1){width:100px}#masterForm th:nth-child(3){width:150px}#masterForm th:nth-child(4){width:110px}#masterForm th:nth-child(5){width:130px}

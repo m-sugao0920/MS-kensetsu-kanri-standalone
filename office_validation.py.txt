@@ -1,0 +1,50 @@
+import json,math,datetime,time,cost_ledger,dispatch_validation
+def validate_office_value(key,value,store,user):
+ x=json.loads(value)
+ if key=='mscm:costEntries:v1':return cost_ledger.validate_entries(value,store,user)
+ if key not in ('mscm:dailyReports:v1','mscm:costRates:v1'):return value
+ projects={p['id']:p for p in json.loads(store.get('mscm:v1:projects','[]'))}
+ people={p['id']:p for p in json.loads(store.get('mscm:v1:workers','[]')) if p.get('companyId')=='__SELF__'}
+ def number(n,low,high):return type(n) in (int,float) and math.isfinite(n) and low<n<=high
+ if key=='mscm:costRates:v1':
+  if not isinstance(x,dict):raise ValueError()
+  for pid,r in x.items():
+   if pid not in people or not isinstance(r,dict) or type(r.get('dayRate')) is not int or not 0<r['dayRate']<=10000000 or not number(r.get('baseHours'),0,24):raise ValueError()
+ else:
+  if not isinstance(x,list) or len(x)>100000:raise ValueError()
+  old={r['id']:r for r in json.loads(store.get(key,'[]'))};seen=set();ids=set();hours={};ranges={}
+  for r in x:
+   if not isinstance(r,dict) or not isinstance(r.get('id'),str) or r['id'] in ids or r.get('projectId') not in projects:raise ValueError()
+   ids.add(r['id']);datetime.date.fromisoformat(r['date']);pair=(r['date'],r['projectId'])
+   if pair in seen:raise ValueError()
+   seen.add(pair);rows=r.get('workers');worker_ids=set()
+   if not isinstance(rows,list) or not 1<=len(rows)<=300:raise ValueError()
+   total=0
+   has_clock=any(isinstance(w,dict) and 'segments' in w for w in rows)
+   if (has_clock or r.get('instructionId')) and r.get('actualConfirmed') is not True:raise ValueError('実績確認が必要です。')
+   source=r.get('instructionId')
+   if source and not any(i.get('id')==source and r['projectId'] in i['plan']['projects'] for day in dispatch_validation.load(store,dispatch_validation.KEY,[]) if day['date']==r['date'] for i in day.get('instructions',[])):raise ValueError('引継元の指示書が見つかりません。')
+   old_rows={w['workerId']:w for w in old.get(r['id'],{}).get('workers',[])}
+   for w in rows:
+    if isinstance(w,dict) and 'segments' in w:
+     w['hours']=dispatch_validation.segments_hours(w['segments'])
+     hkey=(r['date'],w.get('workerId'))
+     for segment in w['segments']:
+      a,b=dispatch_validation.minute(segment['start']),dispatch_validation.minute(segment['end'])
+      if any(a<end and b>start for start,end in ranges.get(hkey,[])):raise ValueError('同じ作業員の実績時刻が別の工事と重なっています。')
+      ranges.setdefault(hkey,[]).append((a,b))
+    elif isinstance(w,dict) and w.get('workerId') not in old_rows:raise ValueError('新しい日報は開始・終了時刻と休憩を入力してください。')
+    if not isinstance(w,dict) or w.get('workerId') not in people or w['workerId'] in worker_ids or not number(w.get('hours'),0,24) or type(w.get('dayRate')) is not int or not 0<w['dayRate']<=10000000 or not number(w.get('baseHours'),0,24):raise ValueError()
+    worker_ids.add(w['workerId']);w['amount']=math.floor(w['dayRate']/w['baseHours']*w['hours']+0.5);total+=w['amount']
+    hkey=(r['date'],w['workerId']);hours[hkey]=hours.get(hkey,0)+w['hours']
+    if hours[hkey]>24:raise ValueError()
+   machines=r.get('machines',[])
+   if not isinstance(machines,list) or len(machines)>200:raise ValueError()
+   for machine in machines:
+    if not isinstance(machine,dict) or not isinstance(machine.get('name'),str) or not 0<len(machine['name'])<=200 or not number(machine.get('hours'),0,24):raise ValueError()
+   for k in ('workNote','extraNote'):
+    if not isinstance(r.get(k,''),str) or len(r.get(k,''))>10000:raise ValueError()
+   r['laborTotal']=total
+   if old.get(r['id'])!=r:
+    r['updatedBy']=user['id'];r['updatedAt']=time.strftime('%Y-%m-%dT%H:%M:%S')
+ return json.dumps(x,ensure_ascii=False)

@@ -1,0 +1,61 @@
+import json,hashlib,copy
+from urllib.parse import urlparse,parse_qs
+import purchase_office as po
+import dispatch_validation as dv
+import office_validation as ov
+import worker_reports as wr
+
+def version(value):return hashlib.sha256(json.dumps(value,ensure_ascii=False,sort_keys=True).encode()).hexdigest()
+def versions(d):return {k:version(v) for k,v in d.items()}
+def purchase_versions(d):return {k:version(d[k]) if k in d else None for k in (po.ENTRY,po.INV,po.ORD,'mscm:v1:supplierPayments','mscm:v1:partners','mscm:v1:projects','mscm:v1:workTypes',po.SUBJECT_KEY)}
+def request(storage,url,method,body):
+ d=json.loads(storage);b=json.loads(body or '{}');u=urlparse(url);path=u.path;q=parse_qs(u.query);changed=False
+ try:
+  if path=='/api/ping':r={'ok':True,'workflowVersion':1,'storageEngine':'browser','dataFile':'このブラウザーのデモデータ','documentsDir':'このブラウザーの資料'}
+  elif path=='/api/storage/all':r={'data':d,'versions':versions(d)}
+  elif path=='/api/purchase/list':r={'entries':po.rows(d,po.ENTRY),'invoices':po.rows(d,po.INV),'orders':po.rows(d,po.ORD),'projects':po.rows(d,'mscm:v1:projects'),'suppliers':po.rows(d,'mscm:v1:partners'),'subjects':po.subject_master(d),'workTypes':po.rows(d,'mscm:v1:workTypes'),'versions':purchase_versions(d)}
+  elif path=='/api/cost/ledger':r=po.ledger(d,q.get('projectId',[''])[0])
+  elif path=='/api/worker/view':r=wr.view(d,q.get('date',[''])[0])
+  elif path=='/api/worker-reports/list':r={'reports':dv.load(d,wr.KEY,[])}
+  elif path in ('/api/worker/report','/api/worker-reports/register'):
+   d,record=wr.submit(d,b) if path.endswith('/report') else wr.register(d,b);changed=True;r={'ok':True,'report':record} if path.endswith('/report') else {'ok':True,'record':record}
+  elif path in ('/api/purchase/save','/api/purchase/cancel','/api/purchase/review'):
+   if b.get('expected')!=purchase_versions(d):return json.dumps({'status':409,'data':{'error':'別の画面で更新されました。再読み込みしてください。'}})
+   if path.endswith('/save'):d,record=po.save(d,b['record'])
+   elif path.endswith('/review'):d,record=po.review(d,b)
+   else:d=po.cancel(d,b['id']);record=None
+   changed=True;warnings=[]
+   if record:
+    for o in po.rows(d,po.ORD):
+     if any(l.get('orderId')==o['id'] for l in record['allocations']) and sum(i.get('netAmount',0) for i in po.rows(d,po.INV) if po.active(i) and i.get('orderId')==o['id'])>o.get('amount',0):warnings.append('発注 '+o.get('no','')+' の請求累計が発注額を超えています。')
+   r={'ok':True,'record':record,'warnings':warnings}
+  elif path in ('/api/storage/set','/api/storage/remove'):
+   key=b.get('key');current=version(d[key]) if key in d else None
+   if current!=b.get('expectedVersion'):return json.dumps({'status':409,'data':{'error':'別の画面で更新されました。再読み込みしてください。'}})
+   if key in (po.ENTRY,po.INV,wr.KEY):raise ValueError('請求・報告は専用画面から操作してください。')
+   if path.endswith('/remove'):d.pop(key,None)
+   else:
+    value=b['value']
+    if key==po.SUBJECT_KEY:value=po.validate_subject_master(value,d)
+    if key==dv.KEY:value=dv.dispatch(value,d)
+    if key==dv.RESOURCE_KEY:value=dv.resources(value)
+    if key in ('mscm:dailyReports:v1','mscm:costRates:v1'):value=ov.validate_office_value(key,value,d,{'id':'office'})
+    d[key]=value
+   changed=True;r={'ok':True,'version':version(d[key]) if key in d else None}
+  elif path=='/api/backup/restore':
+   if b.get('expectedSnapshot')!=versions(d):return json.dumps({'status':409,'data':{'error':'復元準備中にデータが更新されました。'}})
+   incoming=b.get('data')
+   if not isinstance(incoming,dict) or not incoming:raise ValueError('バックアップが空です。')
+   for k,v in incoming.items():
+    if not k.startswith('mscm:') or not isinstance(v,str):raise ValueError('バックアップの形式が不正です。')
+    if k not in ('mscm:purchaseOfficeVersion','mscm:selectedProjectId'):json.loads(v)
+   for k,kind in [('mscm:v1:projects',list),('mscm:v1:meta',dict),('mscm:v1:sequences',dict),('mscm:costEntries:v1',list),('mscm:workerReports:v1',list)]:
+    if k not in incoming or not isinstance(json.loads(incoming[k]),kind):raise ValueError('必要な業務データが不足しています。')
+   meta=json.loads(incoming['mscm:v1:meta'])
+   if meta.get('schema') not in (1,'MSCM-COMMON-1') or meta.get('dataVersion')!=2:raise ValueError('対応していないデータ形式です。')
+   d=incoming;changed=True;r={'ok':True}
+  else:return json.dumps({'status':404,'data':{'error':'このデモでは利用できない操作です。'}})
+  result={'status':200,'data':r}
+  if changed:result['storage']=d
+  return json.dumps(result,ensure_ascii=False)
+ except (ValueError,TypeError,KeyError) as e:return json.dumps({'status':400,'data':{'error':str(e) or '入力を確認してください。'}},ensure_ascii=False)

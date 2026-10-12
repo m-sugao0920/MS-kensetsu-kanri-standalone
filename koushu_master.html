@@ -1,11 +1,10 @@
-<!doctype html><html lang="ja"><head>
-<script src="ms_password.js"></script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>工種マスター（経審・建設業許可）</title>
 <style id="ms-no-flicker">
 /* 初期データ反映前のテンプレートちらつき防止。レイアウト値は変更しない */
 html.ms-app-loading body{visibility:hidden}
 </style>
-<script id="ms-no-flicker-start">
+<script type="text/pages-deferred" id="ms-no-flicker-start">
 document.documentElement.classList.add('ms-app-loading');
 window.addEventListener('load',function(){
   requestAnimationFrame(function(){
@@ -21,12 +20,14 @@ header{background:#284b5b;color:white;padding:16px 20px}h1{font-size:22px;margin
 button{border:0;border-radius:6px;padding:9px 15px;background:#315d70;color:white;font-weight:800;cursor:pointer;margin-right:6px}button.sub{background:#6e7e86}button.danger{background:#8d4b43}.amend{display:none;margin-top:12px;padding:12px;background:#fff7e8;border:1px solid #e4c78d;border-radius:8px}.amend input,.amend select{padding:8px;border:1px solid #b9c6cc;border-radius:6px;margin:3px}
 table{width:100%;border-collapse:collapse}th,td{padding:9px;border-bottom:1px solid #e0e6e9;text-align:left}th{background:#f2f5f6}
 .center{text-align:center}.ok{background:#eaf6ed;padding:10px;border-radius:7px;margin:10px 0}
-</style></head><body>
-<header><h1>工種マスター（経審・建設業許可）<span id="mode" class="mode"></span></h1></header>
-<div class="wrap"><div class="card"><div class="hd">工種について</div><div class="bd">
+</style><style id="master-layout">
+body{background:#f3f7fa;color:#263f50;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Yu Gothic","Meiryo",sans-serif}header{background:#fff;color:#174d78;padding:0;border-bottom:1px solid #cbdbe6}.top{max-width:1380px;margin:auto;padding:18px 28px;display:flex;align-items:center;justify-content:space-between;gap:18px}.brand{font-size:22px;font-weight:900}.wrap{max-width:1100px;margin:0 auto;padding:24px 28px}h1{font-size:28px;color:#174d78;margin:0 0 8px}.lead{font-size:13px;color:#71818c;line-height:1.7;margin:0 0 20px}.card{border:1px solid #cbdbe6;border-radius:12px;margin-bottom:18px}.hd{background:#edf4f9;color:#174d78;padding:13px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px}.bd{padding:18px}.grid{grid-template-columns:120px 1fr 120px 1fr}button{background:#174d78;border-radius:8px;padding:10px 16px;margin-right:0}button.sub{background:#fff;color:#174d78;border:1px solid #a8c0d2}button.warn{background:#fff9e9;color:#795e27;border:1px solid #e2cf95}.actions{gap:10px;border-top:1px solid #e1eaf0;padding-top:16px}input,select{border-color:#b9cbd8}input:focus,select:focus,button:focus-visible{outline:2px solid #4287b9;outline-offset:2px}th{background:#edf4f9;color:#174d78}td,th{padding:12px}.note{line-height:1.7}.empty{text-align:center;color:#71818c;padding:24px}.count{font-size:13px;font-weight:400}.table-scroll{overflow:auto}.table-scroll table{min-width:580px}.status-note{font-size:13px;color:#607583;margin:12px 0 0}@media(max-width:760px){.top{padding:16px;align-items:flex-start;flex-wrap:wrap}.brand{font-size:18px}.wrap{padding:20px 16px}.grid{grid-template-columns:1fr}h1{font-size:24px}.hd{flex-wrap:wrap}}
+</style><link rel="stylesheet" href="management_master.css?v=20261012b"><script src="pages_boot.js" defer></script></head><body>
+<header><div class="master-top"><div class="master-brand">MS建設管理システム　／　管理・設定</div><button onclick="masterBack()">管理・設定に戻る</button></div></header>
+<div class="wrap"><h1>工種マスター<span id="mode" class="mode"></span></h1><p class="lead">経審・建設業許可で使用する工種を選択します。</p><div class="card"><div class="hd">一覧・編集</div><div class="bd table-scroll"><table><thead><tr><th style="width:70px">番号</th><th>工種名</th><th class="center" style="width:110px">使用する</th></tr></thead><tbody id="rows"></tbody></table></div></div><div class="card"><div class="hd">選択の保存・制度改正</div><div class="bd">
 <div class="ok"><b>通常時は工種名をロックします。</b>　会社独自の工事分類は「工事区分マスター」で管理します。</div>
 <p class="note">建設業法上の29種類（2種類の一式工事＋27種類の専門工事）を基準にしています。通常は名称を変更せず、使用する工種だけチェックします。制度改正時のみ専用モードで改定できます。</p>
-<div><button onclick="saveSelection()">選択内容を保存</button><button class="sub" onclick="toggleAmend()">制度改正モード</button><button class="sub" onclick="location.href='kanri_settei.html'">管理・設定へ戻る</button></div>
+<div class="actions"><button onclick="saveSelection()">保存</button><button class="sub" onclick="masterCancel()">キャンセル</button><button class="sub" onclick="toggleAmend()">制度改正モード</button></div>
 <div id="amendBox" class="amend">
 <b>制度改正時のみ使用</b>
 <p class="note">通常運用では使用しません。法令改正等で工種の追加・名称変更・廃止が必要になった場合に、履歴を残して改定します。過去の工種は削除しません。</p>
@@ -37,9 +38,9 @@ table{width:100%;border-collapse:collapse}th,td{padding:9px;border-bottom:1px so
 <button class="danger" onclick="applyAmendment()">改定を登録</button>
 </div>
 </div></div>
-<div class="card"><div class="hd">工種一覧</div><div class="bd"><table><thead><tr><th style="width:70px">番号</th><th>工種名</th><th class="center" style="width:110px">使用する</th></tr></thead><tbody id="rows"></tbody></table></div></div></div>
-<script src="shared_storage.js"></script>
-<script src="ms_data.js"></script><script>
+</div>
+<script type="text/pages-deferred" src="shared_storage.js"></script>
+<script type="text/pages-deferred" src="tax.js?v=20261003"></script><script type="text/pages-deferred" src="ms_data.js?v=tax20261003"></script><script type="text/pages-deferred">
 const OFFICIAL=["土木一式工事","建築一式工事","大工工事","左官工事","とび・土工・コンクリート工事","石工事","屋根工事","電気工事","管工事","タイル・れんが・ブロック工事","鋼構造物工事","鉄筋工事","舗装工事","しゅんせつ工事","板金工事","ガラス工事","塗装工事","防水工事","内装仕上工事","機械器具設置工事","熱絶縁工事","電気通信工事","造園工事","さく井工事","建具工事","水道施設工事","消防施設工事","清掃施設工事","解体工事"];
 function customRecords(){return MSData.all('workTypes').filter(x=>x.legalAmendment===true)}
 function currentTypes(){
@@ -60,13 +61,15 @@ function render(){
 }
 function saveSelection(){
  const existing=MSData.all('workTypes').filter(x=>!x.legalAmendment);
- currentTypes().filter(t=>t.status!=='retired').forEach((t,i)=>{
+ const records=currentTypes().filter(t=>t.status!=='retired').map((t,i)=>{
    const found=existing.find(x=>String(x.legalNo)===String(t.baseNo))||existing.find(x=>x.name===t.name);
    const el=document.querySelector(`input[data-key="${t.baseNo}"]`);
-   MSData.save('workTypes',{id:found?.id,no:found?.no,name:t.name,legalNo:t.baseNo,sortOrder:i+1,status:el&&el.checked?'active':'inactive'});
+   return {id:found?.id,no:found?.no,name:t.name,legalNo:t.baseNo,sortOrder:i+1,status:el&&el.checked?'active':'inactive'};
  });
- alert('工種の選択内容を保存しました。'); render();
+ MSData.saveMany('workTypes',records);
+ render(); masterMarkClean(); alert('工種の選択内容を保存しました。');
 }
+
 function toggleAmend(){
  if(amendBox.style.display==='block'){amendBox.style.display='none';return}
  if(!confirm('制度改正モードは、法令等で工種区分が変更された場合だけ使用します。\n通常の工種選択では使用しません。\n\n開きますか？'))return;
@@ -81,7 +84,16 @@ function applyAmendment(){
  const label=action==='add'?'新設':action==='rename'?'名称変更':'廃止';
  if(!confirm(label+'を制度改正履歴として登録します。よろしいですか？'))return;
  MSData.save('workTypes',{name:nm||('廃止:'+ln),legalNo:ln||('NEW-'+Date.now()),legalAmendment:true,action,effectiveDate:dt,status:action==='retire'?'retired':'active',sortOrder:999});
- amendNo.value='';amendName.value='';effectiveDate.value='';render();alert('制度改正履歴を登録しました。過去データは削除していません。');
+ amendNo.value='';amendName.value='';effectiveDate.value='';render();masterMarkClean();alert('制度改正履歴を登録しました。過去データは削除していません。');
 }
 window.addEventListener('load',()=>{mode.textContent=MSData.getMode()==='production'?'本番運用':'試作モード';render()});
+</script><script type="text/pages-deferred">
+let masterBaseline='';
+function masterValues(){return JSON.stringify(Array.from(document.querySelectorAll('#editor input,#editor select,#rows input[type=checkbox],#amendBox input,#amendBox select')).map(e=>[e.id||e.dataset.key,e.type==='checkbox'?e.checked:e.value]));}
+function masterMarkClean(){masterBaseline=masterValues();}
+function masterAllowLeave(){return masterValues()===masterBaseline||confirm('未保存の変更があります。変更を破棄しますか？');}
+function masterBack(){if(masterAllowLeave()){masterMarkClean();location.href='kanri_settei.html';}}
+function masterCancel(){if(!masterAllowLeave())return;masterMarkClean();if(typeof newRec==='function')newRec();else{render();document.querySelectorAll('#amendBox input').forEach(e=>e.value='');masterMarkClean();}}
+window.addEventListener('beforeunload',e=>{if(masterValues()!==masterBaseline){e.preventDefault();e.returnValue='';}});
+window.addEventListener('load',()=>{masterMarkClean();window.scrollTo(0,0);});
 </script></body></html>

@@ -1,0 +1,178 @@
+"""Canonical purchase invoice entry and atomic projection to order invoices."""
+import json, uuid, datetime, math, copy
+ENTRY='mscm:costEntries:v1'; INV='mscm:v1:supplierInvoices'; ORD='mscm:v1:orders'
+SUBJECTS={'材料費':'material','外注労務費':'labor','外注工事費':'outsourced','外注機械費':'outsourced','自社機械費':'expense','修繕費':'expense','リース機械費':'expense','燃料費':'expense','経費':'expense','交通費':'expense','処分費':'expense','駐車場':'expense','雑材':'expense','通信':'expense','保証料':'expense','未分類':'unclassified'}
+def rows(d,key): return json.loads(d.get(key,'[]'))
+def active(r): return r.get('status') not in ('inactive','cancelled','canceled','void','deleted')
+def encode(x): return json.dumps(x,ensure_ascii=False)
+
+SUBJECT_KEY='mscm:costSubjects:v1'
+def subject_master(d):
+    if SUBJECT_KEY in d:return rows(d,SUBJECT_KEY)
+    return [{'id':'subject-'+str(i+1),'no':str((i+1)*10),'name':name,'category':category,'sortOrder':(i+1)*10,'status':'active'} for i,(name,category) in enumerate(SUBJECTS.items()) if name!='未分類']
+def subject_categories(d):
+    result=dict(SUBJECTS)
+    for s in subject_master(d):result[s['name']]=s['category']
+    return result
+def validate_subject_master(value,d):
+    records=json.loads(value);old={s['id']:s for s in subject_master(d)};used={l.get('subject') for e in rows(d,ENTRY) for l in e.get('allocations',[])}
+    if not isinstance(records,list) or not records:raise ValueError('科目を1件以上登録してください。')
+    names=set();ids=set();numbers=set()
+    for s in records:
+        if not isinstance(s,dict) or not isinstance(s.get('name'),str) or not s['name'].strip() or len(s['name'])>50 or s['name']=='未分類':raise ValueError('科目名を確認してください。')
+        if not isinstance(s.get('no'),str) or not s['no'].strip() or len(s['no'])>20:raise ValueError('科目番号を確認してください。')
+        if not isinstance(s.get('id'),str) or not s['id']:raise ValueError('科目IDを確認してください。')
+        if s['name'] in names or s['id'] in ids or s['no'] in numbers:raise ValueError('科目番号・科目名が重複しています。')
+        names.add(s['name']);ids.add(s['id']);numbers.add(s['no'])
+        if s.get('category') not in ('material','labor','outsourced','expense') or s.get('status') not in ('active','inactive') or type(s.get('sortOrder')) is not int:raise ValueError('集計区分・表示順・使用状態を確認してください。')
+        previous=old.get(s['id'])
+        if previous and previous['name'] in used and (s['name']!=previous['name'] or s['category']!=previous['category']):raise ValueError('使用済み科目の名称・集計区分は変更できません。休止して別の科目を追加してください。')
+    if any(s['name'] in used and s['id'] not in ids for s in old.values()):raise ValueError('使用済み科目は削除せず休止してください。')
+    return encode(records)
+
+def migrate(d):
+    entries=rows(d,ENTRY); invoices=rows(d,INV); byid={i['id']:i for i in invoices}; claimed=set()
+    for e in entries:
+        src=e.pop('supplierInvoiceId',None)
+        if src:
+            e['legacyInvoiceIds']=[src];claimed.add(src)
+            i=byid.get(src)
+            if i:
+                i['costEntryId']=e['id']
+                for l in e['allocations']:l.setdefault('orderId',i.get('orderId',''))
+        for l in e.get('allocations',[]):l.setdefault('orderId','')
+    partners={p['id']:p for p in rows(d,'mscm:v1:partners')};projects={p['id']:p for p in rows(d,'mscm:v1:projects')}
+    for i in invoices:
+        if not active(i) or i['id'] in claimed or i.get('costEntryId'):continue
+        if i.get('supplierId') not in partners or i.get('projectId') not in projects:raise ValueError('既存請求の業者・工事が見つかりません。移行を中止しました。')
+        gross=i.get('amount',0);net=i.get('netAmount');unknown=not isinstance(net,(int,float)) or isinstance(net,bool)
+        if unknown:
+            policy=json.loads(d.get('mscm:v1:meta','{}')).get('taxPolicy',{});rates=sorted([r for r in policy.get('rates',[]) if r.get('from','')<=i.get('invoiceDate','')],key=lambda r:r['from'],reverse=True)
+            rate=i.get('taxRate',rates[0]['rate'] if rates else 10);net=math.floor(gross/(1+float(rate)/100)+.5)
+        tax=i.get('taxAmount',gross-net)
+        if net<=0 or tax<0:raise ValueError('既存請求の金額を確認してください。移行を中止しました。')
+        eid='legacy-'+i['id'];i['costEntryId']=eid
+        entries.append({'id':eid,'supplierId':i['supplierId'],'supplierName':partners[i['supplierId']]['name'],'date':i.get('invoiceDate',''),'invoiceNo':i.get('memo',''),'netAmount':int(net),'taxAmount':int(tax),'grossAmount':gross,'needsConfirmation':unknown,'legacyInvoiceIds':[i['id']],'allocations':[{'projectId':i['projectId'],'orderId':i.get('orderId',''),'subject':'未分類','category':'unclassified','workType':i.get('content',''),'netAmount':int(net)}],'createdAt':i.get('createdAt',''),'updatedAt':i.get('updatedAt','')})
+    d[ENTRY]=encode(entries);d[INV]=encode(invoices)
+    for e in entries:
+        if active(e) and not e.get('legacyInvoiceIds') and not any(i.get('costEntryId')==e['id'] for i in rows(d,INV)):
+            d,_=save(d,e)
+    d['mscm:purchaseOfficeVersion']='1';return d
+def payment_locked(d,e):
+    linked=[i for i in rows(d,INV) if i.get('costEntryId')==e['id'] or i['id'] in e.get('legacyInvoiceIds',[])]
+    ids={i['id'] for i in linked};orders={i.get('orderId') for i in linked if i.get('orderId')}
+    return any(active(p) and (p.get('invoiceId') in ids or p.get('supplierInvoiceId') in ids or (p.get('orderId') in orders and not p.get('invoiceId') and not p.get('supplierInvoiceId'))) for p in rows(d,'mscm:v1:supplierPayments'))
+def validate(d,r,old=None):
+    r=copy.deepcopy(r);partners={p['id']:p for p in rows(d,'mscm:v1:partners')};projects={p['id']:p for p in rows(d,'mscm:v1:projects')};orders={o['id']:o for o in rows(d,ORD) if active(o)}
+    if r.get('supplierId') not in partners:raise ValueError('業者を選択してください。')
+    datetime.date.fromisoformat(r.get('date',''))
+    for k in ('netAmount','taxAmount'):
+        if type(r.get(k)) is not int or not 0<=r[k]<=100000000000:raise ValueError('金額は0以上の整数で入力してください。')
+    if r['netAmount']<=0:raise ValueError('税抜請求額を入力してください。')
+    if 'taxRate' in r and (type(r['taxRate']) not in (int,float) or not math.isfinite(r['taxRate']) or not 0<=r['taxRate']<=100):raise ValueError('消費税率を確認してください。')
+    no=r.get('invoiceNo','')
+    if not isinstance(no,str) or len(no)>100:raise ValueError('請求書番号・備考を確認してください。')
+    if no and any(active(e) and e['id']!=r.get('id') and e.get('supplierId')==r['supplierId'] and e.get('invoiceNo')==no for e in rows(d,ENTRY)):raise ValueError('同じ業者・請求書番号は登録済みです。')
+    lines=r.get('allocations');total=0
+    if not isinstance(lines,list) or not 1<=len(lines)<=500:raise ValueError('振り分けを入力してください。')
+    for l in lines:
+        if l.get('projectId') not in projects or l.get('subject') not in subject_categories(d) or l['subject']=='未分類':raise ValueError('工事と科目を選択してください。')
+        if type(l.get('netAmount')) is not int or l['netAmount']<=0:raise ValueError('振り分け金額を入力してください。')
+        if not isinstance(l.get('workType',''),str) or len(l.get('workType',''))>200 or not isinstance(l.get('content',''),str) or len(l.get('content',''))>200:raise ValueError('工種・内容を確認してください。')
+        previous_lines=(old or {}).get('allocations',[])
+        subjects={s['name']:s for s in subject_master(d)}
+        selected=subjects.get(l['subject'])
+        if not selected or (not active(selected) and not any(x.get('subject')==l['subject'] for x in previous_lines)):raise ValueError('使用する科目を選択してください。')
+        wid=l.get('workTypeId','')
+        if wid:
+            work=next((w for w in rows(d,'mscm:v1:workTypes') if w['id']==wid and not w.get('legalAmendment')),None)
+            if not work or (not active(work) and not any(x.get('workTypeId')==wid for x in previous_lines)):raise ValueError('工種マスターから使用する工種を選択してください。')
+            l['workType']=work['name']
+        elif 'workTypeId' in l:l['workType']=''
+        oid=l.get('orderId','');o=orders.get(oid)
+        if oid and (not o or o.get('projectId')!=l['projectId'] or o.get('supplierId')!=r['supplierId']):raise ValueError('選択した業者・工事に対応する発注を選んでください。')
+        l['orderReviewStatus']='linked' if oid else ('noOrderRequired' if l.get('orderReviewStatus')=='noOrderRequired' and any(x.get('projectId')==l['projectId'] and not x.get('orderId') and x.get('orderReviewStatus')=='noOrderRequired' for x in previous_lines) else 'orderUnconfirmed')
+        l['orderId']=oid;l['category']=subject_categories(d)[l['subject']];l['projectName']=projects[l['projectId']]['name'];l['projectNo']=projects[l['projectId']].get('no','');total+=l['netAmount']
+    if total!=r['netAmount']:raise ValueError('振り分け合計を請求書の税抜合計に合わせてください。')
+    r['supplierName']=partners[r['supplierId']]['name'];r['grossAmount']=r['netAmount']+r['taxAmount'];r['needsConfirmation']=False;r['status']='active';r.pop('supplierInvoiceId',None)
+    r['legacyInvoiceIds']=(old or {}).get('legacyInvoiceIds',[])
+    return r
+def save(d,record):
+    d=copy.deepcopy(d);entries=rows(d,ENTRY);old=next((e for e in entries if e['id']==record.get('id')),None)
+    if old and payment_locked(d,old):raise ValueError('支払登録済みの請求は変更できません。先に支払内容を確認してください。')
+    r=validate(d,record,old);r['id']=old['id'] if old else str(uuid.uuid4());now=datetime.datetime.now(datetime.timezone.utc).isoformat();r['createdAt']=(old or {}).get('createdAt') or now;r['updatedAt']=now
+    invoices=rows(d,INV);existing=[i for i in invoices if i.get('costEntryId')==r['id'] or i['id'] in r['legacyInvoiceIds']];groups={}
+    for l in r['allocations']:
+        key=(l['projectId'],l['orderId']);g=groups.setdefault(key,{'net':0,'content':[]});g.setdefault('reviewStatuses',[]).append(l.get('orderReviewStatus','orderUnconfirmed'));g['net']+=l['netAmount'];g['content'].append(' ／ '.join(x for x in (l.get('workType',''),l.get('content','')) if x))
+    result=[i for i in invoices if i not in existing];used=set();tax_left=r['taxAmount']
+    for index,((pid,oid),g) in enumerate(groups.items()):
+        match=next((i for i in existing if i['id'] not in used and i.get('projectId')==pid and i.get('orderId','')==oid),None)
+        if not match and len(existing)==1 and len(groups)==1:match=existing[0]
+        iid=match['id'] if match else str(uuid.uuid5(uuid.NAMESPACE_URL,r['id']+'|'+pid+'|'+oid));used.add(iid)
+        tax=tax_left if index==len(groups)-1 else r['taxAmount']*g['net']//r['netAmount'];tax_left-=tax
+        inv={**(match or {}),'id':iid,'costEntryId':r['id'],'projectId':pid,'orderId':oid,'supplierId':r['supplierId'],'supplierName':r['supplierName'],'invoiceDate':r['date'],'netAmount':g['net'],'taxAmount':tax,'amount':g['net']+tax,'grossAmount':g['net']+tax,'memo':r['invoiceNo'],'content':' ／ '.join(dict.fromkeys(x for x in g['content'] if x)),'dataSide':'purchase','status':'active','reviewStatus':'linked' if oid else ('noOrderRequired' if all(s=='noOrderRequired' for s in g['reviewStatuses']) else 'orderUnconfirmed'),'createdAt':(match or {}).get('createdAt',now),'updatedAt':now}
+        if 'taxRate' in r:inv['taxRate']=r['taxRate']
+        hist=copy.deepcopy((match or {}).get('history',[]));hist.append({'at':now,'action':'事務入力で更新' if match else '事務入力で登録','before':{k:v for k,v in (match or {}).items() if k!='history'},'after':{k:v for k,v in inv.items() if k!='history'}});inv['history']=hist;result.append(inv)
+    # Retain obsolete projections as inactive records for traceability.
+    for i in existing:
+        if i['id'] not in used:result.append({**i,'status':'inactive','updatedAt':now})
+    d[INV]=encode(result);d[ENTRY]=encode([e for e in entries if e['id']!=r['id']]+[r]);return d,r
+def cancel(d,eid):
+    d=copy.deepcopy(d);entries=rows(d,ENTRY);e=next((e for e in entries if e['id']==eid),None)
+    if not e:raise ValueError('請求が見つかりません。')
+    if payment_locked(d,e):raise ValueError('支払登録済みの請求は取消できません。')
+    e['status']='inactive';e['updatedAt']=datetime.datetime.now(datetime.timezone.utc).isoformat()
+    invoices=rows(d,INV)
+    for i in invoices:
+        if i.get('costEntryId')==eid:i['status']='inactive';i['updatedAt']=e['updatedAt']
+    d[ENTRY]=encode(entries);d[INV]=encode(invoices);return d
+def ledger(d,pid):
+    result=[];warnings=[];entries=rows(d,ENTRY)
+    for e in entries:
+        if not active(e):continue
+        if e.get('needsConfirmation'):
+            if any(l['projectId']==pid for l in e['allocations']):warnings.append('税抜・消費税の確認が必要な引継ぎ請求があります。事務入力で請求書と照合してください。')
+            continue
+        for l in e['allocations']:
+            if l['projectId']==pid:result.append({'date':e['date'],'source':'仕入・下請請求','supplier':e['supplierName'],'subject':l['subject'],'category':l.get('category',subject_categories(d).get(l['subject'],'unclassified')),'workType':' ／ '.join(x for x in (l.get('workType',''),l.get('content','')) if x),'workTypeId':l.get('workTypeId',''),'content':l.get('content',''),'amount':l['netAmount']})
+    for report in rows(d,'mscm:dailyReports:v1'):
+        if report['projectId']==pid:result.append({'date':report['date'],'source':'自社日報','supplier':'自社','subject':'自社労務費','category':'labor','workType':report.get('workNote',''),'amount':report['laborTotal']})
+    totals={k:sum(r['amount'] for r in result if r['category']==k) for k in ('material','labor','outsourced','expense','unclassified')}
+    return {'rows':sorted(result,key=lambda r:r['date']),'totals':totals,'total':sum(totals.values()),'warnings':list(dict.fromkeys(warnings))}
+
+
+def review(d,body):
+    """Update field review and canonical office lines atomically; never add cost rows."""
+    d=copy.deepcopy(d);invoices=rows(d,INV);entries=rows(d,ENTRY)
+    inv=next((i for i in invoices if i['id']==body.get('invoiceId') and active(i)),None)
+    if not inv:raise ValueError('請求が見つかりません。画面を更新してください。')
+    if inv.get('updatedAt','')!=body.get('previousUpdatedAt','') or inv.get('orderId','')!=body.get('previousOrderId',''):raise ValueError('請求が変更されています。画面を更新してください。')
+    entry=next((e for e in entries if e['id']==inv.get('costEntryId') and active(e)),None)
+    if not entry:raise ValueError('事務入力の請求が見つかりません。画面を更新してください。')
+    if payment_locked(d,entry):raise ValueError('支払登録済みの請求は対応を変更できません。先に支払内容を確認してください。')
+    action=body.get('action');oid=body.get('orderId','') if action=='link' else ''
+    if action not in ('link','noOrderRequired','reopen'):raise ValueError('確認操作を選択してください。')
+    if action=='link':
+        order=next((o for o in rows(d,ORD) if o['id']==oid and active(o)),None)
+        if not order or order.get('projectId')!=inv.get('projectId') or order.get('supplierId')!=inv.get('supplierId'):raise ValueError('同じ工事・業者の発注を選択してください。')
+    old_oid=inv.get('orderId','');lines=[l for l in entry['allocations'] if l['projectId']==inv['projectId'] and l.get('orderId','')==old_oid]
+    if not lines or sum(l['netAmount'] for l in lines)!=inv['netAmount']:raise ValueError('請求明細と一致しません。事務入力の内容を確認してください。')
+    now=datetime.datetime.now(datetime.timezone.utc).isoformat();status='linked' if action=='link' else 'noOrderRequired' if action=='noOrderRequired' else 'orderUnconfirmed'
+    before={k:copy.deepcopy(v) for k,v in inv.items() if k!='history'}
+    for l in lines:l['orderId']=oid;l['orderReviewStatus']=status
+    entry['updatedAt']=now;inv['orderId']=oid;inv['reviewStatus']=status;inv['updatedAt']=now;inv['reviewedAt']=now
+    action_name={'link':'工事担当者が発注と対応付け','noOrderRequired':'工事担当者が発注不要を確認','reopen':'工事担当者が発注確認を戻す'}[action]
+    inv.setdefault('history',[]).append({'at':now,'action':action_name,'before':before,'after':{k:copy.deepcopy(v) for k,v in inv.items() if k!='history'}})
+    # If two parts of one invoice now refer to the same order, consolidate the
+    # projection while retaining the replaced record as an inactive history row.
+    duplicates=[i for i in invoices if i is not inv and active(i) and i.get('costEntryId')==entry['id'] and i.get('projectId')==inv['projectId'] and i.get('orderId','')==oid]
+    for other in duplicates:
+        inv['netAmount']+=other['netAmount'];inv['taxAmount']+=other.get('taxAmount',0)
+        inv['amount']=inv['netAmount']+inv['taxAmount'];inv['grossAmount']=inv['amount']
+        inv['content']=' ／ '.join(dict.fromkeys(x for x in (inv.get('content',''),other.get('content','')) if x))
+        other['status']='inactive';other['updatedAt']=now
+        other.setdefault('history',[]).append({'at':now,'action':'発注確認で同じ請求書の明細へ統合','mergedInto':inv['id']})
+    combined=[l for l in entry['allocations'] if l['projectId']==inv['projectId'] and l.get('orderId','')==oid]
+    if not oid:inv['reviewStatus']='noOrderRequired' if all(l.get('orderReviewStatus')=='noOrderRequired' for l in combined) else 'orderUnconfirmed'
+    inv['history'][-1]['after']={k:copy.deepcopy(v) for k,v in inv.items() if k!='history'}
+    d[ENTRY]=encode(entries);d[INV]=encode(invoices);return d,entry

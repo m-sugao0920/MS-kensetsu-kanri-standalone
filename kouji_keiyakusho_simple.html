@@ -1,58 +1,47 @@
 <!doctype html>
 <html lang="ja">
 <head>
-<script src="ms_password.js"></script>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>簡易工事請負契約書｜MS建設管理システム</title>
 <style>
 *{box-sizing:border-box}
 body{margin:0;background:#e9eef1;color:#25313a;font-family:"Yu Gothic","Meiryo",sans-serif}
-.toolbar{position:sticky;top:0;z-index:10;background:white;padding:10px 16px;border-bottom:1px solid #ccd5da;display:flex;gap:8px;align-items:center}
+.toolbar{position:sticky;top:0;z-index:10;background:#fff;padding:10px 16px;border-bottom:1px solid #ccd5da;display:flex;gap:8px;align-items:center}
 .toolbar b{margin-right:auto;color:#315c72}
 button{border:0;border-radius:6px;padding:8px 15px;font-weight:bold;cursor:pointer}
-.pri{background:#315c72;color:white} .sub{background:#e5ecef}
-.note{max-width:210mm;margin:10px auto;padding:10px 14px;background:white;border-left:4px solid #315c72;font-size:12px}
-.page{width:210mm;height:297mm;margin:10px auto;background:white;padding:20mm 20mm 13mm;position:relative;overflow:hidden;box-shadow:0 1px 8px #aab4ba}
-.band{display:block;width:auto;height:1.1mm;background:#315c72;margin:0 0 7mm;border-radius:.25mm}
-h1{margin:0;font-size:27px;letter-spacing:.12em}
+.pri{background:#315c72;color:#fff}.sub{background:#e5ecef;color:#25313a}
+.note{max-width:210mm;margin:10px auto;padding:10px 14px;background:#fff;border-left:4px solid #315c72;font-size:12px}
+.page{width:210mm;height:297mm;margin:10px auto;background:#fff;padding:20mm 20mm 13mm;position:relative;overflow:hidden;box-shadow:0 1px 8px #aab4ba}
+.band{height:1.1mm;background:#315c72;margin:0 0 7mm;border-radius:.25mm}
 .top{display:flex;justify-content:space-between;align-items:flex-end}
-.meta{font-size:9px;text-align:right;line-height:1.7;color:#6e7c86}
+h1{margin:0;font-size:27px;letter-spacing:.1em}
+.meta{font-size:10px;text-align:right;line-height:1.7;color:#6e7c86}
 .parties{display:grid;grid-template-columns:1fr 1fr;gap:7mm;margin-top:7mm}
-.cap{font-size:9px;color:#6e7c86;font-weight:bold}
+.cap{font-size:10px;color:#6e7c86;font-weight:bold}
 .party{font-size:16px;font-weight:bold;border-bottom:1px solid #25313a;padding:2mm 0;margin-bottom:2mm}
-.addr{font-size:10px;min-height:8mm}
-.money{margin:6mm 0 5mm;background:#d5dfe4;border-left:5px solid #315c72;padding:4mm 5mm;display:flex;justify-content:space-between;align-items:center;font-weight:bold}
-.money span{font-size:15px;color:#25313a} .money strong{font-size:28px;color:#000;font-weight:900}
+.addr{font-size:11px;min-height:8mm}
+.moneybox{margin:6mm 0 5mm;background:#d5dfe4;border-left:5px solid #315c72;padding:4mm 5mm;display:flex;justify-content:space-between;align-items:center;font-weight:bold}
+.moneybox span{font-size:15px}.moneybox strong{font-size:28px;color:#000}
 .section{font-size:15px;font-weight:bold;color:#315c72;margin:4mm 0 2mm}
-table{width:100%;border-collapse:collapse;font-size:14px}
+table{width:100%;border-collapse:collapse;font-size:13px}
 th,td{border-bottom:1px solid #d3dce1;padding:2.2mm 2.7mm;text-align:left}
-th{width:40mm;background:#d5dfe4;font-size:14px;font-weight:900} td{font-size:14px}
+th{width:40mm;background:#d5dfe4;font-weight:900}
 .pay{border:1.5px solid #9eacb4;border-radius:6px;overflow:hidden}
-.payrow{display:grid;grid-template-columns:27mm 1fr 1.3fr;min-height:12mm;align-items:center;border-bottom:1px solid #d7e0e4;font-size:14px}
-.payrow:last-child{border:0}
-.payrow b{height:100%;display:flex;align-items:center;padding:0 3mm;background:#d5dfe4;color:#25313a;font-size:14px}
-.payrow span{padding:0 3mm;font-size:14px} .payrow span+span{border-left:1px solid #d7e0e4}
-.small{font-size:11.5px;line-height:1.5;margin-top:2mm}
-.special{border:1px solid #d3dce1;border-radius:5px;min-height:15mm;padding:3mm;background:#eef2f4;font-size:13.5px;line-height:1.5}
+.payrow{display:grid;grid-template-columns:27mm 1fr 1.35fr;min-height:12mm;align-items:center;border-bottom:1px solid #d7e0e4;font-size:13px}
+.payrow:last-child{border:0}.payrow b{height:100%;display:flex;align-items:center;padding:0 3mm;background:#d5dfe4}
+.payrow span{padding:0 3mm}.payrow span+span{border-left:1px solid #d7e0e4}
+.special{border:1px solid #d3dce1;border-radius:5px;min-height:14mm;padding:3mm;background:#eef2f4;font-size:12px;line-height:1.5}
 .signs{display:grid;grid-template-columns:1fr 1fr;gap:6mm;margin-top:5mm}
-.sign{border:1px solid #d3dce1;border-radius:5px;min-height:29mm;padding:3mm 4mm;font-size:11.5px;line-height:1.5}
+.sign{border:1px solid #d3dce1;border-radius:5px;min-height:28mm;padding:3mm 4mm;font-size:11px;line-height:1.6}
 .seal{float:right;border:1px solid #aaa;border-radius:50%;width:14mm;height:14mm;text-align:center;line-height:14mm}
-.foot{position:absolute;bottom:6mm;left:20mm;right:20mm;display:flex;justify-content:space-between;font-size:7px;color:#87939a}
-
-/* 簡易約款 1ページ・2列 */
-.simple-terms{padding:17mm 16mm 10mm}
-.simple-terms .band{margin-bottom:2.5mm}
-.simple-terms h1{text-align:center;font-size:21px;letter-spacing:.04em;line-height:1.1;margin:0}
-.simple-terms .lead{text-align:center;font-size:9px;color:#6e7c86;margin:1mm 0 3mm}
-.terms-columns{display:grid;grid-template-columns:1fr 1fr;gap:7mm;align-items:start}
-.terms-col:first-child{padding-right:3.5mm;border-right:1px solid #cfd8dd}
-.terms-col:last-child{padding-left:0}
-.simple-terms .clause{margin:0 0 1.25mm;padding:0 0 .85mm;border-bottom:1px solid #e2e7ea;break-inside:avoid}
-.simple-terms .clause h3{font-size:8.2px;line-height:1.18;color:#315c72;margin:0 0 .25mm;font-weight:900}
-.simple-terms .clause p{font-size:7.25px;line-height:1.36;margin:0;text-align:justify}
-.simple-terms .foot{left:16mm;right:16mm}
-
+.terms{padding:22mm 22mm 12mm}
+.terms .band{margin-bottom:5mm}
+.terms h1{text-align:center;font-size:25px;letter-spacing:.04em}
+.lead{text-align:center;font-size:12px;color:#6e7c86;margin:2mm 0 6mm}
+.clause{margin-bottom:3.5mm;padding-bottom:2.7mm;border-bottom:1px solid #e0e6e9}
+.clause h3{font-size:14px;color:#315c72;margin:0 0 1mm}
+.clause p{font-size:11.8px;line-height:1.62;margin:0;text-align:justify}
+.foot{position:absolute;bottom:6mm;left:20mm;right:20mm;display:flex;justify-content:space-between;font-size:8px;color:#87939a}
 @page{size:A4 portrait;margin:0}
 @media print{
  html,body{margin:0!important;padding:0!important;background:#fff!important}
@@ -61,151 +50,293 @@ th{width:40mm;background:#d5dfe4;font-size:14px;font-weight:900} td{font-size:14
  .page:last-of-type{page-break-after:auto!important;break-after:auto!important}
 }
 </style>
-<script src="shared_storage.js"></script>
-<script src="ms_data.js"></script>
+<script type="text/pages-deferred" src="shared_storage.js"></script><script type="text/pages-deferred" src="tax.js?v=20261004net"></script><script type="text/pages-deferred" src="ms_data.js?v=tax20261003"></script>
 
-
-<style id="ms-simple-terms-balanced-20260926">
-/* 簡易約款：下余白を減らし、A4 2列を読みやすく使い切る */
-.simple-terms{
-  padding-top:17mm !important;
-  padding-left:16mm !important;
-  padding-right:16mm !important;
-  padding-bottom:8mm !important;
+<style id="ms-simple-terms-27-two-column">
+/* 簡易版：約款 第1条～第27条をA4 1ページ・2列で表示 */
+.page.terms.compact-terms{
+  padding:13mm 14mm 9mm !important;
 }
-.simple-terms .band{
-  margin-bottom:2.8mm !important;
+.page.terms.compact-terms > .band{
+  height:1mm !important;
+  margin:0 0 2.2mm !important;
 }
-.simple-terms h1{
-  font-size:22px !important;
-  line-height:1.12 !important;
-  margin:0 !important;
+.page.terms.compact-terms h1{
+  font-size:19px !important;
+  line-height:1.1 !important;
+  margin:0 0 .5mm !important;
+  text-align:center !important;
 }
-.simple-terms .lead{
-  font-size:9.5px !important;
-  line-height:1.25 !important;
-  margin:1.2mm 0 3.5mm !important;
+.page.terms.compact-terms .lead{
+  font-size:8.5px !important;
+  line-height:1.15 !important;
+  margin:0 0 2mm !important;
+  text-align:center !important;
 }
 .terms-columns{
-  gap:7mm !important;
+  column-count:2;
+  column-gap:8mm;
+  column-rule:1px solid #dfe5e8;
+  height:252mm;
+  column-fill:auto;
 }
-.simple-terms .clause{
-  margin:0 0 1.65mm !important;
-  padding:0 0 1.05mm !important;
+.page.terms.compact-terms .clause{
+  break-inside:avoid;
+  margin:0 0 1.15mm !important;
+  padding:0 0 .75mm !important;
+  border-bottom:1px solid #e4e9ec !important;
 }
-.simple-terms .clause h3{
-  font-size:9.3px !important;
-  line-height:1.25 !important;
-  margin:0 0 .4mm !important;
+.page.terms.compact-terms .clause h3{
+  font-size:8.4px !important;
+  line-height:1.18 !important;
+  margin:0 0 .25mm !important;
+  color:#315c72 !important;
 }
-.simple-terms .clause p{
-  font-size:8.35px !important;
-  line-height:1.48 !important;
+.page.terms.compact-terms .clause p{
+  font-size:7.25px !important;
+  line-height:1.32 !important;
   margin:0 !important;
   text-align:justify !important;
 }
-.simple-terms .foot{
-  bottom:5mm !important;
-}
-
-@media print{
-  .simple-terms{
-    padding-top:17mm !important;
-    padding-left:16mm !important;
-    padding-right:16mm !important;
-    padding-bottom:8mm !important;
-  }
-}
-</style>
-
-
-<style id="ms-simple-terms-balanced-larger-20260926">
-/* 簡易約款：残っている下余白を使ってさらに拡大 */
-.simple-terms{
-  padding-top:16mm !important;
-  padding-left:15mm !important;
-  padding-right:15mm !important;
-  padding-bottom:6mm !important;
-}
-.simple-terms .band{
-  margin-bottom:2.5mm !important;
-}
-.simple-terms h1{
-  font-size:23px !important;
-  line-height:1.12 !important;
-}
-.simple-terms .lead{
-  font-size:10px !important;
-  line-height:1.25 !important;
-  margin:1mm 0 3mm !important;
-}
-.terms-columns{
-  gap:6.5mm !important;
-}
-.terms-col:first-child{
-  padding-right:3mm !important;
-}
-.simple-terms .clause{
-  margin:0 0 1.8mm !important;
-  padding:0 0 1.15mm !important;
-}
-.simple-terms .clause h3{
-  font-size:10px !important;
-  line-height:1.28 !important;
-  margin:0 0 .45mm !important;
-}
-.simple-terms .clause p{
-  font-size:9px !important;
-  line-height:1.52 !important;
-  margin:0 !important;
-  text-align:justify !important;
-}
-.simple-terms .foot{
-  left:15mm !important;
-  right:15mm !important;
+.page.terms.compact-terms .foot{
+  left:14mm !important;
+  right:14mm !important;
   bottom:4mm !important;
 }
 @media print{
-  .simple-terms{
-    padding-top:16mm !important;
-    padding-left:15mm !important;
-    padding-right:15mm !important;
-    padding-bottom:6mm !important;
-  }
+ .page.terms.compact-terms{
+   padding:13mm 14mm 9mm !important;
+ }
+ .terms-columns{
+   column-count:2 !important;
+   column-gap:8mm !important;
+   column-fill:auto !important;
+   height:252mm !important;
+ }
 }
 </style>
 
 
-<style id="ms-simple-terms-top30-20260926">
-/* 簡易約款：上余白25mm */
-.simple-terms{
-  padding-top:25mm !important;
+<style id="ms-fixed-14-15-columns">
+.page.terms.compact-terms .terms-columns.fixed-columns{
+  display:grid !important;
+  grid-template-columns:1fr 1fr !important;
+  gap:8mm !important;
+  height:auto !important;
+  column-count:unset !important;
+  column-gap:unset !important;
+  column-rule:0 !important;
+  align-items:start !important;
+}
+.page.terms.compact-terms .terms-col{
+  min-width:0 !important;
+}
+.page.terms.compact-terms .terms-right{
+  border-left:1px solid #dfe5e8;
+  padding-left:8mm;
 }
 @media print{
-  .simple-terms{
-    padding-top:25mm !important;
-  }
+ .page.terms.compact-terms .terms-columns.fixed-columns{
+   display:grid !important;
+   grid-template-columns:1fr 1fr !important;
+   gap:8mm !important;
+   height:auto !important;
+   column-count:unset !important;
+ }
 }
 </style>
 
-</head>
+
+<style id="ms-terms-bottom-30mm">
+/* 約款ページ：下余白をおおむね30mmにし、空きを文字・行間へ配分 */
+.page.terms.compact-terms{
+  padding:13mm 14mm 30mm !important;
+}
+.page.terms.compact-terms .terms-columns.fixed-columns{
+  height:auto !important;
+}
+.page.terms.compact-terms .clause{
+  margin:0 0 1.8mm !important;
+  padding:0 0 1.05mm !important;
+}
+.page.terms.compact-terms .clause h3{
+  font-size:9.1px !important;
+  line-height:1.25 !important;
+  margin:0 0 .45mm !important;
+}
+.page.terms.compact-terms .clause p{
+  font-size:7.9px !important;
+  line-height:1.45 !important;
+}
+.page.terms.compact-terms .foot{
+  bottom:8mm !important;
+}
+@media print{
+ .page.terms.compact-terms{
+   padding:13mm 14mm 30mm !important;
+ }
+}
+</style>
+
+<style id="ms-terms-more-fill-and-heading-gap">
+.page.terms.compact-terms{padding:13mm 14mm 14mm !important}
+.page.terms.compact-terms .lead{margin:1mm 0 4mm !important}
+.page.terms.compact-terms .terms-columns.fixed-columns{margin-top:4mm !important}
+.page.terms.compact-terms .clause{margin:0 0 2.25mm !important;padding:0 0 1.20mm !important}
+.page.terms.compact-terms .clause h3{font-size:9.7px !important;line-height:1.30 !important;margin:0 0 .60mm !important}
+.page.terms.compact-terms .clause p{font-size:8.45px !important;line-height:1.52 !important}
+.page.terms.compact-terms .foot{bottom:6mm !important}
+@media print{.page.terms.compact-terms{padding:13mm 14mm 14mm !important}.page.terms.compact-terms .terms-columns.fixed-columns{margin-top:4mm !important}}
+</style>
+<style id="ms-terms-top30-title-gap">
+/* 約款ページ：上余白30mm、表題と条文明細の間に余白 */
+.page.terms.compact-terms{
+  padding:30mm 14mm 10mm !important;
+}
+.page.terms.compact-terms > .band{
+  margin:0 0 3mm !important;
+}
+.page.terms.compact-terms h1{
+  margin:0 !important;
+}
+.page.terms.compact-terms .lead{
+  margin:1.5mm 0 0 !important;
+}
+.page.terms.compact-terms .terms-columns.fixed-columns{
+  margin-top:7mm !important;
+}
+.page.terms.compact-terms .clause{
+  margin:0 0 1.55mm !important;
+  padding:0 0 .85mm !important;
+}
+.page.terms.compact-terms .clause h3{
+  font-size:9.2px !important;
+  line-height:1.24 !important;
+  margin:0 0 .4mm !important;
+}
+.page.terms.compact-terms .clause p{
+  font-size:7.85px !important;
+  line-height:1.40 !important;
+}
+.page.terms.compact-terms .foot{
+  bottom:5mm !important;
+}
+@media print{
+ .page.terms.compact-terms{
+   padding:30mm 14mm 10mm !important;
+ }
+ .page.terms.compact-terms .terms-columns.fixed-columns{
+   margin-top:7mm !important;
+ }
+}
+</style>
+<style id="ms-terms-title-detail-gap-final">
+/* 表題位置は維持。表題と条文明細の間を広げ、下の空白を狭くする */
+.page.terms.compact-terms{
+  padding-top:30mm !important;
+  padding-bottom:4mm !important;
+}
+.page.terms.compact-terms .lead{
+  margin:1.5mm 0 0 !important;
+}
+.page.terms.compact-terms .terms-columns.fixed-columns{
+  margin-top:12mm !important;
+}
+.page.terms.compact-terms .clause{
+  margin-bottom:1.85mm !important;
+  padding-bottom:.95mm !important;
+}
+.page.terms.compact-terms .clause h3{
+  font-size:9.35px !important;
+  line-height:1.26 !important;
+  margin-bottom:.45mm !important;
+}
+.page.terms.compact-terms .clause p{
+  font-size:8.05px !important;
+  line-height:1.43 !important;
+}
+.page.terms.compact-terms .foot{
+  bottom:2.5mm !important;
+}
+@media print{
+ .page.terms.compact-terms{
+   padding-top:30mm !important;
+   padding-bottom:4mm !important;
+ }
+ .page.terms.compact-terms .terms-columns.fixed-columns{
+   margin-top:12mm !important;
+ }
+}
+</style>
+<style id="ms-terms-clause-gap-bottom-tight">
+/* 各条文間の空白を広げ、ページ下部まで有効に使う */
+.page.terms.compact-terms{
+  padding-bottom:1.5mm !important;
+}
+.page.terms.compact-terms .terms-columns.fixed-columns{
+  margin-top:12mm !important;
+}
+.page.terms.compact-terms .clause{
+  margin-bottom:2.7mm !important;
+  padding-bottom:1.15mm !important;
+}
+.page.terms.compact-terms .clause h3{
+  margin-bottom:.55mm !important;
+}
+.page.terms.compact-terms .clause p{
+  line-height:1.45 !important;
+}
+.page.terms.compact-terms .foot{
+  bottom:.8mm !important;
+}
+@media print{
+ .page.terms.compact-terms{
+   padding-bottom:1.5mm !important;
+ }
+}
+</style>
+<script src="pages_boot.js" defer></script></head>
 <body>
-<div class="toolbar"><b>簡易工事契約書（2ページ）</b><button class="sub">通常工事契約書へ戻る</button><button class="pri" onclick="window.print()">印刷</button></div>
-<div class="note">表紙は通常契約書と同じです。約款27条を2ページ目の左右2列にまとめた簡易版です。</div>
-<section class="page"><div class="band"></div><div class="top"><h1>工事請負契約書</h1><div class="meta">契約番号　<span data-v="contractNo">―</span><br>契約日　<span data-v="contractDate">―</span></div></div>
-<div class="parties"><div><div class="cap">発注者</div><div class="party"><span data-v="ownerName">発注者</span> 様</div><div class="addr" data-v="ownerAddress">―</div></div><div><div class="cap">受注者</div><div class="party" data-v="contractorName">MSランドスケープ</div><div class="addr" data-v="contractorAddress">―</div></div></div>
-<div class="money"><span>請負代金（税込）</span><strong data-v="totalAmount">―</strong></div>
-<div class="section">工事概要</div><table><tr><th>工事名</th><td data-v="projectName">―</td></tr><tr><th>工事場所</th><td data-v="projectAddress">―</td></tr><tr><th>工期</th><td><span data-v="startDate">―</span> ～ <span data-v="endDate">―</span></td></tr><tr><th>引渡予定日</th><td data-v="handoverDate">―</td></tr><tr><th>うち消費税等</th><td data-v="taxAmount">―</td></tr></table>
-<div class="section">お支払い条件</div><div class="pay"><div class="payrow"><b>前　金</b><span data-v="advance">―</span><span data-v="advanceWhen">支払時期 ―</span></div><div class="payrow"><b>中間金</b><span data-v="interim">―</span><span data-v="interimWhen">支払時期 ―</span></div><div class="payrow"><b>最終支払</b><span data-v="finalPayment">―</span><span data-v="finalWhen">支払時期 ―</span></div></div>
-<div class="small">支払額・支払時期は上記条件によります。追加・変更工事がある場合は、双方で確認した変更額を最終精算に反映します。</div>
-<div class="section">特約・工事固有条件</div><div class="special" data-v="special">特になし</div>
-<div class="signs"><div class="sign"><b>発注者</b><span class="seal">印</span><br><br>住所　<span data-v="ownerAddress">―</span><br>氏名　<span data-v="ownerName">―</span></div><div class="sign"><b>受注者</b><span class="seal">印</span><br><br>住所　<span data-v="contractorAddress">―</span><br>氏名　<span data-v="contractorName">MSランドスケープ</span></div></div><div class="foot"><span>MS建設管理システム</span><span>1 / 4</span></div></section>
-<section class="page simple-terms">
-  <div class="band"></div>
-  <h1>工事請負契約約款</h1>
-  <div class="lead">簡易契約書用　｜　第1条～第27条</div>
-  <div class="terms-columns">
-    <div class="terms-col"><div class="clause"><h3>第1条　総則</h3><p>発注者及び受注者は、契約書、設計図書、見積書、個別契約条件及び本約款に基づき、対等な立場で信義に従い誠実に契約を履行します。</p></div>
+<div class="toolbar"><b>簡易工事請負契約書　2ページ</b><button class="sub" id="back">通常版へ戻る</button><button class="pri" onclick="window.print()">印刷</button></div>
+<div class="note">受注・契約で登録した工事情報・請負金額・支払い条件を表示します。この画面では契約内容を再入力しません。</div>
+
+<section class="page">
+ <div class="band"></div>
+ <div class="top"><h1>工事請負契約書</h1><div class="meta">契約番号　<span data-v="contractNo">―</span><br>契約日　<span data-v="contractDate">―</span></div></div>
+ <div class="parties">
+  <div><div class="cap">発注者</div><div class="party"><span data-v="ownerName">発注者</span> 様</div><div class="addr" data-v="ownerAddress">―</div></div>
+  <div><div class="cap">受注者</div><div class="party" data-v="contractorName">MS建設管理デモ</div><div class="addr" data-v="contractorAddress">―</div></div>
+ </div>
+ <div class="moneybox"><span>請負代金（税込）</span><strong data-v="totalAmount">―</strong></div>
+ <div class="section">工事概要</div>
+ <table>
+  <tr><th>工事名</th><td data-v="projectName">―</td></tr>
+  <tr><th>工事場所</th><td data-v="projectAddress">―</td></tr>
+  <tr><th>工期</th><td><span data-v="startDate">―</span> ～ <span data-v="endDate">―</span></td></tr>
+  <tr><th>引渡予定日</th><td data-v="handoverDate">―</td></tr>
+  <tr><th>うち消費税等</th><td data-v="taxAmount">―</td></tr>
+ </table>
+ <div class="section">お支払い条件</div>
+ <div class="pay">
+  <div class="payrow"><b>前　金</b><span data-v="advance">―</span><span data-v="advanceWhen">―</span></div>
+  <div class="payrow"><b>中間金</b><span data-v="interim">―</span><span data-v="interimWhen">―</span></div>
+  <div class="payrow"><b>最終支払</b><span data-v="finalPayment">―</span><span data-v="finalWhen">―</span></div>
+ </div>
+ <div class="section">特約・工事固有条件</div><div class="special" data-v="special">特になし</div>
+ <div class="signs">
+  <div class="sign"><b>発注者</b><span class="seal">印</span><br><br>住所　<span data-v="ownerAddress">―</span><br>氏名　<span data-v="ownerName">―</span></div>
+  <div class="sign"><b>受注者</b><span class="seal">印</span><br><br>住所　<span data-v="contractorAddress">―</span><br>氏名　<span data-v="contractorName">MS建設管理デモ</span></div>
+ </div>
+ <div class="foot"><span>MS建設管理システム</span><span>1 / 2</span></div>
+</section>
+
+<section class="page terms compact-terms">
+ <div class="band"></div>
+ <h1>工事請負契約約款</h1>
+ <div class="lead">工事請負契約書　簡易版約款</div>
+ <div class="terms-columns fixed-columns">
+  <div class="terms-col terms-left">
+<div class="clause"><h3>第1条　総則</h3><p>発注者及び受注者は、契約書、設計図書、見積書、個別契約条件及び本約款に基づき、対等な立場で信義に従い誠実に契約を履行します。</p></div>
 <div class="clause"><h3>第2条　契約書類</h3><p>契約書及び個別契約条件を基本とし、設計図書、見積書その他の契約書類に疑義又は不一致がある場合は、双方で協議して確認します。</p></div>
 <div class="clause"><h3>第3条　施工体制・法令遵守</h3><p>受注者は工事内容に応じて必要な施工体制を整え、当該工事に適用される関係法令を遵守して施工します。</p></div>
 <div class="clause"><h3>第4条　材料・支給品</h3><p>受注者は契約内容に適合する材料・機器を使用します。発注者の支給品等については受領時に確認し、適切に保管・使用します。</p></div>
@@ -218,8 +349,10 @@ th{width:40mm;background:#d5dfe4;font-size:14px;font-weight:900} td{font-size:14
 <div class="clause"><h3>第11条　完成・検査・引渡し</h3><p>受注者は工事完成後に発注者へ通知します。発注者は完成確認を行い、確認後、双方が定めた方法により工事目的物を引き渡します。</p></div>
 <div class="clause"><h3>第12条　請負代金の支払</h3><p>請負代金は契約書表面の支払条件に従い、前金、中間金及び最終支払として支払うことができます。各支払の金額又は割合、時期及び条件は表面記載のとおりとします。</p></div>
 <div class="clause"><h3>第13条　前金</h3><p>前金を定めた場合、発注者は表面記載の金額及び時期に従って支払います。</p></div>
-<div class="clause"><h3>第14条　中間金</h3><p>中間金を定めた場合、工程の到達、出来高、指定日その他表面記載の条件を満たした時点で支払います。工程等を変更した場合は必要に応じて支払条件を協議します。</p></div></div>
-    <div class="terms-col"><div class="clause"><h3>第15条　最終支払</h3><p>最終支払は、完成確認、引渡しその他表面記載の条件に従って行います。追加・減額工事その他精算事項がある場合は、合意した変更額を反映して精算します。</p></div>
+<div class="clause"><h3>第14条　中間金</h3><p>中間金を定めた場合、工程の到達、出来高、指定日その他表面記載の条件を満たした時点で支払います。工程等を変更した場合は必要に応じて支払条件を協議します。</p></div>
+  </div>
+  <div class="terms-col terms-right">
+<div class="clause"><h3>第15条　最終支払</h3><p>最終支払は、完成確認、引渡しその他表面記載の条件に従って行います。追加・減額工事その他精算事項がある場合は、合意した変更額を反映して精算します。</p></div>
 <div class="clause"><h3>第16条　契約不適合</h3><p>引き渡された工事目的物が契約内容に適合しない場合は、契約書、個別契約条件及び関係法令に従い必要な対応を行います。責任期間その他の条件は個別契約条件によります。</p></div>
 <div class="clause"><h3>第17条　履行遅滞・支払遅延</h3><p>工事完成又は請負代金の支払に遅延が生じた場合は、その原因、責任範囲、個別契約条件及び関係法令に従って処理します。</p></div>
 <div class="clause"><h3>第18条　契約の解除</h3><p>相手方に重大な契約違反があり、相当期間を定めて是正を求めても履行されない場合その他法令上解除が認められる場合は、契約を解除することができます。</p></div>
@@ -231,37 +364,36 @@ th{width:40mm;background:#d5dfe4;font-size:14px;font-weight:900} td{font-size:14
 <div class="clause"><h3>第24条　工事写真・施工記録</h3><p>受注者は、完成後に確認することが困難となる部分その他必要な箇所について、工事内容に応じて写真、測定記録その他の施工記録を残します。</p></div>
 <div class="clause"><h3>第25条　保険等</h3><p>工事の種類、規模及び施工条件に応じて必要となる保険その他の補償については、契約条件及び関係法令に従い取り扱います。必要がある場合は、その加入内容を双方で確認します。</p></div>
 <div class="clause"><h3>第26条　添付書類</h3><p>本契約書に添付する見積書、設計図、仕様書、工程表、変更合意書その他双方が契約内容として確認した書類は、本契約を構成する書類として取り扱います。</p></div>
-<div class="clause"><h3>第27条　協議・紛争解決</h3><p>本契約に定めのない事項又は疑義が生じた事項は双方が誠意をもって協議します。協議で解決しない場合は、建設工事紛争審査会その他双方が合意する手続の利用を検討します。</p></div></div>
+<div class="clause"><h3>第27条　協議・紛争解決</h3><p>本契約に定めのない事項又は疑義が生じた事項は双方が誠意をもって協議します。協議で解決しない場合は、建設工事紛争審査会その他双方が合意する手続の利用を検討します。</p></div>
   </div>
-  <div class="foot"><span>工事請負契約約款（簡易版）</span><span>2 / 2</span></div>
+ </div>
+ <div class="foot"><span>工事請負契約約款</span><span>2 / 2</span></div>
 </section>
-<script>
 
+<script type="text/pages-deferred">
 (function(){
- const q=new URLSearchParams(location.search),id=q.get('id')||'';
- if(!id||!window.MSData){alert('工事データを読み込めません。受注・契約画面から開いてください。');return}
+ const q=new URLSearchParams(location.search),id=q.get('id')||sessionStorage.getItem('mscm:selectedProjectId')||'';
+ if(!id||!window.MSData){alert('工事データを読み込めません。');return}
  const p=MSData.get('projects',id);if(!p){alert('工事データが見つかりません。');return}
  const oc=p.orderContract||{},pay=oc.payment||{},f=p.legacyFinancials||{};
  const our=(MSData.all('companySettings')||[]).find(x=>x.status!=='inactive')||{};
  const amount=Number(oc.currentContractAmount??p.contractAmount??f.finalContractAmount??f.contractAmount??0)||0;
- const tax=Math.round(amount*10/110);
+ const taxQuote=MSTax.quote(p,amount),tax=taxQuote.tax;
  const money=v=>{const n=Number(v)||0;return n?'￥'+Math.round(n).toLocaleString('ja-JP'):'―'};
  const jp=v=>{if(!v)return'―';const a=String(v).match(/^(\d{4})-(\d{2})-(\d{2})/);return a?`${+a[1]}年${+a[2]}月${+a[3]}日`:String(v)};
  const d={contractNo:p.legacyProjectNo||p.no||'―',contractDate:oc.contractDocDate||oc.orderDate||p.registeredDate||'',
  projectName:p.name||'―',projectAddress:p.address||'―',ownerName:p.clientName||'―',
- ownerAddress:p.clientAddress||p.ownerAddress||'―',contractorName:our.companyName||p.contractorName||'MSランドスケープ',
+ ownerAddress:p.clientAddress||p.ownerAddress||'―',contractorName:our.companyName||p.contractorName||'MS建設管理デモ',
  contractorAddress:our.address||'―',startDate:p.startDate||'',endDate:p.endDate||'',handoverDate:p.endDate||'',
- totalAmount:amount,taxAmount:tax,advance:pay.advance,advanceWhen:pay.advanceWhen||'―',
- interim:pay.interim,interimWhen:pay.interimWhen||'―',finalPayment:pay.final,finalWhen:pay.finalWhen||'―',
+ totalAmount:taxQuote.gross,taxAmount:tax,advance:(pay.moneyBasis==='net'?MSTax.quote(p,pay.advance).gross:pay.advance),advanceWhen:pay.advanceWhen||'―',
+ interim:(pay.moneyBasis==='net'?MSTax.quote(p,pay.interim).gross:pay.interim),interimWhen:pay.interimWhen||'―',finalPayment:(pay.moneyBasis==='net'?MSTax.quote(p,pay.final).gross:pay.final),finalWhen:pay.finalWhen||'―',
  special:oc.contractSpecial||oc.note||'特になし'};
  document.querySelectorAll('[data-v]').forEach(e=>{const z=e.dataset.v;let v=d[z];
  if(['totalAmount','taxAmount','advance','interim','finalPayment'].includes(z))v=money(v);
  if(['contractDate','startDate','endDate','handoverDate'].includes(z))v=jp(v);
  e.textContent=(v===undefined||v===null||v==='')?'―':v;});
- const back=document.querySelector('.toolbar .sub');if(back)back.onclick=()=>location.href='kouji_keiyakusho.html?id='+encodeURIComponent(id);
- document.title=(p.name||'工事')+'｜工事請負契約書';
+ document.getElementById('back').onclick=()=>location.href='kouji_keiyakusho.html?id='+encodeURIComponent(id);
+ document.title=(p.name||'工事')+'｜簡易工事請負契約書';
 })();
-
 </script>
-</body>
-</html>
+<script type="text/pages-deferred">document.addEventListener('DOMContentLoaded',()=>{const q=new URLSearchParams(location.search),pid=q.get('id')||q.get('projectId')||sessionStorage.getItem('mscm:selectedProjectId'),project=pid?MSData.get('projects',pid):null;const order=q.get('orderId')?MSData.get('orders',q.get('orderId')):null;if((order||project)&&!(order||project).moneyBasis){const note=document.createElement('div');note.style.cssText='padding:12px;background:#fff4df;color:#754c15;margin:10px;font-size:13px';note.textContent='金額基準が未確認の既存記録です。入力額を税抜として仮計算しています。受注・契約または発注の編集画面で、金額と税率を確認して保存してから帳票・請求を確定してください。';(document.querySelector('main')||document.body).prepend(note);}});</script></body></html>

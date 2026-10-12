@@ -1,11 +1,10 @@
-<!doctype html><html lang="ja"><head>
-<script src="ms_password.js"></script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>請求・入金管理｜MS建設管理システム</title>
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>お客様への請求・入金確認｜MS建設管理システム</title>
 <style id="ms-no-flicker">
 /* 初期データ反映前のテンプレートちらつき防止。レイアウト値は変更しない */
 html.ms-app-loading body{visibility:hidden}
 </style>
-<script id="ms-no-flicker-start">
+<script type="text/pages-deferred" id="ms-no-flicker-start">
 document.documentElement.classList.add('ms-app-loading');
 window.addEventListener('load',function(){
   requestAnimationFrame(function(){
@@ -23,20 +22,16 @@ main{max-width:1440px;margin:auto;padding:16px 24px 28px}.notice{padding:9px 12p
 .panel{background:#fff;border:1px solid #d8e3ea;border-radius:10px;padding:12px}.panel-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}.panel-head b{font-size:19px;color:#174f78}.filters{display:flex;gap:8px}.filters input,.filters select{height:38px;border:1px solid #b9cad5;border-radius:6px;padding:0 10px;font-size:14px}.filters input{width:300px}.filters select{width:150px;background:#fff}
 table{width:100%;border-collapse:collapse;table-layout:fixed}th,td{border-bottom:1px solid #e5edf2;padding:10px 7px;font-size:14px;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}th{background:#f2f7fa;color:#365a70}.money{text-align:right;font-variant-numeric:tabular-nums}.status{text-align:center}.openbtn{border:1px solid #9eb9ca;background:#fff;color:#315d78;border-radius:6px;padding:5px 9px;font-weight:800}.empty{text-align:center;padding:30px;color:#7b8c96}
 @media(max-width:900px){.cards{grid-template-columns:1fr 1fr}.filters input{width:180px}}
-</style><script src="shared_storage.js"></script></head><body>
-<header><div class="top"><div><div class="brand">MS建設管理システム</div><div class="sub">請求・入金管理 ｜ 現在の未処理を中心に表示</div></div><button onclick="location.href='index.html'">メイン画面へ</button></div></header>
-<main>
-<div class="notice">この画面は会社全体の <b>元請請求・入金（売上側）</b> の確認画面です。下請・仕入先から来る請求は含みません。登録・編集は各工事カルテの「元請請求・入金」から行います。</div>
-<section class="cards">
+</style><link rel="stylesheet" href="billing_common.css?v=one-row-final2-20261010"><script type="text/pages-deferred" src="shared_storage.js"></script><script src="pages_boot.js" defer></script></head><body>
+<header><div class="head"><div><div class="brand">MS建設管理システム</div><div class="sub">お客様への請求・入金確認</div></div><nav class="nav"><a href="index.html">メイン画面へ</a><a href="office_entry.html">事務入力へ戻る</a></nav></div></header><main><p class="page-note">お客様への請求漏れ・入金漏れを確認します。登録・編集は一覧の「請求」「入金」から各工事の入力画面を開きます。</p><p class="sales-summary-label">会社全体の合計（検索条件にかかわらず全工事の現在の累計）</p><section class="cards billing-summary">
  <div class="card"><div class="label">現在請負金額 合計</div><div class="value" id="contractTotal">0円</div></div>
  <div class="card"><div class="label">元請請求累計</div><div class="value" id="invoiceTotal">0円</div></div>
  <div class="card"><div class="label">未請求額</div><div class="value" id="unbilledTotal">0円</div></div>
  <div class="card"><div class="label">未入金額</div><div class="value" id="unpaidTotal">0円</div></div>
 </section>
-<section class="panel"><div class="panel-head"><b>工事別 請求・入金状況</b><div class="filters"><select id="period"><option value="pending">未処理あり</option><option value="month">今月動きあり</option><option value="prev">先月動きあり</option><option value="fy">今年度</option><option value="all">すべて</option></select><input id="q" placeholder="工事番号・工事名・発注者で検索"></div></div>
-<table><thead><tr><th style="width:10%">工事番号</th><th style="width:25%">工事名</th><th style="width:15%">発注者</th><th class="money" style="width:12%">現在請負金額</th><th class="money" style="width:11%">元請請求</th><th class="money" style="width:11%">未請求</th><th class="money" style="width:11%">未入金</th><th style="width:5%">開く</th></tr></thead><tbody id="rows"></tbody></table>
-</section></main>
-<script src="ms_data.js"></script><script>
+<div class="billing-workspace"><aside><form id="searchForm" class="panel"><h2>検索条件</h2><div class="billing-search-fields"><div><label for="period">対象の選び方</label><select id="period"><option value="pending">未処理あり</option><option value="month">今月動きあり</option><option value="prev">先月動きあり</option><option value="fy">今年度</option><option value="all">すべて</option></select></div><div><label for="q">工事番号・工事名・発注者</label><input id="q" placeholder="空欄で全工事"></div><div><label for="clientFilter">お客様・発注者</label><select id="clientFilter"><option value="">すべて</option></select></div><div><label for="staffFilter">担当者</label><select id="staffFilter"><option value="">すべて</option></select></div><div><label for="viewFilter">請求・入金状況</label><select id="viewFilter"><option value="">すべて</option><option value="unbilled">未請求あり</option><option value="unpaid">未入金あり</option></select></div></div><div class="actions"><button class="primary" type="submit">検索する</button><button id="resetFilters" type="button">条件をリセット</button></div><p class="muted">期間条件は請求・入金の動きで絞り込みます。各工事の金額は現在の累計です。業者から届く請求は「仕入・下請の請求確認」で確認します。</p></form></aside><section class="panel sales-results"><h2>工事別の請求・入金状況</h2><p id="resultCount" role="status"></p><div class="billing-table-scroll"><table class="billing-row-table"><thead><tr><th style="width:10%">工事番号</th><th style="width:25%">工事名</th><th style="width:15%">発注者</th><th class="money" style="width:12%">現在請負金額</th><th class="money" style="width:11%">元請請求</th><th class="money" style="width:11%">未請求</th><th class="money" style="width:11%">未入金</th><th style="width:10%">入力画面</th></tr></thead><tbody id="rows"></tbody></table>
+</div></section></div></main>
+<script type="text/pages-deferred" src="tax.js?v=20261003"></script><script type="text/pages-deferred" src="ms_data.js?v=tax20261003"></script><script type="text/pages-deferred">
 (function(){
 const $=id=>document.getElementById(id),n=v=>Number(String(v??'').replace(/[^\d.-]/g,''))||0,yen=v=>n(v).toLocaleString('ja-JP')+'円',active=x=>x&&x.status!=='inactive';
 if(!window.MSData){alert('工事データを読み込めません。');return}
@@ -49,15 +44,19 @@ function render(){
  const q=$('q').value.trim().toLowerCase();let ct=0,it=0,ub=0,up=0;
  const all=projects.map(p=>{const c=contractOf(p),d=dataOf(p);return{p,c,inv:d.inv,rec:d.rec,ins:d.ins,res:d.res,unb:Math.max(0,c-d.inv),unp:Math.max(0,d.inv-d.rec)}});all.forEach(x=>{ct+=x.c;it+=x.inv;ub+=x.unb;up+=x.unp});
  $('contractTotal').textContent=yen(ct);$('invoiceTotal').textContent=yen(it);$('unbilledTotal').textContent=yen(ub);$('unpaidTotal').textContent=yen(up);
- const view=new URLSearchParams(location.search).get('view')||'';
+ const view=$('viewFilter').value;
  const mode=$('period').value, now=new Date(), ym=now.toISOString().slice(0,7), prev=new Date(now.getFullYear(),now.getMonth()-1,1).toISOString().slice(0,7), fyStart=(now.getMonth()>=3?now.getFullYear():now.getFullYear()-1)+'-04-01', fyEnd=(now.getMonth()>=3?now.getFullYear()+1:now.getFullYear())+'-03-31';
  const dated=(x,prefix)=>[...x.ins,...x.res].some(v=>String(v.date||v.invoiceDate||v.receiptDate||v.createdAt||'').slice(0,7)===prefix);
  const inFY=x=>{const dates=[...x.ins,...x.res].map(v=>String(v.date||v.invoiceDate||v.receiptDate||v.createdAt||'').slice(0,10)).filter(Boolean);return dates.some(d=>d>=fyStart&&d<=fyEnd)};
  const modeOk=x=>mode==='all'||(mode==='pending'&&(x.unb>0||x.unp>0))||(mode==='month'&&dated(x,ym))||(mode==='prev'&&dated(x,prev))||(mode==='fy'&&inFY(x));
- const a=all.filter(x=>(!q||[x.p.no,x.p.legacyProjectNo,x.p.name,x.p.clientName].join(' ').toLowerCase().includes(q))&&modeOk(x)&&(!view||(view==='unbilled'&&x.unb>0)||(view==='unpaid'&&x.unp>0)));
- $('rows').innerHTML=a.length?a.map(x=>`<tr><td>${x.p.legacyProjectNo||x.p.no||''}</td><td>${x.p.name||''}</td><td>${x.p.clientName||''}</td><td class="money">${yen(x.c)}</td><td class="money">${yen(x.inv)}</td><td class="money">${yen(x.unb)}</td><td class="money">${yen(x.unp)}</td><td class="status"><button class="openbtn" onclick="openProject('${x.p.id}')">開く</button></td></tr>`).join(''):`<tr><td colspan="8" class="empty">該当する工事がありません。</td></tr>`;
+ const a=all.filter(x=>(!q||[x.p.no,x.p.legacyProjectNo,x.p.name,x.p.clientName].join(' ').toLowerCase().includes(q))&&modeOk(x)&&(!$('clientFilter').value||x.p.clientName===$('clientFilter').value)&&(!$('staffFilter').value||[x.p.projectPerson,x.p.sitePerson].includes($('staffFilter').value))&&(!view||(view==='unbilled'&&x.unb>0)||(view==='unpaid'&&x.unp>0)));
+ $('resultCount').textContent='検索結果 '+a.length+'件 ／ 金額は各工事の現在の累計';
+ $('rows').innerHTML=a.length?a.map(x=>`<tr><td>${x.p.legacyProjectNo||x.p.no||''}</td><td><span class="row-name">${x.p.name||''}</span></td><td><span class="row-name">${x.p.clientName||''}</span></td><td class="money">${yen(x.c)}</td><td class="money">${yen(x.inv)}</td><td class="money">${yen(x.unb)}</td><td class="money">${yen(x.unp)}</td><td class="status"><button class="openbtn" onclick="openProject('${x.p.id}','invoice')">請求</button> <button class="openbtn" onclick="openProject('${x.p.id}','receipt')">入金</button></td></tr>`).join(''):`<tr><td colspan="8" class="empty">該当する工事がありません。</td></tr>`;
+ for(const el of $('rows').querySelectorAll('.row-name'))el.title=el.textContent;
 }
-window.openProject=id=>{sessionStorage.setItem('mscm:selectedProjectId',String(id));location.href='seikyu_nyukin.html?id='+encodeURIComponent(id)}
-$('q').addEventListener('input',render);$('period').addEventListener('change',render);render();
+window.openProject=(id,mode='invoice')=>{sessionStorage.setItem('mscm:selectedProjectId',String(id));location.href='seikyu_nyukin.html?id='+encodeURIComponent(id)+'&mode='+mode}
+for(const [id,values]of [['clientFilter',projects.map(p=>p.clientName)],['staffFilter',projects.flatMap(p=>[p.projectPerson,p.sitePerson])]])for(const v of [...new Set(values.filter(Boolean))].sort((a,b)=>a.localeCompare(b,'ja')))$(id).add(new Option(v,v));
+const initialView=new URLSearchParams(location.search).get('view')||'';if(['unbilled','unpaid'].includes(initialView))$('viewFilter').value=initialView;
+$('q').addEventListener('input',render);for(const id of ['period','clientFilter','staffFilter','viewFilter'])$(id).addEventListener('change',render);$('searchForm').onsubmit=e=>{e.preventDefault();render();};$('resetFilters').onclick=()=>{$('searchForm').reset();render();};render();
 })();
 </script></body></html>

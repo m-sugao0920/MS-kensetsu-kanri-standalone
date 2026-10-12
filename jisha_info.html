@@ -1,12 +1,11 @@
 <!doctype html>
-<html lang="ja"><head>
-<script src="ms_password.js"></script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>自社情報｜MS建設管理システム</title>
 <style id="ms-no-flicker">
 /* 初期データ反映前のテンプレートちらつき防止。レイアウト値は変更しない */
 html.ms-app-loading body{visibility:hidden}
 </style>
-<script id="ms-no-flicker-start">
+<script type="text/pages-deferred" id="ms-no-flicker-start">
 document.documentElement.classList.add('ms-app-loading');
 window.addEventListener('load',function(){
   requestAnimationFrame(function(){
@@ -28,13 +27,13 @@ main{max-width:1100px;margin:auto;padding:22px 26px 34px}h1{margin:0;color:var(-
 .note{padding:10px 13px;background:#fffaf0;border:1px solid #ead9ad;border-radius:8px;font-size:12px;line-height:1.7;color:#6f5a2d;margin-bottom:12px}
 .actions{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}.status{font-size:12px;color:#647985;margin-right:auto;align-self:center}
 @media(max-width:800px){.grid{grid-template-columns:repeat(2,1fr)}.span2,.span3,.span4,.span6{grid-column:span 2}}
-</style></head><body>
+</style><script src="pages_boot.js" defer></script></head><body>
 <header><div class="top"><div class="brand">MS建設管理システム　／　自社情報</div><button class="back" id="backBtn">管理・設定へ戻る</button></div></header>
 <main><h1>自社情報</h1><div class="lead">注文書・注文請書・契約書などに共通で使用する会社情報を登録します。</div>
 <div class="note"><b>共通情報です。</b> ここで保存した内容を、今後作成する注文書・注文請書・契約書などから自動取得します。</div>
 
 <section class="panel"><div class="pt">会社基本情報</div><div class="grid">
-<div class="field span3"><label>会社名</label><input id="companyName" placeholder="例：MSランドスケープ"></div>
+<div class="field span3"><label>会社名</label><input id="companyName" placeholder="例：MS建設管理デモ"></div>
 <div class="field span3"><label>会社名ふりがな</label><input id="companyKana"></div>
 <div class="field span2"><label>代表者役職</label><input id="representativeTitle" placeholder="例：代表"></div>
 <div class="field span2"><label>代表者名</label><input id="representativeName"></div>
@@ -59,8 +58,8 @@ main{max-width:1100px;margin:auto;padding:22px 26px 34px}h1{margin:0;color:var(-
 
 <div class="actions"><span class="status" id="status">未保存</span><button class="back" id="cancelBtn">管理・設定へ戻る</button><button class="save" id="saveBtn">自社情報を保存</button></div>
 </main>
-<script src="shared_storage.js"></script><script src="ms_data.js"></script>
-<script>
+<script type="text/pages-deferred" src="shared_storage.js"></script><script type="text/pages-deferred" src="tax.js?v=20261003"></script><script type="text/pages-deferred" src="ms_data.js?v=tax20261003"></script>
+<script type="text/pages-deferred">
 (()=>{const $=id=>document.getElementById(id);
 const fields=['companyName','companyKana','representativeTitle','representativeName','invoiceNo','postal','address','tel','fax','email','licenseNo','licenseNote','documentNote','bankName','bankBranch','accountType','accountNo','accountName'];
 let current=null;

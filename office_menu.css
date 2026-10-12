@@ -1,0 +1,27 @@
+.office-menu{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:12px}
+.office-menu .panel:nth-child(1){--menu-color:#176fa8;--menu-pale:#edf6fc;--menu-symbol:'日'}
+.office-menu .panel:nth-child(2){--menu-color:#b56422;--menu-pale:#fff5eb;--menu-symbol:'請'}
+.office-menu .panel:nth-child(4){--menu-color:#2c8057;--menu-pale:#edf8f2;--menu-symbol:'原'}
+.office-menu .panel:nth-child(3){--menu-color:#4f75b5;--menu-pale:#f0f4fb;--menu-symbol:'一'}
+.office-menu .panel:nth-child(5){--menu-color:#7554a6;--menu-pale:#f5f0fb;--menu-symbol:'科'}
+.office-menu .panel:nth-child(6){--menu-color:#227d84;--menu-pale:#edf9fa;--menu-symbol:'工'}
+.office-menu .panel{margin:0;padding:12px;border-radius:12px;border-color:color-mix(in srgb,var(--menu-color) 35%,white);background:linear-gradient(180deg,#fff,var(--menu-pale));box-shadow:0 5px 13px #1e466414}
+.office-menu .panel h2{display:flex;align-items:center;gap:9px;margin:0 0 11px;padding:0;background:transparent;border:0;color:var(--menu-color);font-size:16px;border-radius:0}
+.office-menu .panel h2::before{content:var(--menu-symbol);display:grid;place-items:center;flex:none;width:32px;height:32px;border-radius:50%;background:var(--menu-color);color:white;font-size:15px}
+.office-menu a.menu-button{display:flex;align-items:center;justify-content:center;width:100%;min-height:44px;padding:9px 12px;background:var(--menu-color);border-color:var(--menu-color);color:#fff;font-size:14px;font-weight:800;white-space:normal;text-align:center;border-radius:7px}
+.office-menu a.menu-button:hover{background:color-mix(in srgb,var(--menu-color) 85%,black);border-color:color-mix(in srgb,var(--menu-color) 85%,black)}
+.office-menu .muted{margin:8px 0 0;color:#506675}
+@media(max-width:900px){.office-menu{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:600px){.office-menu{grid-template-columns:1fr}}
+
+/* メイン画面と同じ、タイトル・説明・開くボタンの順に並べる。 */
+.office-menu{gap:14px}
+.office-menu .panel{min-height:180px;padding:16px;display:flex;flex-direction:column}
+.office-menu .panel h2{font-size:18px;line-height:1.4;margin:0 0 12px}
+.office-menu .panel h2::before{width:36px;height:36px;font-size:16px}
+.office-menu .panel .muted{font-size:13px;line-height:1.6;margin:0 0 18px;color:#506675}
+.office-menu a.menu-button{margin-top:auto;min-height:48px;font-size:14px}
+@media(max-width:600px){.office-menu .panel{min-height:170px}}
+
+/* 項目追加で順番が変わっても、共通マスターの色を維持する。 */
+.office-menu .panel:has(a[href="kanri_settei.html#commonMasters"]){--menu-color:#176fa8;--menu-pale:#edf6fc;--menu-symbol:'共'}

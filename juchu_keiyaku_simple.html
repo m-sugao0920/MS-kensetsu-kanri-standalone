@@ -1,7 +1,6 @@
 <!doctype html>
 <html lang="ja">
 <head>
-<script src="ms_password.js"></script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>簡易工事請負契約書｜MS建設管理システム</title>
@@ -61,8 +60,8 @@ th{width:40mm;background:#d5dfe4;font-size:14px;font-weight:900} td{font-size:14
  .page:last-of-type{page-break-after:auto!important;break-after:auto!important}
 }
 </style>
-<script src="shared_storage.js"></script>
-<script src="ms_data.js"></script>
+<script type="text/pages-deferred" src="shared_storage.js"></script>
+<script type="text/pages-deferred" src="tax.js?v=20261003"></script><script type="text/pages-deferred" src="ms_data.js?v=tax20261003"></script>
 
 
 <style id="ms-simple-terms-balanced-20260926">
@@ -188,18 +187,18 @@ th{width:40mm;background:#d5dfe4;font-size:14px;font-weight:900} td{font-size:14
 }
 </style>
 
-</head>
+<script src="pages_boot.js" defer></script></head>
 <body>
 <div class="toolbar"><b>簡易工事請負契約書　2ページ</b><button class="sub">通常契約書へ戻る</button><button class="pri" onclick="window.print()">印刷</button></div>
 <div class="note">表紙は通常契約書と同じです。約款27条を2ページ目の左右2列にまとめた簡易版です。</div>
 <section class="page"><div class="band"></div><div class="top"><h1>工事請負契約書</h1><div class="meta">契約番号　<span data-v="contractNo">―</span><br>契約日　<span data-v="contractDate">―</span></div></div>
-<div class="parties"><div><div class="cap">発注者</div><div class="party"><span data-v="ownerName">発注者</span> 様</div><div class="addr" data-v="ownerAddress">―</div></div><div><div class="cap">受注者</div><div class="party" data-v="contractorName">MSランドスケープ</div><div class="addr" data-v="contractorAddress">―</div></div></div>
+<div class="parties"><div><div class="cap">発注者</div><div class="party"><span data-v="ownerName">発注者</span> 様</div><div class="addr" data-v="ownerAddress">―</div></div><div><div class="cap">受注者</div><div class="party" data-v="contractorName">MS建設管理デモ</div><div class="addr" data-v="contractorAddress">―</div></div></div>
 <div class="money"><span>請負代金（税込）</span><strong data-v="totalAmount">―</strong></div>
 <div class="section">工事概要</div><table><tr><th>工事名</th><td data-v="projectName">―</td></tr><tr><th>工事場所</th><td data-v="projectAddress">―</td></tr><tr><th>工期</th><td><span data-v="startDate">―</span> ～ <span data-v="endDate">―</span></td></tr><tr><th>引渡予定日</th><td data-v="handoverDate">―</td></tr><tr><th>うち消費税等</th><td data-v="taxAmount">―</td></tr></table>
 <div class="section">お支払い条件</div><div class="pay"><div class="payrow"><b>前　金</b><span data-v="advance">―</span><span data-v="advanceWhen">支払時期 ―</span></div><div class="payrow"><b>中間金</b><span data-v="interim">―</span><span data-v="interimWhen">支払時期 ―</span></div><div class="payrow"><b>最終支払</b><span data-v="finalPayment">―</span><span data-v="finalWhen">支払時期 ―</span></div></div>
 <div class="small">支払額・支払時期は上記条件によります。追加・変更工事がある場合は、双方で確認した変更額を最終精算に反映します。</div>
 <div class="section">特約・工事固有条件</div><div class="special" data-v="special">特になし</div>
-<div class="signs"><div class="sign"><b>発注者</b><span class="seal">印</span><br><br>住所　<span data-v="ownerAddress">―</span><br>氏名　<span data-v="ownerName">―</span></div><div class="sign"><b>受注者</b><span class="seal">印</span><br><br>住所　<span data-v="contractorAddress">―</span><br>氏名　<span data-v="contractorName">MSランドスケープ</span></div></div><div class="foot"><span>MS建設管理システム</span><span>1 / 4</span></div></section>
+<div class="signs"><div class="sign"><b>発注者</b><span class="seal">印</span><br><br>住所　<span data-v="ownerAddress">―</span><br>氏名　<span data-v="ownerName">―</span></div><div class="sign"><b>受注者</b><span class="seal">印</span><br><br>住所　<span data-v="contractorAddress">―</span><br>氏名　<span data-v="contractorName">MS建設管理デモ</span></div></div><div class="foot"><span>MS建設管理システム</span><span>1 / 4</span></div></section>
 <section class="page simple-terms">
   <div class="band"></div>
   <h1>工事請負契約約款</h1>
@@ -235,7 +234,7 @@ th{width:40mm;background:#d5dfe4;font-size:14px;font-weight:900} td{font-size:14
   </div>
   <div class="foot"><span>工事請負契約約款（簡易版）</span><span>2 / 2</span></div>
 </section>
-<script>
+<script type="text/pages-deferred">
 
 (function(){
  const q=new URLSearchParams(location.search),id=q.get('id')||'';
@@ -244,14 +243,14 @@ th{width:40mm;background:#d5dfe4;font-size:14px;font-weight:900} td{font-size:14
  const oc=p.orderContract||{},pay=oc.payment||{},f=p.legacyFinancials||{};
  const our=(MSData.all('companySettings')||[]).find(x=>x.status!=='inactive')||{};
  const amount=Number(oc.currentContractAmount??p.contractAmount??f.finalContractAmount??f.contractAmount??0)||0;
- const tax=Math.round(amount*10/110);
+ const taxQuote=MSTax.quote(p,amount),tax=taxQuote.tax;
  const money=v=>{const n=Number(v)||0;return n?'￥'+Math.round(n).toLocaleString('ja-JP'):'―'};
  const jp=v=>{if(!v)return'―';const a=String(v).match(/^(\d{4})-(\d{2})-(\d{2})/);return a?`${+a[1]}年${+a[2]}月${+a[3]}日`:String(v)};
  const d={contractNo:p.legacyProjectNo||p.no||'―',contractDate:oc.contractDocDate||oc.orderDate||p.registeredDate||'',
  projectName:p.name||'―',projectAddress:p.address||'―',ownerName:p.clientName||'―',
- ownerAddress:p.clientAddress||p.ownerAddress||'―',contractorName:our.companyName||p.contractorName||'MSランドスケープ',
+ ownerAddress:p.clientAddress||p.ownerAddress||'―',contractorName:our.companyName||p.contractorName||'MS建設管理デモ',
  contractorAddress:our.address||'―',startDate:p.startDate||'',endDate:p.endDate||'',handoverDate:p.endDate||'',
- totalAmount:amount,taxAmount:tax,advance:pay.advance,advanceWhen:pay.advanceWhen||'―',
+ totalAmount:taxQuote.gross,taxAmount:tax,advance:pay.advance,advanceWhen:pay.advanceWhen||'―',
  interim:pay.interim,interimWhen:pay.interimWhen||'―',finalPayment:pay.final,finalWhen:pay.finalWhen||'―',
  special:oc.contractSpecial||oc.note||'特になし'};
  document.querySelectorAll('[data-v]').forEach(e=>{const z=e.dataset.v;let v=d[z];
@@ -263,5 +262,5 @@ th{width:40mm;background:#d5dfe4;font-size:14px;font-weight:900} td{font-size:14
 })();
 
 </script>
-</body>
+<script type="text/pages-deferred">document.addEventListener('DOMContentLoaded',()=>{const q=new URLSearchParams(location.search),pid=q.get('id')||q.get('projectId')||sessionStorage.getItem('mscm:selectedProjectId'),project=pid?MSData.get('projects',pid):null;const order=q.get('orderId')?MSData.get('orders',q.get('orderId')):null;if((order||project)&&!(order||project).moneyBasis){const note=document.createElement('div');note.style.cssText='padding:12px;background:#fff4df;color:#754c15;margin:10px;font-size:13px';note.textContent='金額基準が未確認の既存記録です。入力額を税抜として仮計算しています。受注・契約または発注の編集画面で、金額と税率を確認して保存してから帳票・請求を確定してください。';(document.querySelector('main')||document.body).prepend(note);}});</script></body>
 </html>

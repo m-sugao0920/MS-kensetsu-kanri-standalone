@@ -1,5 +1,4 @@
-<!doctype html><html lang="ja"><head>
-<script src="ms_password.js"></script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>作業員マスター｜MS建設管理システム</title>
 <style>
 :root{--deep:#284b5b;--line:#cdd9de;--bg:#f4f7f8;--blue:#eef9ff;--green:#eef8ee;--wine:#7b3346}
@@ -15,24 +14,24 @@ input,select,textarea{border:1px solid #b8c7cd;border-radius:5px;padding:5px 6px
 .preview{margin-top:8px;padding:8px;background:#fff;border:1px solid #e1d7b8;border-radius:6px;font-size:12px;display:none}.ok{color:#27663a;font-weight:900}.err{color:#a13a3a;font-weight:900}.upd{color:#8a671a;font-weight:900}
 .more{display:none;padding:10px;background:#f8fbfc;border-top:1px solid #dce6ea}.more.open{display:block}.grid{display:grid;grid-template-columns:145px 1fr 145px 1fr;gap:7px 9px;align-items:center}.grid label{font-size:11px;font-weight:900}.wide{grid-column:2/5}.small{font-size:11px;color:#6d7f87}
 @media(max-width:900px){.companybar,.importgrid,.grid,.r1,.r2,.r3{grid-template-columns:1fr}.wide{grid-column:auto}}
-</style></head><body>
-<header><div class="head"><h1>作業員マスター</h1><button class="light" onclick="location.href='kanri_settei.html'">管理・設定へ戻る</button></div></header>
-<div class="wrap">
-<div class="card"><div class="hd">1. 所属会社</div><div class="bd"><div class="companybar"><b>会社を選択</b><select id="company" class="green"><option value="">会社を選択してください</option></select><button id="selfBtn" class="light">自社を選択</button></div><p class="note">会社を先に選択します。この会社の作業員だけを表示・登録します。管理番号は新規保存時に A000001～を自動採番します。</p></div></div>
+</style><link rel="stylesheet" href="management_master.css?v=20261012b"><link rel="stylesheet" href="worker_resource_layout.css?v=20261012c"><script src="pages_boot.js" defer></script></head><body>
+<header><div class="master-top"><div class="master-brand">MS建設管理システム　／　管理・設定</div><a href="kanri_settei.html">管理・設定に戻る</a></div></header>
+<div class="wrap"><h1>作業員マスター</h1><p class="master-lead">所属会社を選び、作業員の情報・資格・在籍状態を管理します。</p>
+<div class="card"><div class="hd">所属会社</div><div class="bd"><div class="companybar"><b>会社を選択</b><select id="company" class="green"><option value="">会社を選択してください</option></select><button id="selfBtn" class="light">自社を選択</button></div><p class="note">会社を先に選択します。この会社の作業員だけを表示・登録します。管理番号は新規保存時に A000001～を自動採番します。</p></div></div>
 
-<div class="card"><div class="hd">2. Excel一括取込</div><div class="bd"><div class="import">
+<div class="card"><div class="hd">検索・一覧・編集 <span id="count" class="badge"></span></div><div class="bd">
+<div class="master-filter"><label>検索<input id="workerSearch" placeholder="番号・氏名・職種で検索"></label><label>在籍状態<select id="workerFilter"><option value="all">すべて</option><option value="active">使用中</option><option value="inactive">停止</option></select></label><span id="workerVisibleCount"></span><a class="btn sub" href="worker_cost_master.html">原価単価を開く</a></div><div class="btns"><button id="add">＋ 作業員追加</button><button id="copySel" class="sub">選択した人をコピーして追加</button><button id="printRoster" class="sub">作業員名簿を印刷</button><button id="stop" class="warn">使用／停止</button><button id="deleteWorker" class="danger">選択した作業員を削除</button></div>
+<div id="workers"></div><div class="actions"><button id="saveAll">保存</button><button class="sub" onclick="location.reload()">キャンセル</button></div><p class="small">一覧では氏名・フリガナ・職種を確認・編集できます。生年月日・保険・連絡先・資格／教育などは「詳細」で管理します。</p>
+</div></div><div class="card"><div class="hd">Excel一括取込</div><div class="bd"><div class="import">
 <div class="importgrid"><select id="excelType" class="green"><option value="A">タイプA（26.7作業員名簿【最新】）</option><option value="B">タイプB（鶴よし建設 作業員名簿）</option><option value="MS">MS標準</option></select><input id="xlsxFile" type="file" accept=".xlsx,.xls"><button id="readExcel">内容を確認</button><button id="commitExcel" class="warn" disabled>確認した内容を登録</button></div>
 <p class="note">タイプA・タイプBは、元のExcelを編集せずそのまま選択して取り込めます。その他の形式は「MS標準」を選び、同梱テンプレートへコピー＆ペーストしてから取り込みます。</p>
 <div id="preview" class="preview"></div></div></div></div>
 
-<div class="card"><div class="hd">3. 作業員一覧・2行コンパクト編集 <span id="count" class="badge"></span></div><div class="bd">
-<div class="btns"><button id="add">＋ 作業員追加</button><button id="copySel" class="sub">選択した人をコピーして追加</button><button id="saveAll">入力分をまとめて保存</button><button id="printRoster" class="sub">作業員名簿を印刷</button><button id="stop" class="warn">使用／停止</button><button id="deleteWorker" class="danger">選択した作業員を削除</button></div>
-<div id="workers"></div><p class="small">通常は1人2行で確認・編集できます。家族連絡先・健康診断・保険番号・資格／教育の複数登録は「詳細」で管理します。</p>
-</div></div></div>
+</div>
 
-<script src="shared_storage.js"></script><script src="ms_data.js"></script>
-<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
-<script>
+<script type="text/pages-deferred" src="shared_storage.js"></script><script type="text/pages-deferred" src="tax.js?v=20261003"></script><script type="text/pages-deferred" src="ms_data.js?v=tax20261003"></script>
+<script type="text/pages-deferred" src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+<script type="text/pages-deferred">
 (()=>{const $=id=>document.getElementById(id),selfKey='__SELF__';let selected=null,importRows=[];
 const H=["氏名","フリガナ","職種","職務他","特労","雇入年月日","経験年数","生年月日","技能者ID","健康保険","健康保険番号","年金保険","年金番号","雇用保険","雇用保険番号","建退共","中退共","現住所","本人TEL","家族氏名","続柄","家族住所","家族TEL","最近の健康診断日","特殊健康診断日","血液型","雇入・職長等特別教育","技能講習","免許・資格","入場年月日","受入教育実施年月日","備考"];
 const M={"氏名":"name","フリガナ":"kana","職種":"occupation","職務他":"roleMark","特労":"specialLabor","雇入年月日":"companyHireDate","経験年数":"experienceYears","生年月日":"birthDate","技能者ID":"skillWorkerId","健康保険":"healthInsurance","健康保険番号":"healthInsuranceNo","年金保険":"pensionInsurance","年金番号":"pensionInsuranceNo","雇用保険":"employmentInsurance","雇用保険番号":"employmentInsuranceNo","建退共":"kentaikyo","中退共":"chutaikyo","現住所":"address","本人TEL":"tel","家族氏名":"familyName","続柄":"familyRelation","家族住所":"familyAddress","家族TEL":"familyTel","最近の健康診断日":"healthCheckDate","特殊健康診断日":"specialHealthDate","血液型":"bloodType","雇入・職長等特別教育":"specialEducation","技能講習":"skillTraining","免許・資格":"licenses","入場年月日":"entryDate","受入教育実施年月日":"acceptEducationDate","備考":"notes"};
@@ -214,6 +213,7 @@ async function readExcel(){
  }catch(e){console.error(e);alert('Excelを読み込めませんでした。\n'+(e.message||e))}
 }
 function commitExcel(){const c=companyInfo();if(!c||!importRows.length)return;if(!confirm(`${c.name} に ${importRows.length}名を登録・更新します。よろしいですか？`))return;let n=0,u=0;importRows.forEach(o=>{if(o._kind==='error')return;const x=Object.assign({},o);delete x._kind;x.companyId=c.id;x.companyName=c.name;x.companyType=c.type;if(o._kind==='new'){delete x.id;delete x.no;n++}else u++;MSData.save('workers',x)});alert(`Excel取込が完了しました。\\n新規 ${n}名／更新 ${u}名`);importRows=[];$('commitExcel').disabled=true;$('preview').style.display='none';$('xlsxFile').value='';refresh()}
-$('company').onchange=refresh;$('selfBtn').onclick=()=>{$('company').value=selfKey;refresh()};$('add').onclick=()=>{if(!companyInfo()){alert('先に会社を選択してください。');return}addWorker()};$('copySel').onclick=copySel;$('saveAll').onclick=saveAll;$('stop').onclick=toggle;$('deleteWorker').onclick=deleteWorker;$('printRoster').onclick=()=>{const c=companyInfo();if(!c){alert('先に会社を選択してください。');return}sessionStorage.setItem('ms_worker_print_company',JSON.stringify(c));location.href='sagyoin_print.html'};$('readExcel').onclick=readExcel;$('commitExcel').onclick=commitExcel;window.addEventListener('load',()=>{loadCompanies();refresh()});
+let previousCompany='';function changeCompany(){if([...document.querySelectorAll('.worker')].some(el=>el.dataset.dirty==='1'||(el._data?._new&&read(el).name))&&!confirm('未保存の変更があります。変更を破棄して会社を切り替えますか？')){$('company').value=previousCompany;return;}previousCompany=$('company').value;refresh();}$('company').onchange=changeCompany;$('selfBtn').onclick=()=>{$('company').value=selfKey;changeCompany()};$('add').onclick=()=>{if(!companyInfo()){alert('先に会社を選択してください。');return}addWorker()};$('copySel').onclick=copySel;$('saveAll').onclick=saveAll;$('stop').onclick=toggle;$('deleteWorker').onclick=deleteWorker;$('printRoster').onclick=()=>{const c=companyInfo();if(!c){alert('先に会社を選択してください。');return}sessionStorage.setItem('ms_worker_print_company',JSON.stringify(c));location.href='sagyoin_print.html'};$('readExcel').onclick=readExcel;$('commitExcel').onclick=commitExcel;window.addEventListener('load',()=>{loadCompanies();refresh()});
+window.addEventListener('beforeunload',e=>{if([...document.querySelectorAll('.worker')].some(el=>el.dataset.dirty==='1'||(el._data?._new&&read(el).name))){e.preventDefault();e.returnValue='';}});
 })();
-</script></body></html>
+</script><script type="text/pages-deferred" src="worker_resource_ui.js?v=20261012c"></script></body></html>

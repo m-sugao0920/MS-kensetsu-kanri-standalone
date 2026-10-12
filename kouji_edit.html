@@ -1,14 +1,13 @@
 <!doctype html>
 <html lang="ja">
 <head>
-<script src="ms_password.js"></script>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>工事登録・工事情報 Ver.0.6｜MS建設管理システム</title>
 <style id="ms-no-flicker">
 /* 初期データ反映前のテンプレートちらつき防止。レイアウト値は変更しない */
 html.ms-app-loading body{visibility:hidden}
 </style>
-<script id="ms-no-flicker-start">
+<script type="text/pages-deferred" id="ms-no-flicker-start">
 document.documentElement.classList.add('ms-app-loading');
 window.addEventListener('load',function(){
   requestAnimationFrame(function(){
@@ -120,7 +119,7 @@ textarea{min-height:68px}
 .entry-row.clientline{grid-template-columns:minmax(380px,1.7fr) minmax(220px,1fr)}
 .entry-row.ownerline{grid-template-columns:minmax(190px,1.2fr) minmax(190px,1.2fr) 150px 150px}
 .entry-row.owneraddressline{grid-template-columns:185px minmax(520px,1fr) 150px}
-.entry-row.estimateline{grid-template-columns:190px 180px 145px}
+.entry-row.estimateline{grid-template-columns:300px 180px 145px;align-items:start}
 .entry-row.staffline{grid-template-columns:repeat(5,minmax(150px,1fr))}
 .entry-row .field{grid-column:auto!important}
 .owner-same{height:29px;display:flex;align-items:center;padding:0 6px;white-space:nowrap}
@@ -142,7 +141,7 @@ input,select,textarea{font-size:14px}
 .kb-menu,.client-item,.client-empty{font-size:14px}
 .actions button,.mini{font-size:13px}
 </style>
-</head>
+<script src="pages_boot.js" defer></script></head>
 <body>
 <header><div class="head"><div><div class="brand">MS建設管理システム</div><div class="sub">工事一覧 ＞ 工事登録・工事情報</div></div><div class="nav"><button onclick="location.href='kouji_list.html'">工事一覧へ</button><button onclick="location.href='index.html'">メイン画面へ</button></div></div></header>
 <main>
@@ -193,7 +192,7 @@ input,select,textarea{font-size:14px}
   <div class="owner-same"><label><input type="checkbox" id="copyProjectAddress">工事場所と同じ</label></div>
  </div>
  <div class="entry-row estimateline">
-  <div class="field"><label>請負金額</label><input id="contractAmount" class="money" inputmode="numeric" placeholder="0"></div>
+  <div class="field"><label>請負金額（税抜）</label><input id="contractAmount" class="money" inputmode="numeric" placeholder="0"></div>
   <div class="field"><label>見積番号</label><input id="estimateNo" class="dimension"></div>
   <div class="field"><label>見積時粗利率</label><input id="estimateMargin" class="money" inputmode="decimal" placeholder="0.0 %"></div>
  </div>
@@ -231,9 +230,9 @@ input,select,textarea{font-size:14px}
 </section>
 
 </main>
-<footer>MSランドスケープ　｜　MS建設管理システム</footer>
-<script src="shared_storage.js"></script>
-<script src="ms_data.js"></script><script>
+<footer>MS建設管理デモ　｜　MS建設管理システム</footer>
+<script type="text/pages-deferred" src="shared_storage.js"></script>
+<script type="text/pages-deferred" src="tax.js?v=20261004compact"></script><script type="text/pages-deferred" src="ms_data.js?v=tax20261003"></script><script type="text/pages-deferred">
 document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{
  document.querySelectorAll('.tab,.tabpane').forEach(x=>x.classList.remove('active'));
  b.classList.add('active');document.getElementById(b.dataset.tab).classList.add('active');
@@ -277,11 +276,11 @@ function loadMasterOptions(){
     return (type==='法人顧客'||type==='個人顧客') && (trade==='受注'||trade==='両方') && state==='取引中' && x.status!=='inactive';
    }).sort((a,b)=>(a.name||'').localeCompare(b.name||'','ja'));
   eligiblePartners=partners;
-  const savedWorkTypes=MSData.all('workTypes').filter(x=>!x.legalAmendment);
-  const workTypes=savedWorkTypes.length
-    ? savedWorkTypes.filter(x=>x.status==='active').sort((a,b)=>(a.sortOrder||999)-(b.sortOrder||999)).map(x=>x.name)
-    : OFFICIAL_WORK_TYPES;
-  workTypes.forEach(name=>addOption(workCategory,name,name));
+  const savedWorkTypes=MSData.all('workTypes')
+    .filter(x=>x.status!=='inactive' && !x.legalAmendment)
+    .sort((a,b)=>(Number(a.sortOrder)||999)-(Number(b.sortOrder)||999)||(a.no||'').localeCompare(b.no||''));
+  savedWorkTypes.forEach(x=>addOption(workCategory,x.name||x.no||'',x.name||x.no||''));
+  if(![...workCategory.options].some(o=>o.value==='外構工事'))addOption(workCategory,'外構工事','外構工事');
   const projectTypes=MSData.all('projectTypes').filter(x=>x.status!=='inactive').sort((a,b)=>(a.sortOrder||999)-(b.sortOrder||999));
   projectTypes.forEach(x=>addOption(projectClass,x.name,x.name));
   const emps=MSData.all('employees').filter(x=>x.status!=='inactive');
@@ -297,6 +296,10 @@ function fillOwnerFromPartner(partner){
 function syncNewClientToOwner(){
  if(newClientBox.classList.contains('hidden'))return;
  ownerName.value=clientName.value.trim();ownerKana.value=newClientKana.value.trim();ownerTel.value=newClientTel.value.trim();ownerMobile.value=newClientMobile.value.trim();ownerPostal.value=newClientPostal.value.trim();ownerAddress.value=newClientAddress.value.trim();
+}
+function fillClientContacts(partner){
+ clientContact.innerHTML='<option value="">選択してください</option>';
+ (partner.contacts||[]).forEach(c=>{if(c.name)addOption(clientContact,c.name,c.department?c.name+'（'+c.department+'）':c.name)});
 }
 function loadClientContacts(){
  const partner=findPartnerByName(clientName.value); clientContact.innerHTML='<option value="">選択してください</option>';
@@ -326,8 +329,15 @@ document.addEventListener('mousedown',e=>{if(kbMenu&&!e.target.closest('.kb-menu
 document.addEventListener('keydown',e=>{const el=e.target;if(!/^(INPUT|SELECT|TEXTAREA|BUTTON)$/.test(el.tagName))return;if(el.tagName==='SELECT'){if(e.key===' '||e.code==='Space'){e.preventDefault();openSelect(el);return;}if(kbSelect===el&&(e.key==='ArrowDown'||e.key==='ArrowUp')){e.preventDefault();const n=el.options.length;if(n){kbIndex=Math.max(0,Math.min(n-1,kbIndex+(e.key==='ArrowDown'?1:-1)));paintKbActive()}return;}if(kbSelect===el&&e.key==='Enter'){e.preventDefault();if(kbIndex>=0){el.selectedIndex=kbIndex;el.dispatchEvent(new Event('change',{bubbles:true}))}closeKbMenu(true);return;}if(kbSelect===el&&e.key==='Escape'){e.preventDefault();closeKbMenu(false);return;}}if(el===clientName&&[' ','ArrowDown','ArrowUp','Enter','Escape'].includes(e.key))return;if(e.key==='Enter'&&el.tagName!=='TEXTAREA'&&el.type!=='button'&&el.type!=='submit'){e.preventDefault();moveFocus(el,e.shiftKey?-1:1);return;}});
 function moneyNumber(v){const n=Number(String(v||'').replace(/,/g,'').replace(/[^0-9+\-.]/g,''));return Number.isFinite(n)?n:0;}
 function moneyText(n){return Math.round(Number(n)||0).toLocaleString('ja-JP');}
-contractAmount.addEventListener('focus',()=>{const n=moneyNumber(contractAmount.value);contractAmount.value=n===0&&contractAmount.value.trim()===''?'':String(n);});
-contractAmount.addEventListener('blur',()=>{if(contractAmount.value.trim()!=='')contractAmount.value=moneyText(moneyNumber(contractAmount.value));});
+// 請負金額：入力中も3桁カンマを常時表示する
+contractAmount.addEventListener('input',()=>{
+ const raw=String(contractAmount.value||'').replace(/[^0-9]/g,'');
+ if(!raw){contractAmount.value='';return;}
+ contractAmount.value=Number(raw).toLocaleString('ja-JP');
+});
+contractAmount.addEventListener('blur',()=>{
+ if(contractAmount.value.trim()!=='') contractAmount.value=moneyText(moneyNumber(contractAmount.value));
+});
 let editingProject=null;
 function isNewProjectMode(){
  const p=new URLSearchParams(location.search);
@@ -338,7 +348,7 @@ function selectedProjectId(){
  if(p.get('new')==='1') return '';
  return p.get('id')||'';
 }
-function setValue(id,v){const el=document.getElementById(id);if(el)el.value=(v??'');}
+function setValue(id,v){const el=document.getElementById(id);if(el){if(el.tagName==='SELECT'&&v)ensureOption(el,String(v));el.value=(v??'');}}
 function loadExistingProject(){
  const id=selectedProjectId();
  if(!id||!window.MSData) return false;
@@ -382,7 +392,7 @@ document.getElementById('save').onclick=()=>{
  }
  const clientSnapshot={name:clientName.value.trim(),kana:partner?.kana||newClientKana.value.trim(),zipcode:partner?.zipcode||newClientPostal.value.trim(),address:partner?.address||newClientAddress.value.trim(),tel:partner?.tel||newClientTel.value.trim(),mobile:partner?.mobile||newClientMobile.value.trim()};
  const rec={id:editingProject?.id||undefined,no:editingProject?.no||undefined,name:projectName.value.trim(),registeredDate:registeredDate.value,completedDate:completedDate.value,status:completedDate.value?'completed':'active',
- contractType:contractType.value,workCategory:workCategory.value,projectClass:projectClass.value,clientId:partner?.id||'',clientName:clientName.value.trim(),clientSnapshot,clientContact:clientContact.value,contractorName:'',
+ contractType:contractType.value,workCategory:workCategory.value,projectClass:projectClass.value,clientId:partner?.id||'',clientName:clientName.value.trim(),clientSnapshot,clientContact:clientContact.value,contractorName:editingProject?.contractorName||'',
  estimateNo:estimateNo.value,estimateMargin:estimateMargin.value,contractAmount:moneyNumber(contractAmount.value),startDate:startDate.value,endDate:endDate.value,
  ownerName:ownerName.value,ownerKana:ownerKana.value,ownerTel:ownerTel.value,ownerMobile:ownerMobile.value,ownerPostal:ownerPostal.value,ownerAddress:ownerAddress.value,
  projectPostal:projectPostal.value,address:projectAddress.value,salesPerson:salesPerson.value,projectPerson:projectPerson.value,sitePerson:sitePerson.value,estimatePerson:estimatePerson.value,designPerson:designPerson.value,

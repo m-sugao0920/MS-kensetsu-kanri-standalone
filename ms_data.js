@@ -42,10 +42,10 @@
   function ensure(){
     if(!MSShared.getItem(keys.meta)) put(keys.meta,{schema:APP_SCHEMA,dataVersion:DATA_VERSION,mode:"trial",createdAt:now(),updatedAt:now()});
     else {
-      const m=parse(keys.meta,{});
+      const m=parse(keys.meta,{}), before=JSON.stringify(m);
       if(!m.mode) m.mode="trial";
       if(!m.dataVersion || m.dataVersion<DATA_VERSION) m.dataVersion=DATA_VERSION;
-      put(keys.meta,m);
+      if(JSON.stringify(m)!==before) put(keys.meta,m);
     }
     if(!MSShared.getItem(keys.seq)) put(keys.seq,{project:0,partner:0,employee:0,worker:0,workType:0,projectType:0,partnerType:0,order:0,invoice:0,payment:0});
     Object.entries(keys).forEach(([name,k])=>{ if(!["meta","seq"].includes(name) && !MSShared.getItem(k)) put(k,[]) });
@@ -128,6 +128,14 @@
   function exportData(){
     ensure(); const payload={schema:APP_SCHEMA,dataVersion:DATA_VERSION,exportedAt:now(),data:{}};
     Object.keys(keys).forEach(name=>payload.data[name]=parse(keys[name], name==="seq"?{}:(name==="meta"?{}:[])));
+    payload.data.salesBilling=parse("mscm:salesBilling:v1",{});
+    const workflowKeys={dispatch:"mscm:dispatch:v1",resources:"mscm:resources:v1",costRates:"mscm:costRates:v1",dailyReports:"mscm:dailyReports:v1"};
+    Object.entries(workflowKeys).forEach(([name,key])=>payload.data[name]=parse(key,name==="costRates"?{}:[]));
+    const snapshot=MSShared.snapshot();
+    payload.storage=snapshot.data;
+    payload.backupVersion=1;
+    payload.data.workerReports=JSON.parse(snapshot.data["mscm:workerReports:v1"]||"[]");
+    payload.data.costEntries=JSON.parse(snapshot.data["mscm:costEntries:v1"]||"[]");
     return payload;
   }
   function downloadBackup(){
@@ -145,11 +153,11 @@
   }
   function restoreData(payload){
     payload=migrate(payload);
-    const d=payload.data||{};
-    Object.keys(keys).forEach(name=>{
-      if(d[name]!==undefined) put(keys[name],d[name]);
-    });
-    ensure();
+    if(payload.storage!==undefined){
+      if(payload.backupVersion!==1)throw new Error("対応していないバックアップ形式です。");
+      MSShared.restoreSnapshot(payload.storage);ensure();return;
+    }
+    throw new Error("旧形式のバックアップは作業員の実績報告や原価データを含まないため、この画面では復元できません。新しいバックアップを書き出してください。");
   }
   function restoreFile(file){
     return file.text().then(t=>restoreData(JSON.parse(t)));
@@ -178,4 +186,5 @@
   }
   ensure();
   global.MSData={contractValue,DATA_VERSION,APP_SCHEMA,keys,defs,all,get,save,saveMany,nextNo,peekNo,deactivate,exportData,downloadBackup,restoreData,restoreFile,getMode,setMode,productionStartReset,resetAll,uuid};
+  if(global.MSTax) MSTax.install(global.MSData);
 })(window);
