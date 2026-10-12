@@ -45,11 +45,16 @@
   for(const name of ['purchase_office','cost_ledger','office_validation','dispatch_validation','worker_reports','pages_backend']){const code=window.MSPagesCode&&window.MSPagesCode[name];if(!code)throw Error('集計処理が不足しています：'+name);py.FS.writeFile('/app/'+name+'.py',code);}
   py.runPython("import sys; sys.path.insert(0, '/app'); from pages_backend import request as pages_request");
   const request=py.globals.get('pages_request');
+  const readCache=new Map();let cachedStorage=null;
   function localRequest(url,method,body){
    try{
     const current=localStorage.getItem(storageKey);if(!current)throw Error('保存データがありません。画面を再読み込みしてください。');
+    if(cachedStorage!==current){readCache.clear();cachedStorage=current;}
+    const cacheKey=method+':'+url;
+    if(method==='GET'&&readCache.has(cacheKey))return readCache.get(cacheKey);
     const result=JSON.parse(request(current,url,method,body||'{}'));
-    if(result.storage){localStorage.setItem(storageKey,JSON.stringify(result.storage));delete result.storage;}
+    if(method==='GET'&&result.status===200)readCache.set(cacheKey,result);
+    if(result.storage){localStorage.setItem(storageKey,JSON.stringify(result.storage));delete result.storage;readCache.clear();cachedStorage=null;}
     return result;
    }catch(error){return {status:507,data:{error:'デモデータを保存できませんでした。バックアップを書き出してからブラウザーの空き容量を確認してください。 '+error.message}};}
   }
@@ -84,6 +89,7 @@
    return new Response(JSON.stringify(result.data),{status:result.status,headers:{'Content-Type':'application/json'}});
   };
   if(shell){
+   if('serviceWorker' in navigator)navigator.serviceWorker.register(new URL('demo_sw.js',base),{scope:base.pathname}).catch(()=>{});
    window.MSPagesBridge={XHR:LocalXHR,fetch:window.fetch,storageKey};
    const frame=document.createElement('iframe');frame.title='MS建設管理';frame.style.cssText='position:fixed;inset:0;width:100%;height:100%;border:0;background:white';document.body.append(frame);
    function route(){let page;try{page=decodeURIComponent(location.hash.slice(1))||'demo_home.html';}catch(e){page='demo_home.html';}if(page==='index.html')page='demo_home.html';const dest=new URL(page,base);if(dest.origin!==location.origin||!dest.pathname.startsWith(base.pathname)||!dest.pathname.endsWith('.html'))return;const current=frame.contentWindow?.location.href;if(current!==dest.href)frame.src=dest.href;}
