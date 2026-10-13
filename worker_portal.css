@@ -1,1 +1,51 @@
-:root{--line:#c5d1d8;--deep:#294350;--muted:#526776}*{box-sizing:border-box}body{margin:0;background:#f5f7f8;color:var(--deep);font:16px/1.5 "Yu Gothic",Meiryo,sans-serif}header{background:#fff;border-bottom:1px solid var(--line);padding:12px 20px}h1{font-size:22px;margin:0;font-weight:400}h2,h3,h4{font-weight:400}h2{font-size:21px}h3{font-size:18px}main{max-width:1300px;margin:16px auto;padding:0 12px;display:grid;grid-template-columns:280px minmax(0,1fr);gap:16px}.search,.content{background:#fff;border:1px solid var(--line);border-radius:6px;padding:16px;min-width:0}.search{align-self:start}label{display:block;margin:12px 0 4px}input,select,textarea,button{font:inherit}input,select,textarea{width:100%;border:1px solid var(--line);border-radius:4px;padding:8px;background:#fff;color:var(--deep)}textarea{min-height:75px;resize:vertical}button{border:1px solid #97aebd;border-radius:5px;background:#eff5f8;color:var(--deep);padding:8px 12px;cursor:pointer;margin:5px 0}button:disabled{opacity:.5;cursor:default}.project-button{width:100%;text-align:left;display:block;background:#fff}.project-button[aria-pressed=true]{outline:2px solid #477fb8}.project-button span{display:block}.project-button small{color:var(--muted)}.actions{display:flex;gap:10px;flex-wrap:wrap}.people-row,.machine-row{padding:10px;border:1px solid var(--line);margin:8px 0;border-radius:5px}.time-fields{display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:8px;align-items:end}.time-fields label{margin:5px 0}.actual-hours{margin:4px 0;color:var(--muted)}.machine-row{display:grid;grid-template-columns:2fr 1fr auto;gap:8px;align-items:end}.machine-row label{margin:0}.check{display:flex;gap:8px;align-items:center}.check input{width:auto}.arrangement-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;border-bottom:1px solid var(--line);padding-bottom:10px}.arrangement-row label{min-width:0}.arrangement-row label:last-of-type{grid-column:1/-1}summary{cursor:pointer}table{width:100%;border-collapse:collapse;margin:8px 0;font-size:15px}th,td{border:1px solid var(--line);padding:6px;vertical-align:top;text-align:left;font-weight:400;overflow-wrap:anywhere}th{background:#f2f6f8}pre{white-space:pre-wrap;font:inherit;border:1px solid var(--line);padding:10px;min-height:50px}.instruction-project{margin:10px 0}.status-note{color:var(--muted)}[hidden]{display:none!important}@media(max-width:800px){main{grid-template-columns:1fr}.time-fields{grid-template-columns:1fr 1fr}.machine-row{grid-template-columns:1fr 1fr}.machine-row label:first-child{grid-column:1/-1}.arrangement-row{grid-template-columns:1fr 1fr}.search{padding:12px}.content{padding:12px}} 
+:root{--line:#c5d1d8;--deep:#000;--muted:#000}*{box-sizing:border-box}body{margin:0;background:#f5f7f8;color:var(--deep);font:16px/1.5 "Yu Gothic",Meiryo,sans-serif}header{background:#fff;border-bottom:1px solid var(--line);padding:12px 20px}h1{font-size:22px;margin:0;font-weight:400}h2,h3,h4{font-weight:400}h2{font-size:21px}h3{font-size:18px}main{max-width:1300px;margin:16px auto;padding:0 12px;display:grid;grid-template-columns:280px minmax(0,1fr);gap:16px}.search,.content{background:#fff;border:1px solid var(--line);border-radius:6px;padding:16px;min-width:0}.search{align-self:start}label{display:block;margin:12px 0 4px}input,select,textarea,button{font:inherit}input,select,textarea{width:100%;border:1px solid var(--line);border-radius:4px;padding:8px;background:#fff;color:var(--deep)}textarea{min-height:75px;resize:vertical}button{border:1px solid #97aebd;border-radius:5px;background:#eff5f8;color:var(--deep);padding:8px 12px;cursor:pointer;margin:5px 0}button:disabled{opacity:1;color:#000;background:#eee;border-style:dashed;cursor:default}.project-button{width:100%;text-align:left;display:block;background:#fff}.project-button[aria-pressed=true]{outline:2px solid #477fb8}.project-button span{display:block}.project-button small{color:var(--muted)}.actions{display:flex;gap:10px;flex-wrap:wrap}.people-row,.machine-row{padding:10px;border:1px solid var(--line);margin:8px 0;border-radius:5px}.time-fields{display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:8px;align-items:end}.time-fields label{margin:5px 0}.actual-hours{margin:4px 0;color:var(--muted)}.machine-row{display:grid;grid-template-columns:2fr 1fr auto;gap:8px;align-items:end}.machine-row label{margin:0}.check{display:flex;gap:8px;align-items:center}.check input{width:auto}.arrangement-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;border-bottom:1px solid var(--line);padding-bottom:10px}.arrangement-row label{min-width:0}.arrangement-row label:last-of-type{grid-column:1/-1}summary{cursor:pointer}table{width:100%;border-collapse:collapse;margin:8px 0;font-size:15px}th,td{border:1px solid var(--line);padding:6px;vertical-align:top;text-align:left;font-weight:400;overflow-wrap:anywhere}th{background:#f2f6f8}pre{white-space:pre-wrap;font:inherit;border:1px solid var(--line);padding:10px;min-height:50px}.instruction-project{margin:10px 0}.status-note{color:var(--muted)}[hidden]{display:none!important}@media(max-width:800px){main{grid-template-columns:1fr}.time-fields{grid-template-columns:1fr 1fr}.machine-row{grid-template-columns:1fr 1fr}.machine-row label:first-child{grid-column:1/-1}.arrangement-row{grid-template-columns:1fr 1fr}.search{padding:12px}.content{padding:12px}} 
+
+
+/* 黒文字と班割に合わせた控えめな色 */
+input::placeholder,textarea::placeholder{color:#000;opacity:1}
+input:disabled,select:disabled,textarea:disabled{color:#000;-webkit-text-fill-color:#000;opacity:1;background:#f5f5f5}
+.report-context{padding:8px 12px;background:#f3f7fc;border-left:3px solid #477fb8;font-weight:600}
+.report-tabs{display:flex;gap:6px;margin:16px 0 0;border-bottom:1px solid #a9b8c4;flex-wrap:wrap}
+.report-tabs button{margin:0;padding:9px 14px;background:#fff;color:#000;border-radius:5px 5px 0 0;border-bottom:3px solid transparent;font-weight:600}
+#tabPeople{border-top:3px solid #477fb8}#tabEquipment{border-top:3px solid #c58a27}#tabWork{border-top:3px solid #57976b}
+#tabPeople[aria-selected=true]{background:#f3f7fc;border-bottom-color:#477fb8}
+#tabEquipment[aria-selected=true]{background:#fcf8ef;border-bottom-color:#c58a27}
+#tabWork[aria-selected=true]{background:#f2f8f3;border-bottom-color:#57976b}
+.report-tabs button:focus-visible{outline:2px solid #000;outline-offset:2px}
+[role=tabpanel]{padding:12px 0;min-width:0}[role=tabpanel]>h3{margin:0 0 10px;font-weight:600}
+#actualPeople,#actualMachines{display:block}
+#actualPeople .people-row{border-left:3px solid #477fb8;margin:8px 0;padding:10px;background:#fff}
+.people-heading{display:flex;gap:12px;align-items:center;margin-bottom:4px}
+.people-heading select{flex:1;min-width:0}.people-heading .actual-hours{flex:none;margin:0;font-weight:600;color:#000}
+#actualPeople input,#actualPeople select,#actualMachines input{min-width:0;padding:6px}
+#actualPeople button,#actualMachines button{font-size:14px;padding:5px 8px}
+#actualPeople .time-fields{grid-template-columns:repeat(3,minmax(0,1fr)) auto;gap:8px}
+#actualPeople .time-fields label{min-width:0;margin:2px 0}
+#actualPeople .time-fields>button{margin:0;white-space:nowrap}
+#actualMachines .machine-row{grid-template-columns:minmax(0,2fr) minmax(90px,1fr) auto;gap:8px;margin:8px 0;border-left:3px solid #c58a27}
+#actualMachines .machine-row label:first-child{grid-column:auto}
+.equipment-colors{display:flex;gap:14px;flex-wrap:wrap;font-size:14px;margin-bottom:8px}
+.equipment-colors span{padding-left:7px}.equipment-colors .heavy{border-left:3px solid #c58a27}.equipment-colors .machine{border-left:3px solid #9270b2}.equipment-colors .vehicle{border-left:3px solid #57976b}
+#panelWork textarea{min-height:120px}
+.report-submit{border-top:1px solid #a9b8c4;margin-top:8px;padding-top:8px}
+#sendWorkerReport{background:#f3f7fc;border-left:3px solid #477fb8;color:#000;font-weight:600}
+@media(max-width:600px){.report-tabs button{padding:8px;font-size:14px}.people-heading{gap:6px;flex-wrap:wrap}.people-heading select{flex-basis:65%}#actualPeople .time-fields{grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}#actualPeople .time-fields>button{grid-column:1/-1;justify-self:end}#actualMachines .machine-row{grid-template-columns:minmax(0,1fr) auto}#actualMachines .machine-row label:first-child{grid-column:1/-1}.people-heading .actual-hours{font-size:14px;max-width:100%;overflow-wrap:anywhere}}
+
+/* 作業指示書と共通のヘッダー・画面幅・パネル */
+body{background:linear-gradient(180deg,#fff,#edf6fc);font-size:15px;color:#000}
+header{background:linear-gradient(135deg,#173f6b,#245b86);color:#fff;padding:0;border:0}
+.head{max-width:1440px;margin:auto;padding:13px 24px;display:flex;justify-content:space-between;align-items:center;gap:12px}
+.brand{font-size:24px;font-weight:400}.sub{font-size:13px;margin-top:2px}
+.nav{display:flex;gap:7px;flex-wrap:wrap}.nav a{border:1px solid #ffffff8c;background:#ffffff1f;color:#fff;border-radius:6px;padding:7px 12px;text-decoration:none;white-space:nowrap;font-weight:400}
+.nav a:focus-visible{outline:2px solid #fff;outline-offset:2px}
+main{max-width:1440px;margin:0 auto;padding:11px 24px 24px;grid-template-columns:minmax(260px,30%) minmax(0,1fr);gap:16px;align-items:start}
+.search,.content{border-color:#c9dbe8;border-radius:9px;box-shadow:0 4px 12px #173f6b0d;padding:14px;background:#fff}
+.search{position:sticky;top:12px}
+.panel-heading{margin:-14px -14px 12px;padding:9px 14px;background:#f2f8fc;border-bottom:1px solid #d9e6ef;border-radius:9px 9px 0 0;font-size:16px;color:#000}
+#workerActual>h2{margin:12px -14px 10px;padding:9px 14px;background:#f2f8fc;border-top:1px solid #d9e6ef;border-bottom:1px solid #d9e6ef;font-size:20px;color:#000}
+#workerInstruction>h2{margin:0 0 10px;font-size:20px;color:#000}
+#workerInstruction table th,#workerInstruction table td{border-color:#c9dbe8;padding:5px 7px;font-size:14px;color:#000}
+#workerInstruction th{background:#f2f8fc}
+.project-button{border-color:#c9dbe8;padding:10px;margin:7px 0;font-size:15px}
+.project-button[aria-pressed=true]{background:#edf6fc;outline-color:#176fa8}
+@media(max-width:850px){main{grid-template-columns:1fr;padding:11px 12px 20px}.search{position:static}.head{padding:13px 12px;flex-wrap:wrap}.nav{gap:6px}.nav a{font-size:14px;padding:6px 9px}}

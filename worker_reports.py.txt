@@ -41,7 +41,8 @@ def view(store,date):
     people=[{k:w.get(k,'') for k in ('id','name','no')} for w in dv.load(store,'mscm:v1:workers',[]) if w.get('companyId')=='__SELF__' and w.get('status')!='inactive']
     reports=[r for r in dv.load(store,KEY,[]) if r['date']==date]
     # Records in this key are themselves an allowlisted, price-free schema.
-    return {'instruction':clean_instruction(ins) if ins else None,'workers':people,'reports':reports}
+    registered=sorted({r['projectId'] for r in dv.load(store,DAILY,[]) if r['date']==date})
+    return {'instruction':clean_instruction(ins) if ins else None,'workers':people,'reports':reports,'registeredProjectIds':registered}
 
 def submit(store,body):
     date=text(body.get('date'),10,True);datetime.date.fromisoformat(date);pid=text(body.get('projectId'),100,True)
