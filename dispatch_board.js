@@ -2,7 +2,8 @@
 document.addEventListener('DOMContentLoaded',()=>{
  const M=DispatchModel,$=id=>document.getElementById(id),parse=(k,f)=>JSON.parse(MSShared.getItem(k)||JSON.stringify(f)),labels={worker:'作業員',heavy:'重機',machine:'機械',vehicle:'車両'};
  const projects=parse('mscm:v1:projects',[]).filter(p=>p.status!=='inactive'),resources=[...parse('mscm:v1:workers',[]).filter(w=>w.companyId==='__SELF__'&&w.status!=='inactive').map(w=>({id:w.id,kind:'worker',name:w.name,no:w.no})),...parse(M.resourceKey,[]).filter(r=>r.status!=='inactive')];
- let days=parse(M.key,[]),plan=M.blank(),undo=[],selected=null,dirty=false,date='',currentInstruction=null;
+ let days=repairDraftNotes(parse(M.key,[])),plan=M.blank(),undo=[],selected=null,dirty=false,date='',currentInstruction=null;
+ function repairDraftNotes(records){for(const day of records){const draft=day.draft;if(!draft||!Array.isArray(draft.projects)||!draft.notes||typeof draft.notes!=='object')continue;for(const id of Object.keys(draft.notes)){if(draft.projects.includes(id))continue;draft.detachedNotes=draft.detachedNotes||{};if(!(id in draft.detachedNotes))draft.detachedNotes[id]=draft.notes[id];delete draft.notes[id];}}return records;}
  let poolKind='worker',poolTarget=null;
  function closeMagnets(){$('magnetDrawer').hidden=true;poolTarget=null;}
  function openMagnets(kind,project=null){poolKind=kind;poolTarget=project;$('vehiclePurposeLabel').hidden=kind!=='vehicle';$('drawerTitle').textContent=labels[kind]+'のマグネット';$('magnetDrawer').hidden=false;$('resourceSearch').value='';renderPool();$('resourceSearch').focus();}
