@@ -62,7 +62,9 @@ footer{max-width:1440px;margin:auto;padding:0 24px 18px;color:#728490;font-size:
 @media(max-width:700px){.top-inner,main{padding-left:13px;padding-right:13px}.project-head{grid-template-columns:1fr}.dashboard{grid-template-columns:1fr 1fr}.info-grid{grid-template-columns:105px 1fr}.actions{grid-template-columns:1fr 1fr}}
 @media(max-width:480px){.dashboard,.actions{grid-template-columns:1fr}.project-name{font-size:21px}}
 </style>
-<script type="text/pages-deferred" src="shared_storage.js"></script><script src="pages_boot.js" defer></script></head>
+<script type="text/pages-deferred" src="shared_storage.js"></script><style>
+.dashboard .metric .label,.dashboard .metric-sub{color:#000!important}.metric .label a{color:#000;text-decoration:none;cursor:pointer}.metric .label a:hover{text-decoration:underline}.metric .value{white-space:normal;overflow-wrap:anywhere;font-size:22px;line-height:1.35;color:#000}.metric[data-finance=remaining] .value{font-size:20px}.progress-row{white-space:normal;grid-template-columns:150px minmax(0,1fr) auto}.progress-row>span:nth-child(2){white-space:normal;line-height:1.5;color:#000}.progress-row b{color:#000}.finance-negative{background:#fff1ee!important}.finance-note{font-size:13px;line-height:1.6;color:#000}.dashboard .label a:focus-visible{outline:2px solid #176fa8}@media(max-width:600px){.progress-row{grid-template-columns:1fr auto}.progress-row>span:nth-child(2){grid-column:1/-1;grid-row:2}}
+</style><style>.invoice-breakdown-nav{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin:0 0 12px;color:#000;font-size:13px}.invoice-breakdown-nav a{display:inline-block;padding:9px 16px;background:#edf7f1;border:1px solid #438c75;border-radius:6px;color:#000;font-weight:700;text-decoration:none}.invoice-breakdown-nav a:focus-visible{outline:2px solid #176fa8;outline-offset:2px}</style><script src="pages_boot.js?v=release-20261013" defer></script></head>
 <body>
 <header class="top"><div class="top-inner">
  <div><div class="brand">MS建設管理システム</div><div class="sub">工事一覧 ＞ 工事カルテ　｜　選択中の1工事を管理</div></div>
@@ -80,16 +82,17 @@ footer{max-width:1440px;margin:auto;padding:0 24px 18px;color:#728490;font-size:
 </section>
 
 <section class="dashboard">
- <div class="metric contract"><div class="label">元請未請求（税抜）</div><div class="value">—</div><div class="metric-sub">受注 − 元請請求</div></div>
- <div class="metric budget"><div class="label">下請未発注</div><div class="value">—</div><div class="metric-sub">実行予算 − 発注済</div></div>
- <div class="metric invoice"><div class="label">下請未請求（税抜）</div><div class="value">—</div><div class="metric-sub">発注済 − 下請請求</div></div>
- <div class="metric payment"><div class="label">元請未収金（税込）</div><div class="value">—</div><div class="metric-sub">元請請求 − 入金</div></div>
- <div class="metric contract"><div class="label">受注金額（税抜）</div><div class="value">—</div></div>
- <div class="metric order"><div class="label">発注済（税抜）</div><div class="value">—</div></div>
- <div class="metric payment"><div class="label">元請請求済（税抜）</div><div class="value">—</div></div>
- <div class="metric profit"><div class="label">予定利益 / 利益率</div><div class="value">—</div></div>
+<div class="metric contract" data-finance="contract"><div class="label"><a data-finance-page="juchu_keiyaku.html">受注金額（税抜）</a></div><div class="value">読み込み中…</div><div class="metric-sub">増減契約を含む</div></div>
+<div class="metric payment" data-finance="billed"><div class="label"><a data-finance-page="seikyu_nyukin.html">元請請求済（税抜）</a></div><div class="value">読み込み中…</div><div class="metric-sub">元請・お客様への請求累計</div></div>
+<div class="metric contract" data-finance="billRemaining"><div class="label"><a data-finance-page="seikyu_nyukin.html">元請請求残（税抜）</a></div><div class="value">読み込み中…</div><div class="metric-sub">受注金額 − 元請請求済</div></div>
+<div class="metric payment" data-finance="unpaid"><div class="label"><a data-finance-page="seikyu_nyukin.html">元請未収金（税込）</a></div><div class="value">読み込み中…</div><div class="metric-sub">元請請求額 − 入金額</div></div>
+<div class="metric invoice" data-finance="supplier"><div class="label"><a data-finance-page="cost_ledger.html">下請・仕入請求累計（税抜）</a></div><div class="value">読み込み中…</div><div class="metric-sub">発注書なしの請求も含む</div></div>
+<div class="metric budget" data-finance="labor"><div class="label"><a data-finance-page="cost_ledger.html">自社労務費累計</a></div><div class="value">読み込み中…</div><div class="metric-sub">事務で登録済みの日報から集計</div></div>
+<div class="metric order" data-finance="cost"><div class="label"><a data-finance-page="cost_ledger.html">現在の原価合計（税抜）</a></div><div class="value">読み込み中…</div><div class="metric-sub">原価台帳に登録された原価の合計</div></div>
+<div class="metric profit" data-finance="remaining"><div class="label"><a data-finance-page="cost_ledger.html">受注額からの残額・率</a></div><div class="value">読み込み中…</div><div class="metric-sub">今後の原価を含まない暫定額</div></div>
 </section>
 
+<div class="invoice-breakdown-nav"><a id="invoiceBreakdownButton" href="#">請求の内訳を見る</a><span>発注に対応した請求・発注書なしの請求をまとめて確認できます。</span></div>
 <div class="content">
  <div>
   <section class="panel">
@@ -98,7 +101,7 @@ footer{max-width:1440px;margin:auto;padding:0 24px 18px;color:#728490;font-size:
     <dt>工事番号</dt><dd>26-001</dd><dt>登録日</dt><dd>2026/08/25</dd>
     <dt>工事名</dt><dd>○○邸 外構工事</dd><dt>工事区分</dt><dd>外構工事</dd>
     <dt>発注者</dt><dd>○○建設株式会社</dd><dt>発注担当者</dt><dd>○○ 様</dd>
-    <dt>施主名</dt><dd>○○ ○○ 様</dd><dt>施工者</dt><dd>MS建設管理デモ</dd>
+    <dt>施主名</dt><dd>○○ ○○ 様</dd><dt>施工者</dt><dd>デモ建設株式会社</dd>
     <dt>施主住所</dt><dd>静岡県三島市○○ <span class="map-slot">地図（後日）</span></dd><dt>工事場所</dt><dd>静岡県伊豆の国市○○ <span class="map-slot">地図（後日）</span></dd>
     <dt>工期</dt><dd>2026/09/01 ～ 2026/10/15</dd><dt>営業担当</dt><dd>デモ担当</dd>
     <dt>工事担当</dt><dd>デモ担当</dd><dt>現場担当</dt><dd>デモ担当</dd>
@@ -109,12 +112,14 @@ footer{max-width:1440px;margin:auto;padding:0 24px 18px;color:#728490;font-size:
   <div class="work-overview">
    <section class="panel">
     <div class="panel-head"><b>この工事の進行状況</b><span style="font-size:12px;color:#6a7d89">各専用画面の状況をここで確認</span></div>
-    <div class="progress-list">
-     <div class="progress-row"><b>受注・契約</b><span>受注金額 1,250,000円</span><span class="progress-status">登録済</span></div>
-     <div class="progress-row"><b>実行予算</b><span>900,000円　予算残 280,000円</span><span class="progress-status">作成済</span></div>
-     <div class="progress-row"><b>発注・下請請求（支払側）</b><span>発注 620,000円　請求累計 480,000円</span><span class="progress-status attn">未請求 140,000円</span></div>
-     <div class="progress-row"><b>元請請求・入金（売上側）</b><span>請求 600,000円　入金 600,000円</span><span class="progress-status">未収 0円</span></div>
-    </div>
+    <div class="progress-list" id="financeProgress">
+<div class="progress-row"><b>受注・契約</b><span>読み込み中…</span><span class="progress-status">確認中</span></div>
+<div class="progress-row"><b>実行予算（予定）</b><span>読み込み中…</span><span class="progress-status">確認中</span></div>
+<div class="progress-row"><b>下請・仕入請求</b><span>読み込み中…</span><span class="progress-status">確認中</span></div>
+<div class="progress-row"><b>元請請求・入金</b><span>読み込み中…</span><span class="progress-status">確認中</span></div>
+<div class="progress-row"><b>原価・現在の残額</b><span>読み込み中…</span><span class="progress-status">確認中</span></div>
+<div class="progress-row"><b>発注管理（参考）</b><span>読み込み中…</span><span class="progress-status">確認中</span></div>
+</div>
    </section>
 
    <section class="panel">
@@ -132,9 +137,7 @@ footer{max-width:1440px;margin:auto;padding:0 24px 18px;color:#728490;font-size:
 
   <section class="panel">
    <div class="panel-head"><b>要確認</b><span style="font-size:10px;color:#6a7d89">問題がある項目だけ確認</span></div>
-   <div class="notice warn"><b>未請求があります</b>受注金額に対して、元請への未請求が 650,000円 あります。</div>
-   <div class="notice normal"><b>下請請求</b>発注済 620,000円 に対し、下請請求累計は 480,000円 です。</div>
-   <div class="notice normal"><b>入金状況</b>元請請求 600,000円 は入金済みです。未収入金はありません。</div>
+   <div id="financeNotices"><div class="notice normal">金額を確認しています。</div></div>
   </section>
 
   <section class="panel">
@@ -144,8 +147,8 @@ footer{max-width:1440px;margin:auto;padding:0 24px 18px;color:#728490;font-size:
  </div>
 </div>
 </main>
-<footer>MS建設管理デモ　｜　MS建設管理システム</footer>
-<script type="text/pages-deferred" src="tax.js?v=20261004net"></script><script type="text/pages-deferred" src="ms_data.js?v=tax20261003"></script>
+<footer>デモ建設株式会社　｜　MS建設管理システム</footer>
+<script type="text/pages-deferred" src="tax.js?v=20261004net"></script><script type="text/pages-deferred" src="ms_data.js?v=tax20261003"></script><script type="text/pages-deferred" src="carte_finance.js?v=invoice-breakdown-20261013"></script>
 <script type="text/pages-deferred">
 (function(){
 const params=new URLSearchParams(location.search);
@@ -180,69 +183,7 @@ if(x){
 
  const contractNow=MSData.contractValue(x);
  function yenOr(v,empty='未登録'){if(v===undefined||v===null||v==='')return empty;const n=Number(v);return Number.isFinite(n)?n.toLocaleString('ja-JP')+'円':empty;}
- const metrics=document.querySelectorAll('.metric .value');
- if(metrics.length>=8){
-   const budgetTotal=(eb.totalAmount!==undefined&&eb.totalAmount!==null)?Number(eb.totalAmount):null;
-   const budgetRemain=budgetTotal!==null?budgetTotal-orderTotal:null;
-   const orderShown=liveOrders.length?orderTotal:Number(f.budgetOrderAmount||0);
-   const supplierShown=liveSupplierInvoices.length?supplierInvoiceTotal:0;
-   const salesInvShown=liveSalesInvoices.length?salesInvoiceTotal:Number(f.invoiceAmount||0);
-   const salesRecShown=liveSalesReceipts.length?salesReceiptTotal:Number(f.paymentAmount||0);
-   const canBill=Math.max(0,Number(contractNow)-liveSalesInvoices.reduce((a,i)=>a+MSTax.invoiceQuote(i).net,0));
-   // 下請未発注：工種予算＋実際に充当した予備費－発注済
-   let orderableBudgetTotal=budgetTotal;
-   try{
-     const br=(MSData.all('budgets')||[]).filter(b=>String(b.projectId)===String(id)&&b.status!=='inactive').sort((a,b)=>String(b.updatedAt||'').localeCompare(String(a.updatedAt||'')))[0]||null;
-     if(br){
-       const reserveUsed=Array.isArray(br.items)?br.items.reduce((s,it)=>s+(Number(it&&it.reserveUsed)||0),0):0;
-       if(br.baseBudgetAmount!==undefined&&br.baseBudgetAmount!==null){
-         orderableBudgetTotal=Number(br.baseBudgetAmount)+reserveUsed;
-       }else if(Array.isArray(br.items)){
-         orderableBudgetTotal=br.items.reduce((s,it)=>s+(Number(it&&it.amount)||0)+(Number(it&&it.reserveUsed)||0),0);
-       }
-     }
-   }catch(e){}
-   const canOrder=orderableBudgetTotal!==null?Math.max(0,orderableBudgetTotal-orderShown):null;
-   const unlinked=liveSupplierInvoices.filter(i=>i.reviewStatus!=='noOrderRequired'&&!liveOrders.some(o=>o.id===i.orderId));
-   const linkedAmount=liveSupplierInvoices.filter(i=>liveOrders.some(o=>o.id===i.orderId)).reduce((q,i)=>q+(Number(i.amount)||0),0);
-   const unallocated=liveOrders.some(o=>!o.allocations?.length);
-   const supplierWaiting=Math.max(0,orderTotal-liveSupplierInvoices.filter(i=>liveOrders.some(o=>o.id===i.orderId)).reduce((a,i)=>a+MSTax.invoiceQuote(i).net,0));
-   const unpaid=Math.max(0,salesInvShown-salesRecShown);
-   metrics[0].textContent=yenOr(canBill);
-   metrics[1].textContent=canOrder!==null?(unallocated?'予算との対応未確認':yenOr(canOrder)):'予算未登録';
-   metrics[2].textContent=yenOr(supplierWaiting)+(unlinked.length?'（発注未確認 '+unlinked.length+'件）':'');
-   metrics[3].textContent=yenOr(unpaid);
-   metrics[4].textContent=yenOr(contractNow);metrics[4].insertAdjacentHTML('afterend','<div class="metric-sub"></div>');metrics[4].nextElementSibling.textContent='税込 '+yenOr(MSTax.gross(x,contractNow));
-   metrics[5].textContent=yenOr(orderTotal);
-   metrics[6].textContent=yenOr(liveSalesInvoices.reduce((a,i)=>a+MSTax.invoiceQuote(i).net,0));
-   metrics[7].textContent=(eb.profitAmount!==undefined&&eb.profitAmount!==null)?(yenOr(eb.profitAmount)+' / '+(eb.profitRate===null?'未算定':Number(eb.profitRate||0).toFixed(1)+'%')):(x.budgetManagement==='none'?'予算管理なし':'未算定（予算未登録）');
- }
- if(x.budgetManagement==='none'){if(metrics[1])metrics[1].closest('.metric').hidden=true;if(metrics[7])metrics[7].closest('.metric').hidden=true;}
- const rows=document.querySelectorAll('.progress-row');
- if(rows.length>=4){
-   rows[0].children[1].textContent='受注金額（税抜） '+yenOr(contractNow); rows[0].children[2].textContent=(x.legacyFinancials&&!x.orderContract?'旧データ':(x.orderContract?'登録済':'未登録'));
-   if(x.budgetManagement==='none'){rows[1].children[1].textContent='予算管理なし：発注・請求で原価を管理します';rows[1].children[2].textContent='予算管理なし';}else if(eb.totalAmount!==undefined&&eb.totalAmount!==null){rows[1].children[1].textContent='実行予算 '+yenOr(eb.totalAmount)+'　予定利益 '+yenOr(eb.profitAmount);rows[1].children[2].textContent='作成済';}else{rows[1].children[1].textContent='今ある発注・請求は予算なしでも登録できます';rows[1].children[2].textContent='予算未登録';}
-   rows[2].children[1].textContent='発注金額（税抜） '+(liveOrders.length?yenOr(orderTotal):yenOr(f.budgetOrderAmount))+'　下請請求 '+(liveSupplierInvoices.length?yenOr(supplierInvoiceTotal):'未登録');
-   rows[2].children[2].textContent=liveOrders.length?'登録済':(x.legacyFinancials?'旧データ':'未登録');
-   const clientInvText=liveSalesInvoices.length?yenOr(salesInvoiceTotal):yenOr(f.invoiceAmount);
-   const clientRecText=liveSalesReceipts.length?yenOr(salesReceiptTotal):yenOr(f.paymentAmount);
-   rows[3].children[1].textContent='元請請求 '+clientInvText+'　入金 '+clientRecText;
-   rows[3].children[2].textContent=(liveSalesInvoices.length||liveSalesReceipts.length)?'登録済':(x.legacyFinancials?'旧データ':'未登録');
- }
- const notices=document.querySelectorAll('.notice');
- const pending=liveSupplierInvoices.filter(i=>i.reviewStatus!=='noOrderRequired'&&!liveOrders.some(o=>o.id===i.orderId)).length;
- const unmapped=liveOrders.filter(o=>!o.allocations?.length).length;
- if(pending||(x.budgetManagement!=='none'&&(unmapped||eb.totalAmount===undefined))){
-   const note=document.createElement('div');note.className='notice';
-   note.textContent=[x.budgetManagement!=='none'&&eb.totalAmount===undefined?'予算未登録：概算から追加できます。':'',pending?'発注未確認の請求書 '+pending+'件：発注・下請請求で確認してください。':'',x.budgetManagement!=='none'&&unmapped?'予算との対応未確認の発注 '+unmapped+'件：後から予算明細に結び付けられます。':''].filter(Boolean).join(' ');
-   const parent=notices[0]?.parentElement;if(parent)parent.prepend(note);
- }
-
- if(notices.length>=3){
-   notices[0].innerHTML='<b>旧データ移行</b>受注・発注・請求・入金は旧工事データを表示します。実行予算は予算管理を行う工事で作成します。';
-   notices[1].innerHTML='<b>発注金額</b>旧データの「予算発注金額」を暫定的に発注金額として表示しています。意味を確認後に正式確定します。';
-   notices[2].innerHTML='<b>請求・入金</b>旧データに値がない場合は「未登録」と表示し、0円とは扱いません。';
- }
+ CarteFinance.render({id,project:x,budget:eb,orders:liveOrders,salesProject});
  document.title=val(x.name)+'｜工事カルテ｜MS建設管理システム';
 }
 function go(href){if(id) sessionStorage.setItem('mscm:selectedProjectId',id);const sep=href.includes('?')?'&':'?';location.href=href+sep+'id='+encodeURIComponent(id);}

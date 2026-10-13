@@ -34,6 +34,8 @@
  try{
   if(location.protocol==='file:')throw Error('この版はWeb上で開きます。公開前の確認には「デモを確認.bat」を使ってください。');
   await unlock();
+  if('serviceWorker' in navigator){try{const registration=await navigator.serviceWorker.register(new URL('demo_sw.js',base),{scope:base.pathname,updateViaCache:'none'});const pending=registration.installing||registration.waiting;if(pending)await new Promise(resolve=>{const timer=setTimeout(resolve,15000);const done=()=>{if(pending.state==='activated'||pending.state==='redundant'){clearTimeout(timer);resolve();}};pending.addEventListener('statechange',done);done();});}catch(error){console.warn('画面の更新確認を完了できませんでした。',error);}}
+
   let raw=localStorage.getItem(storageKey);
   if(!raw){const response=await originalFetch(new URL('demo_data.json.txt',base));if(!response.ok)throw Error('デモデータを読み込めません。');raw=JSON.stringify(await response.json());localStorage.setItem(storageKey,raw);}
   const savedData=JSON.parse(raw),companyKey='mscm:v1:companySettings';
@@ -43,7 +45,7 @@
   await script('https://cdn.jsdelivr.net/pyodide/v0.29.3/full/pyodide.js');
   const py=await loadPyodide({indexURL:'https://cdn.jsdelivr.net/pyodide/v0.29.3/full/'});
   py.FS.mkdirTree('/app');
-  await script(new URL('pages_code.js?v=20261012b',base).href);
+  await script(new URL('pages_code.js?v=release-20261013',base).href);
   for(const name of ['purchase_office','cost_ledger','office_validation','dispatch_validation','worker_reports','pages_backend']){const code=window.MSPagesCode&&window.MSPagesCode[name];if(!code)throw Error('集計処理が不足しています：'+name);py.FS.writeFile('/app/'+name+'.py',code);}
   py.runPython("import sys; sys.path.insert(0, '/app'); from pages_backend import request as pages_request");
   const request=py.globals.get('pages_request');
@@ -91,7 +93,7 @@
    return new Response(JSON.stringify(result.data),{status:result.status,headers:{'Content-Type':'application/json'}});
   };
   if(shell){
-   if('serviceWorker' in navigator)navigator.serviceWorker.register(new URL('demo_sw.js',base),{scope:base.pathname}).catch(()=>{});
+
    window.MSPagesBridge={XHR:LocalXHR,fetch:window.fetch,storageKey};
    const frame=document.createElement('iframe');frame.title='MS建設管理';frame.style.cssText='position:fixed;inset:0;width:100%;height:100%;border:0;background:white';document.body.append(frame);
    function route(){let page;try{page=decodeURIComponent(location.hash.slice(1))||'demo_home.html';}catch(e){page='demo_home.html';}if(page==='index.html')page='demo_home.html';const dest=new URL(page,base);if(dest.origin!==location.origin||!dest.pathname.startsWith(base.pathname)||!dest.pathname.endsWith('.html'))return;const current=frame.contentWindow?.location.href;if(current!==dest.href)frame.src=dest.href;}
