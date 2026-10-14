@@ -202,6 +202,7 @@ const usabilityRender=render;render=function(){usabilityRender();refreshHistoryS
 drawDetails();refreshHistorySummary();
 
 // Keep the saved invoice selected and offer print without opening history.
+const invoiceActions=document.createElement('div');invoiceActions.className='invoice-actions';const saveButton=$('invoiceSaveBtn');saveButton.before(invoiceActions);invoiceActions.append(saveButton);
 const saveNotice=document.createElement('div');saveNotice.id='invoiceSaveNotice';saveNotice.className='hint';saveNotice.setAttribute('role','status');$('invoiceSaveBtn').after(saveNotice);
 window.onInvoiceSaved=()=>{saveNotice.textContent='保存済みです。右側の元請請求履歴にある「請求書を表示」から印刷・PDF保存できます。'};
 const printReset=resetBill;resetBill=function(){printReset();saveNotice.textContent=''};
