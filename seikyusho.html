@@ -9,7 +9,7 @@
 .billing-position .rows{display:grid;grid-template-columns:1fr 1fr;column-gap:4mm}.billing-position .row{font-size:10px}.billing-position .row:nth-last-child(2){border:0}@media print{.page:has(.billing-position) .party{margin-top:4mm}.page:has(.billing-position) .moneyhero{margin:4mm 0 3mm}.page:has(.billing-position) .notes{margin-top:2mm}.page:has(.billing-position) .foot{margin-top:4mm}} .moneyhero strong,.total .grand{color:#000} .billing-position h3{font-size:12px}.billing-position .row{font-size:12px;grid-template-columns:39mm 1fr!important;line-height:1.5} 
 /* Let printed content determine page count; screen paper height must not create a blank page. */
 @media print{html,body{margin:0;padding:0}.page{margin:0;min-height:0;width:100%;box-shadow:none;padding:20mm 14mm 14mm}}
-</style><script src="pages_boot.js" defer></script></head><body>
+</style><script src="pages_boot_invoice_20261014.js" defer></script></head><body>
 <div class="toolbar"><b>請求書</b><button id="new">新規</button><button class="save" id="save">下書き保存</button><button id="export">データを書き出す</button><button id="import">データを読み込む</button><button class="pri" id="print">印刷・PDF保存</button><input type="file" id="file" accept="application/json,.json" hidden></div>
 <div class="notice" id="status" role="status" aria-live="polite">請求内容を入力すると、下の請求書に反映します。</div>
 <section class="editor"><h2>請求先・工事・発行情報</h2><div class="grid" id="fields"></div></section>

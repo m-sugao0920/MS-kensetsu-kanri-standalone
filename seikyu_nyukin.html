@@ -212,7 +212,7 @@ window.onInvoiceSaved=record=>{savedInvoiceId=record.id;savedSignature=invoiceSi
 const printFill=fillBill;fillBill=function(record){printFill(record);if(record.document){savedInvoiceId=record.id;savedSignature=invoiceSignature()}else{savedInvoiceId='';savedSignature=''}updatePrintState()};
 const printReset=resetBill;resetBill=function(){printReset();savedInvoiceId='';savedSignature='';updatePrintState()};
 const printCalc=calcBill;calcBill=function(){printCalc();updatePrintState()};$('billTax').onchange=calcBill;$('billRounding').onchange=calcBill;$('invoiceForm').addEventListener('input',updatePrintState);$('invoiceForm').addEventListener('change',updatePrintState);
-function viewSavedInvoice(){if(!savedInvoiceId||invoiceSignature()!==savedSignature){show('invoiceWarning','変更内容を更新してから請求書を表示してください。');return}window.open('seikyusho.html?projectId='+encodeURIComponent(id)+'&invoiceId='+encodeURIComponent(savedInvoiceId),'_blank','noopener')}
+function viewSavedInvoice(){if(!savedInvoiceId||invoiceSignature()!==savedSignature){show('invoiceWarning','変更内容を更新してから請求書を表示してください。');return}window.open('seikyusho.html?projectId='+encodeURIComponent(id)+'&invoiceId='+encodeURIComponent(savedInvoiceId)+'&preview=20261014','_blank')}
 directView.onclick=viewSavedInvoice;
 saveAndView.onclick=()=>{if(invoiceSaving)return;const oldHook=window.onInvoiceSaved;let success=false;window.onInvoiceSaved=record=>{oldHook(record);success=true};try{saveButton.click()}finally{window.onInvoiceSaved=oldHook}if(success)viewSavedInvoice()};
 displayOpt.classList.add('billing-position-option');displayOpt.lastChild.textContent='請求書に契約・請求状況を載せる';
