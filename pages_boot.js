@@ -14,7 +14,11 @@
 
  async function unlock(){
   const key='mscm-demo-login:'+base.pathname;
-  if(sessionStorage.getItem(key)==='allowed')return;
+  const sharedKey=key+':expires',duration=8*60*60*1000;
+  function rememberLogin(){localStorage.setItem(sharedKey,String(Date.now()+duration));sessionStorage.setItem(key,'allowed');}
+  const expires=localStorage.getItem(sharedKey);
+  if(expires!==null&&Number(expires)>Date.now()){sessionStorage.setItem(key,'allowed');return;}
+  if(expires===null&&sessionStorage.getItem(key)==='allowed'){rememberLogin();return;}
   notice.replaceChildren();
   const form=document.createElement('form');form.style.cssText='width:min(360px,85vw);background:white;padding:28px;border:1px solid #cadce8;border-radius:12px';
   const heading=document.createElement('h1');heading.textContent='MS建設管理 デモ';heading.style.fontSize='22px';
@@ -25,7 +29,7 @@
   form.append(heading,label,input,button,message);notice.append(form);input.focus();
   await new Promise(resolve=>{form.onsubmit=async event=>{event.preventDefault();button.disabled=true;
    try{const bytes=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(input.value));const hash=Array.from(new Uint8Array(bytes),b=>b.toString(16).padStart(2,'0')).join('');
-    if(hash==='a447121cc5948970732efda054e44237f70bb347515964b80f6ae301638df0a8'){sessionStorage.setItem(key,'allowed');resolve();}else{message.textContent='パスワードが違います。';input.select();}
+    if(hash==='a447121cc5948970732efda054e44237f70bb347515964b80f6ae301638df0a8'){rememberLogin();resolve();}else{message.textContent='パスワードが違います。';input.select();}
    }catch(error){message.textContent='パスワードを確認できません。公開URLまたは確認用の起動ボタンから開いてください。';}
    finally{button.disabled=false;}
   };});
