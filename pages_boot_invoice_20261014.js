@@ -2,7 +2,6 @@
 (async()=>{
  'use strict';
  const shell=document.documentElement.dataset.demoShell==='true';
- if(!shell&&location.pathname.endsWith('/seikyu_nyukin.html')){location.replace(new URL('seikyu_nyukin_current_20261014.html'+location.search+location.hash,location.href).href);return;}
  let invoiceBridge=null;try{if(!shell&&window.opener&&window.opener.location.origin===location.origin)invoiceBridge=window.opener.MSPagesBridge||null;}catch(e){}
  if(window!==window.top&&shell){location.replace(new URL('demo_home.html',location.href).href);return;}
  if(window===window.top&&!shell&&!invoiceBridge){location.replace(new URL('index.html#'+encodeURIComponent(location.pathname.split('/').pop()+location.search+location.hash),location.href).href);return;}
@@ -104,7 +103,7 @@
 
    window.MSPagesBridge={XHR:LocalXHR,fetch:window.fetch,storageKey};
    const frame=document.createElement('iframe');frame.title='MS建設管理';frame.style.cssText='position:fixed;inset:0;width:100%;height:100%;border:0;background:white';document.body.append(frame);
-   function route(){let page;try{page=decodeURIComponent(location.hash.slice(1))||'demo_home.html';}catch(e){page='demo_home.html';}if(page==='index.html')page='demo_home.html';const dest=new URL(page,base);if(dest.origin!==location.origin||!dest.pathname.startsWith(base.pathname)||!dest.pathname.endsWith('.html'))return;const current=frame.contentWindow?.location.href;if(current!==dest.href)frame.src=dest.href;}
+   function route(){let page;try{page=decodeURIComponent(location.hash.slice(1))||'demo_home.html';}catch(e){page='demo_home.html';}if(page==='index.html')page='demo_home.html';page=page.replace(/^seikyu_nyukin_current_20261014\.html(?=[?#]|$)/,'seikyu_nyukin.html');const dest=new URL(page,base);if(dest.origin!==location.origin||!dest.pathname.startsWith(base.pathname)||!dest.pathname.endsWith('.html'))return;const current=frame.contentWindow?.location.href;if(current!==dest.href)frame.src=dest.href;}
    frame.addEventListener('load',()=>{try{const u=new URL(frame.contentWindow.location.href);if(u.origin!==location.origin)return;const page=u.pathname.split('/').pop()+u.search+u.hash;const hash='#'+encodeURIComponent(page);if(location.hash!==hash)history.replaceState(null,'',hash);}catch(e){}});
    window.addEventListener('hashchange',route);route();overlay.remove();
   }else await startPage();
