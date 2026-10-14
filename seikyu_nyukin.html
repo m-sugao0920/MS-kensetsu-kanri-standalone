@@ -202,21 +202,13 @@ const usabilityRender=render;render=function(){usabilityRender();refreshHistoryS
 drawDetails();refreshHistorySummary();
 
 // Keep the saved invoice selected and offer print without opening history.
-let savedInvoiceId='',savedSignature='';
-const invoiceActions=document.createElement('div');invoiceActions.className='invoice-actions';const saveButton=$('invoiceSaveBtn');saveButton.before(invoiceActions);invoiceActions.append(saveButton);const saveAndView=document.createElement('button');saveAndView.id='invoiceSaveView';saveAndView.type='button';saveAndView.className='save';saveAndView.textContent='登録して請求書を表示';invoiceActions.append(saveAndView);
-const directView=document.createElement('button');directView.id='invoiceDirectView';directView.type='button';directView.className='save';directView.textContent='請求書を表示・印刷';directView.hidden=true;invoiceActions.after(directView);
-const saveNotice=document.createElement('div');saveNotice.id='invoiceSaveNotice';saveNotice.className='hint';saveNotice.setAttribute('role','status');directView.after(saveNotice);
-function invoiceSignature(){return JSON.stringify({date:$('invoiceDate').value,memo:$('invoiceMemo').value,customer:$('billCustomer').value,type:$('billType').value,no:$('billNo').value,payment:$('billDue').value,tax:$('billTax').value,rounding:$('billRounding').value,show:$('billShowPosition').checked,items:details})}
-function updatePrintState(){directView.hidden=!savedInvoiceId;directView.disabled=!!savedInvoiceId&&invoiceSignature()!==savedSignature;if(savedInvoiceId){saveAndView.textContent='更新して請求書を表示';saveNotice.textContent=directView.disabled?'内容が変更されています。更新すると変更後の請求書を印刷できます。':'保存済みです。明細を残しています。このまま請求書を表示・印刷できます。'}else{saveAndView.textContent='登録して請求書を表示';saveNotice.textContent=''}}
-window.onInvoiceSaved=record=>{savedInvoiceId=record.id;savedSignature=invoiceSignature();updatePrintState()};
-const printFill=fillBill;fillBill=function(record){printFill(record);if(record.document){savedInvoiceId=record.id;savedSignature=invoiceSignature()}else{savedInvoiceId='';savedSignature=''}updatePrintState()};
-const printReset=resetBill;resetBill=function(){printReset();savedInvoiceId='';savedSignature='';updatePrintState()};
-const printCalc=calcBill;calcBill=function(){printCalc();updatePrintState()};$('billTax').onchange=calcBill;$('billRounding').onchange=calcBill;$('invoiceForm').addEventListener('input',updatePrintState);$('invoiceForm').addEventListener('change',updatePrintState);
-function viewSavedInvoice(){if(!savedInvoiceId||invoiceSignature()!==savedSignature){show('invoiceWarning','変更内容を更新してから請求書を表示してください。');return}window.open('seikyusho.html?projectId='+encodeURIComponent(id)+'&invoiceId='+encodeURIComponent(savedInvoiceId)+'&preview=20261014','_blank')}
-directView.onclick=viewSavedInvoice;
-saveAndView.onclick=()=>{if(invoiceSaving)return;const oldHook=window.onInvoiceSaved;let success=false;window.onInvoiceSaved=record=>{oldHook(record);success=true};try{saveButton.click()}finally{window.onInvoiceSaved=oldHook}if(success)viewSavedInvoice()};
+const saveNotice=document.createElement('div');saveNotice.id='invoiceSaveNotice';saveNotice.className='hint';saveNotice.setAttribute('role','status');$('invoiceSaveBtn').after(saveNotice);
+window.onInvoiceSaved=()=>{saveNotice.textContent='保存済みです。右側の元請請求履歴にある「請求書を表示」から印刷・PDF保存できます。'};
+const printReset=resetBill;resetBill=function(){printReset();saveNotice.textContent=''};
+const printFill=fillBill;fillBill=function(record){printFill(record);saveNotice.textContent='訂正後は更新してください。請求書は右側の元請請求履歴から表示できます。'};
+function updatePrintState(){}
 displayOpt.classList.add('billing-position-option');displayOpt.lastChild.textContent='請求書に契約・請求状況を載せる';
-const printStyle=document.createElement('style');printStyle.textContent='.invoice-actions{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:8px}.invoice-actions .save{grid-column:auto!important;height:auto;min-height:42px;padding:8px}#invoiceDirectView{background:#315c72}#invoiceDirectView[hidden]{display:none!important}#invoiceDirectView:disabled{opacity:.5;cursor:default}.billing-position-option{font-size:16px!important;line-height:1.6;font-weight:bold!important;padding:10px;background:#f2f8fc;border-radius:7px}.billing-position-option input{width:22px!important;height:22px!important;flex-shrink:0}';document.head.append(printStyle);updatePrintState();
+const printStyle=document.createElement('style');printStyle.textContent='.invoice-actions{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:8px}.invoice-actions .save{grid-column:auto!important;height:auto;min-height:42px;padding:8px}.billing-position-option{font-size:16px!important;line-height:1.6;font-weight:bold!important;padding:10px;background:#f2f8fc;border-radius:7px}.billing-position-option input{width:22px!important;height:22px!important;flex-shrink:0}';document.head.append(printStyle);updatePrintState();
 
 
 // Separate billing and receipt work while retaining drafts on tab switches.
@@ -284,7 +276,7 @@ const settingsGrid=document.createElement('div');settingsGrid.className='invoice
 settingsGrid.append($('billType').parentElement,$('billNo').parentElement,$('billDue').parentElement);settingsFold.append(settingsGrid,taxesFold,$('paymentHint'),supplementFold,grossHelp,displayOpt);
 const toolbar=document.createElement('div');toolbar.className='invoice-register-bar';
 const amountField=$('invoiceAmount').parentElement;amountField.hidden=true;
-const actionTools=document.createElement('div');actionTools.className='invoice-secondary-actions';actionTools.append(cancelBill,directView);
+const actionTools=document.createElement('div');actionTools.className='invoice-secondary-actions';actionTools.append(cancelBill);
 toolbar.append($('billSummary'),amountField,$('invoiceWarning'),invoiceActions,actionTools,saveNotice);
 invoiceForm.replaceChildren(identityRow,detailBlock,toolbar,settingsFold,paymentChoices);
 const compactCalc=calcBill;calcBill=function(){compactCalc();$('invoiceAmount').readOnly=true;};
@@ -306,7 +298,7 @@ const compactEntryStyle=document.createElement('style');compactEntryStyle.textCo
 .invoice-register-bar{position:sticky;bottom:10px;z-index:20;background:#f2f8fc;border:1px solid #b9d2e4;border-radius:9px;padding:10px;box-shadow:0 3px 12px #173f6b18}
 .invoice-register-bar #billSummary{font-size:14px!important;font-weight:700;margin:0 0 8px;line-height:1.6}
 .invoice-register-bar .warning{margin-bottom:8px}.invoice-register-bar .invoice-actions{gap:8px}
-.invoice-secondary-actions{display:flex;gap:8px;align-items:center;margin-top:6px}.invoice-secondary-actions #invoiceDirectView{font-size:12px;padding:6px;height:auto;min-height:30px}.invoice-secondary-actions button{cursor:pointer}
+.invoice-secondary-actions{display:flex;gap:8px;align-items:center;margin-top:6px}.invoice-secondary-actions button{cursor:pointer}
 .invoice-settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:10px}.invoice-settings-grid label{display:block;font-size:12px;color:#607481;margin-bottom:4px}
 .invoice-settings .billing-position-option{font-size:13px!important}.invoice-settings{margin:0!important}
 .metrics .metric{min-height:0;padding:8px 10px}.metrics .value{margin-top:3px;font-size:20px}.metrics{margin:8px 0}
