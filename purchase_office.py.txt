@@ -137,6 +137,14 @@ def ledger(d,pid):
             if l['projectId']==pid:result.append({'date':e['date'],'source':'仕入・下請請求','supplier':e['supplierName'],'subject':l['subject'],'category':l.get('category',subject_categories(d).get(l['subject'],'unclassified')),'workType':' ／ '.join(x for x in (l.get('workType',''),l.get('content','')) if x),'workTypeId':l.get('workTypeId',''),'content':l.get('content',''),'amount':l['netAmount']})
     for report in rows(d,'mscm:dailyReports:v1'):
         if report['projectId']==pid:result.append({'date':report['date'],'source':'自社日報','supplier':'自社','subject':'自社労務費','category':'labor','workType':report.get('workNote',''),'amount':report['laborTotal']})
+    for report in rows(d,'mscm:dailyReports:v1'):
+     if report['projectId']!=pid:continue
+     if not report.get('machineCostVersion'):
+      if report.get('machines'):warnings.append('旧日報の機械・車両損料が未計上です。日報の修正画面で単価を確認して保存してください。')
+      continue
+     for m in report.get('machines',[]):
+      if m.get('amount') is None:warnings.append('単価未設定の機械・車両損料があります。日報と機材マスターを確認してください。');continue
+      result.append({'date':report['date'],'source':'自社機械・車両日報','supplier':'自社','subject':'自社機械費','category':'expense','workType':m['name'],'amount':m['amount'],'hours':m['hours'],'unitPrice':m['costSnapshot']['fee'],'usageUnit':m['costSnapshot']['unit'],'resourceId':m.get('resourceId','')})
     totals={k:sum(r['amount'] for r in result if r['category']==k) for k in ('material','labor','outsourced','expense','unclassified')}
     return {'rows':sorted(result,key=lambda r:r['date']),'totals':totals,'total':sum(totals.values()),'warnings':list(dict.fromkeys(warnings))}
 

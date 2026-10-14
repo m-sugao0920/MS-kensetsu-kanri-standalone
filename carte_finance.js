@@ -5,11 +5,11 @@ const number=value=>{const n=Number(value);if(!Number.isFinite(n))throw Error('�
 function calculate(input,tax){
  const {contract,ledger}=input,invoices=active(input.invoices),receipts=active(input.receipts);
  const billed=invoices.reduce((n,r)=>n+number(tax.invoiceQuote(r).net),0),gross=invoices.reduce((n,r)=>n+number(r.amount),0),received=receipts.reduce((n,r)=>n+number(r.amount),0);
- const labor=ledger.rows.filter(r=>r.source==='自社日報').reduce((n,r)=>n+number(r.amount),0),supplier=ledger.rows.filter(r=>r.source!=='自社日報').reduce((n,r)=>n+number(r.amount),0),cost=number(ledger.total);
- if(Math.abs(labor+supplier-cost)>0.01)throw Error('原価の明細と合計が一致しません。原価台帳を確認してください。');
+ const labor=ledger.rows.filter(r=>r.source==='自社日報').reduce((n,r)=>n+number(r.amount),0),equipment=ledger.rows.filter(r=>r.source==='自社機械・車両日報').reduce((n,r)=>n+number(r.amount),0),supplier=ledger.rows.filter(r=>r.source!=='自社日報'&&r.source!=='自社機械・車両日報').reduce((n,r)=>n+number(r.amount),0),cost=number(ledger.total);
+ if(Math.abs(labor+equipment+supplier-cost)>0.01)throw Error('原価の明細と合計が一致しません。原価台帳を確認してください。');
  const validContract=contract!==null&&contract!==undefined&&contract!=='';
  const c=validContract?number(contract):null,remaining=c===null?null:c-cost;
- return {contract:c,billed,billRemaining:c===null?null:c-billed,unpaid:gross-received,gross,received,supplier,labor,cost,remaining,rate:c>0?remaining/c*100:null,invoiceCount:invoices.length,costCount:ledger.rows.length,warnings:ledger.warnings||[]};
+ return {contract:c,billed,billRemaining:c===null?null:c-billed,unpaid:gross-received,gross,received,supplier,labor,equipment,cost,remaining,rate:c>0?remaining/c*100:null,invoiceCount:invoices.length,costCount:ledger.rows.length,warnings:ledger.warnings||[]};
 }
 const money=n=>n===null||n===undefined?'未登録':Math.round(n).toLocaleString('ja-JP')+'円';
 async function render(context){
@@ -29,7 +29,7 @@ async function render(context){
   cells.contract.sub.textContent=values.contract===null?'受注・契約で金額を登録してください':'増減契約を含む ／ 税込 '+money(MSTax.gross(project,values.contract));
   cells.billed.sub.textContent='登録済みの元請請求 '+values.invoiceCount+'件';
   cells.supplier.sub.textContent='発注書なしの請求も含む ／ 登録済みの原価';
-  cells.cost.sub.textContent='下請・仕入請求＋自社労務費 ／ 原価台帳と一致';
+  cells.cost.sub.textContent='下請・仕入＋労務費＋機械・車両損料 ／ 原価台帳と一致';cells.labor.sub.textContent='日報の労務費 ／ 機械・車両損料 '+money(values.equipment)+'（原価合計に含む）';
   if(values.warnings.length){cells.cost.sub.textContent='一部原価に確認事項あり（下の要確認を参照）';cells.remaining.sub.textContent='原価に未確認項目あり ／ 参考額';}
   progress(0,'受注金額（税抜） '+money(values.contract),values.contract===null?'未登録':'登録済');
   const hasBudget=budget.totalAmount!==undefined&&budget.totalAmount!==null;

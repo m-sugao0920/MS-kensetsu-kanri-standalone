@@ -45,6 +45,7 @@ def validate_office_value(key,value,store,user):
    for k in ('workNote','extraNote'):
     if not isinstance(r.get(k,''),str) or len(r.get(k,''))>10000:raise ValueError()
    r['laborTotal']=total
+   if r['id'] not in old or (r.get('machineCostVersion')==1 and r!=old[r['id']]):cost_ledger.machine_costs(r,store,old.get(r['id']))
    if old.get(r['id'])!=r:
     r['updatedBy']=user['id'];r['updatedAt']=time.strftime('%Y-%m-%dT%H:%M:%S')
  return json.dumps(x,ensure_ascii=False)

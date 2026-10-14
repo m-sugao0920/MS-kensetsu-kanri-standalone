@@ -54,5 +54,46 @@ def ledger(d,project_id):
   rows.append({'date':i.get('invoiceDate',''),'source':'既存下請請求','supplier':i.get('supplierName',''),'subject':'科目未分類','category':'unclassified','workType':i.get('content',''),'amount':net})
  for report in load(d,'mscm:dailyReports:v1',[]):
   if report['projectId']==project_id:rows.append({'date':report['date'],'source':'自社日報','supplier':'自社','subject':'自社労務費','category':'labor','workType':report.get('workNote',''),'amount':report['laborTotal']})
+ for report in load(d,'mscm:dailyReports:v1',[]):
+  if report['projectId']!=project_id:continue
+  if not report.get('machineCostVersion'):
+   if report.get('machines'):warnings.append('旧日報の機械・車両損料が未計上です。日報の修正画面で単価を確認して保存してください。')
+   continue
+  for m in report.get('machines',[]):
+   if m.get('amount') is None:warnings.append('単価未設定の機械・車両損料があります。日報と機材マスターを確認してください。');continue
+   rows.append({'date':report['date'],'source':'自社機械・車両日報','supplier':'自社','subject':'自社機械費','category':'expense','workType':m['name'],'amount':m['amount'],'hours':m['hours'],'unitPrice':m['costSnapshot']['fee'],'usageUnit':m['costSnapshot']['unit'],'resourceId':m.get('resourceId','')})
  totals={k:sum(r['amount'] for r in rows if r['category']==k) for k in ('material','labor','outsourced','expense','unclassified')}
  return {'rows':sorted(rows,key=lambda r:r['date']),'totals':totals,'total':sum(totals.values()),'warnings':list(dict.fromkeys(warnings))}
+
+def machine_costs(report,store,previous=None):
+ resources=load(store,'mscm:resources:v1',[])
+ old_machines=(previous or {}).get('machines',[])
+ total=0
+ for machine in report.get('machines',[]):
+  name=machine['name'];purpose=machine.get('vehiclePurpose','')
+  if not purpose:
+   if name.endswith('（通勤）'):purpose='commute'
+   elif name.endswith('（材料運搬）'):purpose='transport'
+  if purpose not in ('','commute','transport'):raise ValueError('車両の用途を確認してください。')
+  rid=machine.get('resourceId','')
+  if rid:matches=[r for r in resources if r.get('id')==rid]
+  else:
+   plain=name.removesuffix('（通勤）').removesuffix('（材料運搬）')
+   matches=[r for r in resources if r.get('name')==plain]
+  resource=matches[0] if len(matches)==1 else None
+  rid=resource['id'] if resource else rid
+  saved=next((m.get('costSnapshot') for m in old_machines if m.get('resourceId')==rid and m.get('vehiclePurpose','')==purpose and m.get('costSnapshot')),None)
+  if saved and saved.get('fee') is not None:
+   fee=saved.get('fee');unit=saved.get('unit','day')
+  elif resource:
+   rate=resource.get('vehicleRates',{}).get(purpose,{}) if resource.get('kind')=='vehicle' else {}
+   if rate.get('fee') is not None:fee=rate['fee'];unit=rate.get('unit','day')
+   else:fee=resource.get('usageFee');unit=resource.get('usageUnit','day')
+  else:fee=None;unit='day'
+  if fee is not None and (type(fee) is not int or not 0<=fee<=10000000 or unit not in ('day','hour')):raise ValueError('機械・車両の単価を確認してください。')
+  machine['resourceId']=rid;machine['vehiclePurpose']=purpose
+  machine['costSnapshot']={'resourceId':rid,'vehiclePurpose':purpose,'fee':fee,'unit':unit,'baseHours':1 if unit=='hour' else 8}
+  machine['amount']=None if fee is None else math.floor(fee*machine['hours']/(1 if unit=='hour' else 8)+0.5)
+  total+=machine['amount'] or 0
+ report['machineCostVersion']=1;report['machineTotal']=total
+ return report
