@@ -2,6 +2,7 @@
 (async()=>{
  'use strict';
  const shell=document.documentElement.dataset.demoShell==='true';
+ if(!shell&&location.pathname.endsWith('/seikyu_nyukin.html')){location.replace(new URL('seikyu_nyukin_current_20261014.html'+location.search+location.hash,location.href).href);return;}
  if(window!==window.top&&shell){location.replace(new URL('demo_home.html',location.href).href);return;}
  if(window===window.top&&!shell){location.replace(new URL('index.html#'+encodeURIComponent(location.pathname.split('/').pop()+location.search+location.hash),location.href).href);return;}
  const originalFetch=window.fetch.bind(window),NativeXHR=window.XMLHttpRequest;

@@ -1,0 +1,338 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>元請請求・入金管理（売上側）｜MS建設管理システム</title>
+<style id="ms-no-flicker">
+/* 初期データ反映前のテンプレートちらつき防止。レイアウト値は変更しない */
+html.ms-app-loading body{visibility:hidden}
+</style>
+<script type="text/pages-deferred" id="ms-no-flicker-start">
+document.documentElement.classList.add('ms-app-loading');
+window.addEventListener('load',function(){
+  requestAnimationFrame(function(){
+    document.documentElement.classList.remove('ms-app-loading');
+  });
+},{once:true});
+</script>
+
+<style>
+:root{--deep:#173f6b;--line:#c9dbe8;--text:#243746;--muted:#6a7d89;--blue:#2f74a6;--green:#3b8b67;--warn:#b86c24;--red:#a94343}
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(180deg,#fff,#edf6fc);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Yu Gothic","Meiryo",sans-serif;min-height:100vh}
+.top{background:linear-gradient(135deg,#173f6b,#245b86);color:#fff}.top-inner{max-width:1440px;margin:auto;padding:15px 24px;display:flex;align-items:center;justify-content:space-between;gap:16px}.brand{font-size:24px;font-weight:950}.sub{font-size:12px;opacity:.9;margin-top:3px}.top-actions{display:flex;gap:8px;flex-wrap:wrap}.top-actions button{border:1px solid rgba(255,255,255,.65);background:rgba(255,255,255,.12);color:#fff;border-radius:8px;padding:8px 14px;font-weight:900;cursor:pointer}
+main{max-width:1440px;margin:auto;padding:16px 24px 30px}.project{background:#fff;border:1px solid var(--line);border-radius:12px;padding:13px 15px;box-shadow:0 7px 18px rgba(23,63,107,.08);display:flex;justify-content:space-between;gap:15px;align-items:center}.no{font-size:11px;color:#60798a;font-weight:900}.name{font-size:24px;color:var(--deep);font-weight:950;margin-top:2px}.meta{font-size:12px;color:#5c7180;margin-top:6px}.state{border:1px solid #b9ddc6;background:#e7f5ec;color:#2e704b;border-radius:999px;padding:6px 13px;font-size:11px;font-weight:950}
+.metrics{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin:11px 0}.metric{background:#fff;border:1px solid #d4e1ea;border-radius:10px;padding:11px 12px;min-height:76px;box-shadow:0 4px 11px rgba(23,63,107,.05);border-top:3px solid var(--blue)}.metric:nth-child(3){border-top-color:var(--warn)}.metric:nth-child(4){border-top-color:var(--green)}.metric:nth-child(5){border-top-color:var(--red)}.label{font-size:10px;font-weight:900;color:#5e7381}.value{font-size:21px;font-weight:800;margin-top:6px;font-variant-numeric:tabular-nums;white-space:nowrap}.metric small{display:block;margin-top:3px;font-size:10px;color:#7a8a94}
+.role-note{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:11px}.role{background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:11px;line-height:1.55}.role b{display:block;font-size:13px;margin-bottom:2px}.role.invoice b{color:var(--blue)}.role.receipt b{color:var(--green)}
+.entry-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.panel{background:#fff;border:1px solid var(--line);border-radius:11px;box-shadow:0 5px 14px rgba(23,63,107,.06);overflow:hidden}.panel-head{padding:10px 13px;background:#f2f8fc;border-bottom:1px solid #d9e6ef;display:flex;align-items:center;justify-content:space-between;gap:10px}.panel-head b{color:var(--deep);font-size:15px}.who{font-size:10px;color:#71818c;font-weight:800}.form{padding:12px;display:grid;grid-template-columns:1fr 1fr;gap:9px}.field{min-width:0}.field.full{grid-column:1/-1}.field label{display:block;font-size:10px;font-weight:900;color:#607481;margin-bottom:4px}.field input{width:100%;height:38px;border:1px solid #b8cad6;border-radius:7px;padding:0 10px;font-size:15px;background:#fff}.field input[type=number]{text-align:right}.save{grid-column:1/-1;border:0;border-radius:8px;height:39px;color:#fff;font-weight:950;cursor:pointer}.invoice-panel .save{background:var(--blue)}.receipt-panel .save{background:var(--green)}.hint{grid-column:1/-1;font-size:10px;color:#72838d;line-height:1.45}.warning{display:none;grid-column:1/-1;border:1px solid #e1b28c;background:#fff5eb;color:#8d4d1c;border-radius:7px;padding:7px 9px;font-size:11px;font-weight:800}
+.history-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}.table-wrap{overflow-x:auto}table{width:100%;border-collapse:collapse;font-size:12px}th,td{padding:9px 10px;border-bottom:1px solid #e4edf2;text-align:left;white-space:nowrap}th{background:#f7fafc;color:#526b7a;font-size:10px}td.money,th.money{text-align:right;font-variant-numeric:tabular-nums}tfoot td{font-weight:950;background:#fafcfd}.empty{padding:16px;color:#788a95;font-size:11px;text-align:center}.footnote{margin-top:12px;padding:10px 12px;border:1px dashed #b9cbd7;border-radius:9px;color:#657986;font-size:11px;line-height:1.6;background:#fbfdfe}
+@media(max-width:900px){.metrics{grid-template-columns:repeat(2,1fr)}.entry-grid,.history-grid,.role-note{grid-template-columns:1fr}}@media(max-width:600px){main,.top-inner{padding-left:13px;padding-right:13px}.project{align-items:flex-start;flex-direction:column}.metrics{grid-template-columns:1fr}.form{grid-template-columns:1fr}.field.full,.save,.hint,.warning{grid-column:auto}.name{font-size:21px}}
+.money-input{text-align:right;background:#fff7f7!important}.row-actions{display:flex;gap:4px;justify-content:center}.row-actions button{border:1px solid #b9cad5;background:#fff;border-radius:5px;padding:4px 7px;font-size:11px;font-weight:700;cursor:pointer}.row-actions .delete{color:#9a4444;border-color:#d9b7b7}.history-grid td{font-size:13px}.history-grid td.money{font-weight:600}</style><script type="text/pages-deferred" src="shared_storage.js"></script><script src="pages_boot.js" defer></script></head><body>
+<header class="top"><div class="top-inner"><div><div class="brand">MS建設管理システム</div><div class="sub">元請請求・入金管理（売上側）</div></div><div class="top-actions"><button onclick="location.href='kouji_carte.html?id='+encodeURIComponent(new URLSearchParams(location.search).get('id')||sessionStorage.getItem('mscm:selectedProjectId')||'')">工事カルテへ</button><button onclick="location.href='index.html'">メイン画面へ</button></div></div></header>
+<main>
+<div style="margin-bottom:10px;padding:9px 12px;border:1px solid #b9d7ea;background:#f2f9fd;border-radius:8px;font-size:12px;color:#315b72;font-weight:700">
+元請・お客様への請求と入金を管理します。下請・仕入先から届いた請求書は「発注・下請請求」で登録してください。
+</div>
+<section class="project"><div><div class="no">工事番号　26-001</div><div class="name">○○邸 外構工事</div><div class="meta">発注者：○○建設株式会社　｜　工事担当：デモ担当　｜　工期：2026/09/01 ～ 2026/10/15</div></div><span class="state">施工中</span></section>
+<section class="metrics"><div class="metric"><div class="label">受注金額（税込）</div><div class="value" id="contractValue">1,250,000円</div></div><div class="metric"><div class="label">元請請求累計</div><div class="value" id="invoiceTotal">600,000円</div></div><div class="metric"><div class="label">元請未請求額</div><div class="value" id="unbilled">650,000円</div><small>受注金額 − 請求累計</small></div><div class="metric"><div class="label">入金累計</div><div class="value" id="receiptTotal">600,000円</div></div><div class="metric"><div class="label">未入金額</div><div class="value" id="unpaid">0円</div><small>請求累計 − 入金累計</small></div></section>
+<section class="role-note"><div class="role invoice"><b>工事担当者：元請への請求を登録</b>元請・お客様へ請求書を作成・提出した時点で、請求日と請求金額を登録します。</div><div class="role receipt"><b>経理担当者：入金を登録</b>入金を確認した時点で、入金日と入金金額を登録します。</div></section>
+<div class="entry-grid">
+<section class="panel invoice-panel"><div class="panel-head"><b>元請請求を登録</b><span class="who">工事担当者</span></div><form class="form" id="invoiceForm"><div class="field"><label for="invoiceDate">元請請求日</label><input id="invoiceDate" type="date" required></div><div class="field"><label for="invoiceAmount">今回請求額（税込・自動計算）</label><input id="invoiceAmount" type="text" inputmode="numeric" class="money-input" placeholder="0" required></div><div class="field full"><label for="invoiceMemo">備考（任意）</label><input id="invoiceMemo" type="text" maxlength="80" placeholder="例：第2回請求"></div><div class="warning" id="invoiceWarning"></div><button class="save" id="invoiceSaveBtn" type="button">元請請求を登録</button><div class="hint">受注金額を超える請求になる場合は登録せず、受注金額・増減を確認します。</div></form></section>
+<section class="panel receipt-panel"><div class="panel-head"><b>入金を登録</b><span class="who">経理担当者</span></div><form class="form" id="receiptForm"><div class="field"><label for="receiptDate">入金日</label><input id="receiptDate" type="date" required></div><div class="field"><label for="receiptAmount">入金金額（税込・実際の入金額）</label><input id="receiptAmount" type="text" inputmode="numeric" class="money-input" placeholder="0" required></div><div class="field full"><label for="receiptMemo">備考（任意）</label><input id="receiptMemo" type="text" maxlength="80" placeholder="例：振込入金"></div><div class="warning" id="receiptWarning"></div><button class="save" id="receiptSaveBtn" type="button">入金を登録</button><div class="hint">入金累計が請求累計を超える場合は登録せず、請求内容または入金内容を確認します。</div></form></section>
+</div>
+<div class="history-grid">
+<section class="panel"><div class="panel-head"><b>元請請求履歴</b><span class="who">元請・お客様へ請求した事実を記録</span></div><div class="table-wrap"><table><thead><tr><th>元請請求日</th><th class="money">元請請求金額</th><th>備考</th><th style="width:105px">操作</th></tr></thead><tbody id="invoiceHistory"></tbody><tfoot><tr><td>合計</td><td class="money" id="invoiceFoot"></td><td></td><td></td></tr></tfoot></table></div></section>
+<section class="panel"><div class="panel-head"><b>入金履歴</b><span class="who">入金確認を記録</span></div><div class="table-wrap"><table><thead><tr><th>入金日</th><th class="money">入金金額（税込 ／ 税抜参考）</th><th>備考</th><th style="width:105px">操作</th></tr></thead><tbody id="receiptHistory"></tbody><tfoot><tr><td>合計</td><td class="money" id="receiptFoot"></td><td></td><td></td></tr></tfoot></table></div></section>
+</div>
+<div class="footnote"><b>管理の考え方：</b> この画面は、当社から元請・お客様へ出す請求と、その入金を管理します。下請・仕入先から当社へ来る請求は「発注・請求管理」で管理します。請求明細を入力すると金額を自動計算します。登録後、履歴の「請求書を表示」から印刷・PDF保存ができます。</div>
+</main>
+<script type="text/pages-deferred" src="tax.js?v=20261004net"></script><script type="text/pages-deferred" src="ms_data.js?v=tax20261003"></script><script type="text/pages-deferred">
+(function(){
+const $=id=>document.getElementById(id),p=new URLSearchParams(location.search),id=p.get('id')||sessionStorage.getItem('mscm:selectedProjectId')||'';
+if(!id||!window.MSData){alert('工事データを読み込めません。工事一覧から工事を選択してください。');location.href='kouji_list.html';return}
+let project=MSData.get('projects',id);if(!project){alert('選択中の工事が見つかりません。');location.href='kouji_list.html';return}sessionStorage.setItem('mscm:selectedProjectId',String(id));
+const n=v=>Number(String(v??'').replace(/[^\d.-]/g,''))||0,yen=v=>n(v).toLocaleString('ja-JP')+'円',esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),active=x=>x&&x.status!=='inactive',today=()=>new Date().toISOString().slice(0,10);
+const oc=project.orderContract||{},legacy=project.legacyFinancials||{};
+let cs=(MSData.all('contracts')||[]).filter(x=>active(x)&&String(x.projectId)===String(id)).sort((a,b)=>String(b.updatedAt||'').localeCompare(String(a.updatedAt||'')));
+const candidates=[oc.currentContractAmount,legacy.finalContractAmount,legacy.contractAmount,project.contractAmount,cs[0]?.currentAmount,project.finalContractAmount,project.orderAmount];
+const contractValue=candidates.find(x=>x!==undefined&&x!==null&&x!=='');
+let contract=MSTax.gross(project,n(contractValue));
+const SALES_KEY='mscm:salesBilling:v1';
+function loadSalesStore(){try{const v=JSON.parse(MSShared.getItem(SALES_KEY)||'{}');return v&&typeof v==='object'?v:{}}catch(e){return {}}}
+function saveSalesStore(store){MSShared.setItem(SALES_KEY,JSON.stringify(store))}
+function uid(prefix){return prefix+'_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,8)}
+let salesStore=loadSalesStore();
+let salesProject=salesStore[String(id)]||{invoices:[],receipts:[]};
+let invoices=(salesProject.invoices||[]).filter(active),receipts=(salesProject.receipts||[]).filter(active),editInvoiceId='',editReceiptId='';
+function persistSales(){
+ salesStore=loadSalesStore();
+ salesStore[String(id)]={invoices,receipts,updatedAt:new Date().toISOString()};
+ saveSalesStore(salesStore);
+}
+const sum=a=>a.reduce((t,x)=>t+n(x.amount),0);
+function fm(el){const d=String(el.value||'').replace(/[^\d]/g,'');el.value=d?Number(d).toLocaleString('ja-JP'):''}
+function show(i,m){$(i).textContent=m;$(i).style.display='block'}function hide(i){$(i).style.display='none'}
+function hasReceipt(x){return receipts.some(r=>active(r)&&(String(r.invoiceId||'')===String(x.id)||String(r.clientInvoiceId||'')===String(x.id)))}
+function uniqueById(a){const seen=new Set();return a.filter(x=>{const k=String(x.id||'');if(!k)return true;if(seen.has(k))return false;seen.add(k);return true})}
+function receiptNetReference(rec){
+ const linked=invoices.find(i=>String(i.id)===String(rec.invoiceId||rec.clientInvoiceId||''));
+ if(linked&&n(rec.amount)===n(linked.amount))return MSTax.invoiceQuote(linked).net;
+ const candidates=linked?[linked]:invoices;
+ const rates=[...new Set(candidates.map(i=>Number(i.taxRate??i.document?.taxRate??MSTax.rateOn(i.date))))];
+ if(rates.length!==1)return null;
+ return Math.round(n(rec.amount)/(1+rates[0]/100));
+}
+function receiptAmountDisplay(rec){const net=receiptNetReference(rec);return '<strong>税込 '+yen(rec.amount)+'</strong><span class="history-gross"> ／ '+(net===null?'税抜 未確定':'税抜 '+yen(net))+'</span>';}
+function render(){invoices=uniqueById(invoices);receipts=uniqueById(receipts);const it=sum(invoices),rt=sum(receipts);$('invoiceTotal').textContent=yen(it);$('unbilled').textContent=yen(contract-it);$('receiptTotal').textContent=yen(rt);$('unpaid').textContent=yen(it-rt);$('invoiceFoot').textContent=yen(it);$('receiptFoot').textContent='税込 '+yen(rt);
+$('invoiceHistory').innerHTML=invoices.map(x=>`<tr><td>${esc(String(x.date||'').replaceAll('-','/'))}</td><td class="money"><span class="history-net">${yen(MSTax.invoiceQuote(x).net)}</span><span class="history-gross"> ／ ${yen(x.amount)}</span></td><td title="${esc([...(x.document?.items||[]).map(i=>i.description),x.memo].filter(Boolean).join(" ／ "))}">${esc([...(x.document?.items||[]).map(i=>i.description),x.memo].filter(Boolean).join(" ／ "))}</td><td><div class="row-actions"><button type="button" onclick="editInvoice('${esc(x.id)}')">編集</button><button type="button" onclick="openInvoice('${esc(x.id)}')">請求書を表示</button><button type="button" class="delete" onclick="deleteInvoice('${esc(x.id)}')">削除</button></div></td></tr>`).join('');
+$('receiptHistory').innerHTML=receipts.map(x=>`<tr><td>${esc(String(x.date||'').replaceAll('-','/'))}</td><td class="money">${receiptAmountDisplay(x)}</td><td title="${esc([...(x.document?.items||[]).map(i=>i.description),x.memo].filter(Boolean).join(" ／ "))}">${esc([...(x.document?.items||[]).map(i=>i.description),x.memo].filter(Boolean).join(" ／ "))}</td><td><div class="row-actions"><button type="button" onclick="editReceipt('${esc(x.id)}')">編集</button><button type="button" class="delete" onclick="deleteReceipt('${esc(x.id)}')">削除</button></div></td></tr>`).join('')}
+window.editInvoice=i=>{const x=invoices.find(v=>String(v.id)===String(i));if(!x)return;if(hasReceipt(x)){alert('この元請請求には入金データがあります。先に入金データを訂正してください。');return}editInvoiceId=x.id;$('invoiceDate').value=x.date||'';$('invoiceAmount').value=n(x.amount).toLocaleString('ja-JP');$('invoiceMemo').value=x.memo||'';fillBill(x);document.querySelector('#invoiceForm .save').textContent='元請請求を更新'};
+window.deleteInvoice=i=>{const x=invoices.find(v=>String(v.id)===String(i));if(!x)return;if(hasReceipt(x)){alert('この元請請求には入金データがあります。先に入金データを訂正してください。');return}if(!confirm('この元請請求データを削除しますか？'))return;if(!confirm('削除すると元に戻せません。本当に削除しますか？'))return;invoices=invoices.filter(v=>String(v.id)!==String(i));persistSales();render()};
+window.editReceipt=i=>{const x=receipts.find(v=>String(v.id)===String(i));if(!x)return;editReceiptId=x.id;$('receiptDate').value=x.date||'';$('receiptAmount').value=n(x.amount).toLocaleString('ja-JP');$('receiptMemo').value=x.memo||'';document.querySelector('#receiptForm .save').textContent='入金を更新'};
+window.deleteReceipt=i=>{const x=receipts.find(v=>String(v.id)===String(i));if(!x)return;if(!confirm('この入金データを削除しますか？'))return;if(!confirm('削除すると元に戻せません。本当に削除しますか？'))return;receipts=receipts.filter(v=>String(v.id)!==String(i));persistSales();render()};
+// Invoice editor integrated with the existing salesBilling store.
+const customer=(project.clientId&&MSData.get('partners',project.clientId))||project.clientSnapshot||{};
+const own=(MSData.all('companySettings')||[]).find(active)||{};
+let details=[];
+const extra=document.createElement('div');extra.className='field full';extra.innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:9px"><div><label>請求先</label><input id="billCustomer"></div><div><label>法人・個人</label><select id="billType"><option value="company">法人（御中）</option><option value="individual">個人（様）</option></select></div><div><label>請求番号</label><input id="billNo" placeholder="未入力なら登録時に採番"></div><div><label>お支払い条件</label><input id="billDue" type="text"></div><div><label>消費税率</label><input id="billTax" type="number" min="0" max="100" step="0.1"></div><div><label>税端数処理</label><select id="billRounding"><option value="floor">切り捨て</option><option value="round">四捨五入</option><option value="ceil">切り上げ</option></select></div></div><p id="paymentHint" style="font-size:11px"></p><label>請求明細（税抜）</label><div style="overflow-x:auto"><table><thead><tr><th>内容</th><th>数量</th><th>単位</th><th>単価</th><th></th></tr></thead><tbody id="billLines"></tbody></table></div><button type="button" id="billAdd">＋ 明細を追加</button><p id="billSummary" style="font-size:12px"></p><div style="font-size:11px">内容・数量・単価を入力してください。請求金額は明細から自動計算します。</div>`;
+$('invoiceForm').insertBefore(extra,$('invoiceWarning'));
+const style=document.createElement('style');style.textContent='#invoiceForm select{width:100%;height:38px;border:1px solid #b8cad6;border-radius:7px;background:#fff;font:inherit}#billLines input{font-size:12px;padding:4px;min-width:65px}#billLines td:first-child{width:42%}#billLines button,#billAdd{padding:7px;border:0;border-radius:5px;cursor:pointer}.row-actions{flex-wrap:wrap}';document.head.append(style);
+function defaultBillTerms(){return String(customer.paymentTerms||'').trim()||(project.orderContract?.payment?'契約書記載の条件による':'従来のお取引条件による')}
+function resetBill(){details=[];$('billCustomer').value=project.clientName||customer.name||customer.companyName||'';$('billType').value=customer.entityType==='個人'||customer.partnerType==='個人顧客'?'individual':'company';$('billNo').value='';$('billDue').value=defaultBillTerms();MSTax.addRateOption($('billTax'),MSTax.rateOn($('invoiceDate').value||MSTax.today()));$('billRounding').value=MSTax.policy().rounding;const pay=project.orderContract?.payment||{};$('paymentHint').textContent='支払条件：'+(customer.paymentTerms||[pay.advanceWhen&&'前金 '+pay.advanceWhen,pay.interimWhen&&'中間金 '+pay.interimWhen,pay.finalWhen&&'最終 '+pay.finalWhen].filter(Boolean).join('／')||defaultBillTerms())+'（今回の条件は上の欄で変更できます）';drawDetails()}
+function billTotals(){const subtotal=details.reduce((sum,i)=>sum+Math.round(Number(i.quantity)*Number(i.unitPrice)),0),tax=Math[$('billRounding').value](subtotal*Number($('billTax').value)/100);return{subtotal,tax,total:subtotal+tax}}
+function calcBill(){const t=billTotals();$('invoiceAmount').readOnly=details.length>0;if(details.length)$('invoiceAmount').value=Number.isFinite(t.total)?t.total.toLocaleString('ja-JP'):'';$('billSummary').textContent=details.length?'小計 '+yen(t.subtotal)+' ／ 消費税 '+yen(t.tax)+' ／ 合計 '+yen(t.total):'明細未入力';}
+function drawDetails(){$('billLines').replaceChildren();details.forEach((item,i)=>{const tr=document.createElement('tr');['description','quantity','unit','unitPrice'].forEach(k=>{const td=document.createElement('td'),input=document.createElement('input');input.value=item[k];input.setAttribute('aria-label',`明細${i+1} ${k}`);if(['quantity','unitPrice'].includes(k)){input.type='number';input.min='0';input.step=k==='quantity'?'0.001':'1'}input.oninput=()=>{item[k]=input.type==='number'?input.valueAsNumber:input.value;calcBill()};td.append(input);tr.append(td)});const td=document.createElement('td'),b=document.createElement('button');b.type='button';b.textContent='削除';b.onclick=()=>{details.splice(i,1);drawDetails()};td.append(b);tr.append(td);$('billLines').append(tr)});calcBill()}
+$('billAdd').onclick=()=>{details.push({description:'',quantity:1,unit:'式',unitPrice:0});drawDetails()};$('billTax').onchange=calcBill;$('billRounding').onchange=calcBill;
+function buildDocument(recordId){if(!details.length)return null;if(!$('billCustomer').value.trim())throw Error('請求先を入力してください。');if(!$('billDue').value.trim())$('billDue').value=defaultBillTerms();if(details.some(x=>!x.description.trim()||!Number.isFinite(x.quantity)||!Number.isFinite(x.unitPrice)||x.quantity<=0||x.unitPrice<0))throw Error('明細内容、0より大きい数量、0以上の単価を入力してください。');if(!Number.isSafeInteger(billTotals().total))throw Error('請求金額を確認してください。');const previous=invoices.find(x=>String(x.id)===String(editInvoiceId))?.document;return {schemaVersion:1,id:recordId,projectId:id,customerId:project.clientId||'',customerType:$('billType').value,customerName:$('billCustomer').value.trim(),customerAddress:previous?.customerAddress||[customer.zipcode||customer.postal,customer.address].filter(Boolean).join(' '),projectName:previous?.projectName||project.name||'',projectAddress:previous?.projectAddress||project.address||project.projectAddress||'',invoiceNo:$('billNo').value.trim()||('INV-'+$('invoiceDate').value.replaceAll('-','')+'-'+recordId),invoiceDate:$('invoiceDate').value,dueDate:/^\d{4}-\d{2}-\d{2}$/.test($('billDue').value.trim())?$('billDue').value.trim():'',paymentTerms:$('billDue').value.trim(),taxRate:$('billTax').value,rounding:$('billRounding').value,companyName:previous?.companyName||own.companyName||'',companyAddress:previous?.companyAddress||[own.postal,own.address].filter(Boolean).join(' '),companyContact:previous?.companyContact||[own.tel&&'TEL '+own.tel,own.fax&&'FAX '+own.fax].filter(Boolean).join('　'),registrationNo:previous?.registrationNo||own.invoiceNo||'',bank:previous?.bank||[own.bankName,own.bankBranch].filter(Boolean).join(' '),account:previous?.account||[own.accountType,own.accountNo].filter(Boolean).join(' '),accountName:previous?.accountName||own.accountName||'',notes:$('invoiceMemo').value.trim(),items:details.map(x=>({...x}))}}
+function fillBill(x){resetBill();if(x.document){details=x.document.items.map(i=>({...i}));$('billCustomer').value=x.document.customerName;$('billType').value=x.document.customerType;$('billDue').value=x.document.paymentTerms||x.document.dueDate||defaultBillTerms();$('billNo').value=x.document.invoiceNo;MSTax.addRateOption($('billTax'),x.document.taxRate);$('billRounding').value=x.document.rounding;drawDetails()}}
+window.openInvoice=i=>{const x=invoices.find(v=>String(v.id)===String(i));if(!x?.document){alert('この請求には明細がありません。「編集」から明細を入力して保存してください。');return}location.href='seikyusho.html?projectId='+encodeURIComponent(id)+'&invoiceId='+encodeURIComponent(i)};
+resetBill();
+const cancelBill=document.createElement('button');cancelBill.type='button';cancelBill.textContent='入力をクリア・編集取消';cancelBill.onclick=()=>{editInvoiceId='';$('invoiceAmount').value='';$('invoiceMemo').value='';$('invoiceSaveBtn').textContent='元請請求を登録';hide('invoiceWarning');resetBill()};extra.append(cancelBill);
+const grossHelp=document.createElement('details');grossHelp.style.cssText='padding:9px;background:#f3f8fc;margin:10px 0';grossHelp.innerHTML='<summary>個人顧客など：希望する税込総額から税抜金額を計算</summary><label>希望する請求総額（税込）<input id="targetGross" inputmode="numeric" placeholder="例：1,000,000"></label><button type="button" id="applyTargetGross">税込総額に合わせる</button><p style="font-size:12px">税込総額を入力してボタンを押すと、端数処理も自動で選び、税抜単価に反映します（数量1・明細1行）。</p><p id="targetGrossMessage" aria-live="polite"></p>';extra.append(grossHelp);
+$('targetGross').oninput=()=>fm($('targetGross'));
+function matchTargetGross(amount,rate,current){
+ for(const rounding of [...new Set([current,'round','floor','ceil'])]){
+  try{return MSTax.fromGross(amount,rate,rounding)}catch(e){}
+ }
+ throw Error('この税込総額に合わせられません。金額と税率を確認してください。');
+}
+$('applyTargetGross').onclick=()=>{try{
+ if(details.length!==1||Number(details[0].quantity)!==1)throw Error('税込総額の自動調整は数量1の明細1行で使えます。');
+ const amount=n($('targetGross').value);if(!Number.isSafeInteger(amount)||amount<=0)throw Error('希望する税込総額を1円以上の数字で入力してください。');
+ const q=matchTargetGross(amount,$('billTax').value,$('billRounding').value);
+ $('billRounding').value=q.rounding;details[0].unitPrice=q.net;drawDetails();
+ const roundingName={floor:'切り捨て',round:'四捨五入',ceil:'切り上げ'}[q.rounding];
+ $('targetGrossMessage').textContent='税込 '+yen(q.gross)+'に反映しました。税抜 '+yen(q.net)+' ／ 消費税 '+yen(q.tax)+' ／ 端数処理：'+roundingName+'（自動選択）';
+}catch(e){$('targetGrossMessage').textContent=e.message;}};
+
+
+function saveInvoice(){hide('invoiceWarning');const date=$('invoiceDate').value,amount=n($('invoiceAmount').value),memo=$('invoiceMemo').value.trim();if(!date||amount<=0)return;const old=editInvoiceId?invoices.find(x=>String(x.id)===String(editInvoiceId)):null;if(old&&hasReceipt(old)){alert('この元請請求には入金データがあります。先に入金データを訂正してください。');return}if(sum(invoices)-(old?n(old.amount):0)+amount>contract){show('invoiceWarning','受注金額を超える元請請求になります。受注金額・増減を確認してください。');return}if(!old&&invoices.some(x=>active(x)&&x.date===date&&n(x.amount)===amount&&String(x.memo||'')===memo)){show('invoiceWarning','同じ日付・同じ金額・同じ備考の元請請求がすでに登録されています。');return}
+const recordId=(old&&old.id)||uid('si');let document;try{document=buildDocument(recordId)}catch(e){show('invoiceWarning',e.message);return}if(old?.document&&!document){show('invoiceWarning','帳票付き請求は明細を1行以上残してください。');return}if(document&&invoices.some(x=>String(x.id)!==String(recordId)&&x.document?.invoiceNo===document.invoiceNo)){show('invoiceWarning','この工事に同じ請求番号があります。');return}const rec={...(old||{}),id:recordId,projectId:id,dataSide:'sales',date,amount,netAmount:billTotals().subtotal,taxAmount:billTotals().tax,taxRate:Number($('billTax').value),taxRounding:$('billRounding').value,moneyBasis:'net',memo,status:'active',updatedAt:new Date().toISOString(),...(document?{document}:{})};
+invoices=old?invoices.map(x=>String(x.id)===String(old.id)?rec:x):[...invoices,rec];
+persistSales();editInvoiceId=rec.id;$('billNo').value=rec.document?.invoiceNo||'';$('invoiceSaveBtn').textContent='元請請求を更新';render();window.onInvoiceSaved?.(rec)}
+function saveReceipt(){hide('receiptWarning');const date=$('receiptDate').value,amount=n($('receiptAmount').value),memo=$('receiptMemo').value.trim();if(!date||amount<=0)return;const old=editReceiptId?receipts.find(x=>String(x.id)===String(editReceiptId)):null;if(sum(receipts)-(old?n(old.amount):0)+amount>sum(invoices)){show('receiptWarning','請求累計を超える入金になります。請求内容または入金内容を確認してください。');return}if(!old&&receipts.some(x=>active(x)&&x.date===date&&n(x.amount)===amount&&String(x.memo||'')===memo)){show('receiptWarning','同じ日付・同じ金額・同じ備考の入金がすでに登録されています。');return}
+const rec={...(old||{}),id:(old&&old.id)||uid('sr'),projectId:id,dataSide:'sales',date,amount,memo,status:'active',updatedAt:new Date().toISOString()};
+receipts=old?receipts.map(x=>String(x.id)===String(old.id)?rec:x):[...receipts,rec];
+persistSales();editReceiptId='';$('receiptAmount').value='';$('receiptMemo').value='';$('receiptSaveBtn').textContent='入金を登録';render();$('receiptAmount').focus()}
+[$('invoiceAmount'),$('receiptAmount')].forEach(el=>el.oninput=()=>fm(el));
+
+function setupEnterMove(ids,saveId){ids.forEach((fid,idx)=>$(fid).addEventListener('keydown',e=>{if(e.key!=='Enter'||e.shiftKey)return;e.preventDefault();e.stopPropagation();(idx<ids.length-1?$(ids[idx+1]):$(saveId)).focus()}))}
+setupEnterMove(['invoiceDate','invoiceAmount','invoiceMemo'],'invoiceSaveBtn');setupEnterMove(['receiptDate','receiptAmount','receiptMemo'],'receiptSaveBtn');
+$('invoiceForm').addEventListener('submit',e=>e.preventDefault());$('receiptForm').addEventListener('submit',e=>e.preventDefault());
+let invoiceSaving=false,receiptSaving=false;
+$('invoiceSaveBtn').onclick=()=>{if(invoiceSaving)return;invoiceSaving=true;$('invoiceSaveBtn').disabled=true;try{saveInvoice()}finally{setTimeout(()=>{invoiceSaving=false;$('invoiceSaveBtn').disabled=false},500)}};
+$('receiptSaveBtn').onclick=()=>{if(receiptSaving)return;receiptSaving=true;$('receiptSaveBtn').disabled=true;try{saveReceipt()}finally{setTimeout(()=>{receiptSaving=false;$('receiptSaveBtn').disabled=false},500)}};
+// History first; expandable entry and automatic billing position.
+const invoicePanel=document.querySelector('.invoice-panel');
+const entryGrid=document.querySelector('.entry-grid');
+const historyPanel=$('invoiceHistory').closest('.panel');
+entryGrid.before(historyPanel);
+const launch=document.createElement('button');launch.type='button';launch.textContent='＋ 新しい請求を作成';launch.style.cssText='padding:9px 14px;border:0;border-radius:7px;background:var(--blue);color:#fff;font-weight:bold;cursor:pointer';historyPanel.querySelector('.panel-head').append(launch);
+const position=document.createElement('section');position.className='metrics';position.innerHTML='<div class="metric"><div class="label">請負金額（税抜）</div><div class="value" id="billContract"></div></div><div class="metric"><div class="label">前回までの請求済額（税抜）</div><div class="value" id="billPrevious"></div><small>編集時は編集中の請求を除く</small></div><div class="metric"><div class="label">今回出来高（税抜）</div><div class="value" id="billCurrent"></div></div><div class="metric"><div class="label">今回登録後の未請求額（税抜）</div><div class="value" id="billRemaining"></div></div>';
+historyPanel.before(position);
+const originalMetrics=document.querySelector('.metrics');originalMetrics.querySelectorAll('.metric').forEach((card,i)=>{if(i<3)card.hidden=true});originalMetrics.style.gridTemplateColumns='repeat(2,1fr)';entryGrid.after(originalMetrics);document.querySelector('.role-note').hidden=true;
+historyPanel.querySelector('th:last-child').style.width='230px';
+const revisionStyle=document.createElement('style');revisionStyle.textContent='.entry-grid{grid-template-columns:1fr}.metrics:has(#billContract){grid-template-columns:repeat(4,1fr)}.invoice-panel[hidden],.role-note[hidden],.metric[hidden]{display:none!important}#invoiceForm{grid-template-columns:repeat(4,1fr)}#invoiceForm .field.full,#invoiceForm .save,#invoiceForm .hint,#invoiceForm .warning{grid-column:1/-1}@media(max-width:760px){#invoiceForm{grid-template-columns:1fr 1fr}.metrics:has(#billContract){grid-template-columns:1fr 1fr}}';document.head.append(revisionStyle);
+const displayOpt=document.createElement('label');displayOpt.style.cssText='display:flex;align-items:center;gap:8px;margin:12px 0';displayOpt.innerHTML='<input type="checkbox" id="billShowPosition" style="width:auto;height:auto">請求書に請負金額・請求済額・請求後の残額を表示する';extra.append(displayOpt);
+function refreshPosition(){const previous=sum(invoices.filter(x=>String(x.id)!==String(editInvoiceId))),current=invoicePanel.hidden?0:billTotals().total;const netPrevious=invoices.filter(x=>String(x.id)!==String(editInvoiceId)).reduce((a,x)=>a+MSTax.invoiceQuote(x).net,0),netCurrent=invoicePanel.hidden?0:billTotals().subtotal;[['billContract',n(contractValue),contract],['billPrevious',netPrevious,previous],['billCurrent',netCurrent,current],['billRemaining',n(contractValue)-netPrevious-netCurrent,contract-previous-current]].forEach(([key,net,gross])=>{$(key).textContent=yen(net);const card=$(key).parentElement;let note=card.querySelector('.gross-note');if(!note){note=document.createElement('small');note.className='gross-note';card.append(note)}note.textContent='税込 '+yen(gross)})}
+const originalCalcBill=calcBill;calcBill=function(){originalCalcBill();$('invoiceAmount').readOnly=true;refreshPosition()};
+const originalResetBill=resetBill;resetBill=function(){originalResetBill();details=[{description:'',quantity:1,unit:'式',unitPrice:0}];$('billShowPosition').checked=false;drawDetails()};
+const originalFillBill=fillBill;fillBill=function(x){originalFillBill(x);if(!x.document){details=[{description:x.memo||project.name||'工事一式',quantity:1,unit:'式',unitPrice:n(x.amount)}];$('billTax').value='0';drawDetails();$('billSummary').textContent+=' ／ 過去の金額を引き継ぎました。税率・税抜単価をご確認ください。'}$('billShowPosition').checked=!!x.document?.showBillingPosition;refreshPosition()};
+const originalBuildDocument=buildDocument;buildDocument=function(recordId){const document=originalBuildDocument(recordId);if(!document)throw Error('請求明細を入力してください。');return {...document,showBillingPosition:$('billShowPosition').checked,billingPosition:{contractAmount:contract,previousAmount:sum(invoices.filter(x=>String(x.id)!==String(editInvoiceId))),currentAmount:billTotals().total,remainingAmount:contract-sum(invoices.filter(x=>String(x.id)!==String(editInvoiceId)))-billTotals().total}}};
+const originalDrawDetails=drawDetails;drawDetails=function(){originalDrawDetails();$('billLines').querySelectorAll('button').forEach(button=>{const click=button.onclick;button.onclick=()=>{if(details.length===1){details=[{description:'',quantity:1,unit:'式',unitPrice:0}];drawDetails()}else click()}})};
+const originalRender=render;render=function(){originalRender();refreshPosition()};
+const originalEditInvoice=window.editInvoice;window.editInvoice=function(i){const x=invoices.find(v=>String(v.id)===String(i));if(!x||hasReceipt(x)){originalEditInvoice(i);return}invoicePanel.hidden=false;originalEditInvoice(i);refreshPosition();invoicePanel.scrollIntoView({behavior:'smooth',block:'start'})};
+launch.onclick=()=>{if(!invoicePanel.hidden&&!confirm('編集中の内容を破棄して新しい請求を作成しますか？'))return;editInvoiceId='';$('invoiceMemo').value='';$('invoiceDate').value=today();$('invoiceSaveBtn').textContent='元請請求を登録';hide('invoiceWarning');invoicePanel.hidden=false;resetBill();invoicePanel.scrollIntoView({behavior:'smooth',block:'start'})};
+cancelBill.onclick=()=>{editInvoiceId='';$('invoiceMemo').value='';$('invoiceSaveBtn').textContent='元請請求を登録';hide('invoiceWarning');invoicePanel.hidden=true;resetBill()};
+const originalSaveInvoice=saveInvoice;saveInvoice=function(){const before=invoices.map(x=>x.updatedAt).join('|');originalSaveInvoice();if(before!==invoices.map(x=>x.updatedAt).join('|')){invoicePanel.hidden=true;refreshPosition();historyPanel.scrollIntoView({behavior:'smooth',block:'start'})}};
+invoicePanel.hidden=true;resetBill();refreshPosition();
+
+// Restore two columns with histories directly above each form.
+const leftColumn=document.createElement('div'),rightColumn=document.createElement('div');
+const receiptPanel=document.querySelector('.receipt-panel'),receiptHistoryPanel=$('receiptHistory').closest('.panel');
+entryGrid.replaceChildren(leftColumn,rightColumn);
+leftColumn.append(historyPanel,invoicePanel);
+rightColumn.append(receiptHistoryPanel,receiptPanel);
+const fixStyle=document.createElement('style');fixStyle.textContent='.entry-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:start;gap:12px}.entry-grid>div{display:grid;gap:12px;min-width:0}#invoiceForm{grid-template-columns:1fr 1fr}.entry-grid .panel-head{flex-wrap:wrap}.entry-grid .row-actions{gap:4px}.entry-grid th:last-child{width:160px!important}@media(max-width:900px){.entry-grid{grid-template-columns:1fr}}';document.head.append(fixStyle);
+entryGrid.before(position,originalMetrics);
+invoicePanel.hidden=false;
+const resetAlways=resetBill;resetBill=function(){invoicePanel.hidden=false;resetAlways();refreshPosition()};
+launch.textContent='新規入力';launch.onclick=()=>{if(!confirm('編集中の内容をクリアして新規入力に戻しますか？'))return;editInvoiceId='';$('invoiceMemo').value='';$('invoiceDate').value=today();$('invoiceSaveBtn').textContent='元請請求を登録';hide('invoiceWarning');resetBill()};
+cancelBill.onclick=()=>{editInvoiceId='';$('invoiceMemo').value='';$('invoiceSaveBtn').textContent='元請請求を登録';hide('invoiceWarning');resetBill()};
+saveInvoice=function(){hide('invoiceWarning');calcBill();if(!$('invoiceDate').value){show('invoiceWarning','請求日を入力してください。');return}if(!Number.isFinite(billTotals().total)||billTotals().total<=0){show('invoiceWarning','明細の内容・数量・単価を入力してください。');return}try{originalSaveInvoice()}catch(e){show('invoiceWarning','保存できませんでした。 '+e.message)}invoicePanel.hidden=false;refreshPosition()};
+refreshPosition();
+
+// Keep payment wording and optional settings out of the main entry flow.
+const paymentChoices=document.createElement('datalist');paymentChoices.id='billPaymentChoices';
+['契約書記載の条件による','従来のお取引条件による','工事完成後14日以内','工事完成後30日以内'].forEach(text=>{const option=document.createElement('option');option.value=text;paymentChoices.append(option)});extra.append(paymentChoices);$('billDue').setAttribute('list',paymentChoices.id);$('billDue').placeholder='条件を選択、または自由に入力';
+const taxesFold=document.createElement('details');taxesFold.className='bill-fold';const taxesSummary=document.createElement('summary');taxesFold.append(taxesSummary);const taxesGrid=document.createElement('div');taxesGrid.style.cssText='display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:9px';taxesGrid.append($('billTax').parentElement,$('billRounding').parentElement);taxesFold.append(taxesGrid);$('paymentHint').before(taxesFold);
+const supplementFold=document.createElement('details');supplementFold.className='bill-fold';const supplementSummary=document.createElement('summary');supplementSummary.textContent='補足事項（任意）';supplementFold.append(supplementSummary);const memoBox=$('invoiceMemo').parentElement;memoBox.querySelector('label').textContent='補足事項';$('invoiceMemo').placeholder='例：お振込手数料はご負担をお願いいたします。';$('invoiceMemo').maxLength=1000;supplementFold.append(memoBox);extra.insertBefore(supplementFold,cancelBill);
+const softStyle=document.createElement('style');softStyle.textContent='.bill-fold{border:1px solid #d9e6ef;border-radius:7px;padding:9px;margin:10px 0;background:#f8fbfd}.bill-fold summary{cursor:pointer;font-size:12px;font-weight:bold;color:var(--deep)}.bill-fold .field{margin-top:9px}';document.head.append(softStyle);
+function refreshTaxSummary(){taxesSummary.textContent='税の設定：消費税 '+$('billTax').value+'％・端数'+({floor:'切り捨て',round:'四捨五入',ceil:'切り上げ'}[$('billRounding').value]);supplementSummary.textContent='補足事項（任意）'+($('invoiceMemo').value.trim()?'・入力あり':'')}
+const softCalc=calcBill;calcBill=function(){softCalc();refreshTaxSummary()};$('billTax').onchange=calcBill;$('billRounding').onchange=calcBill;$('invoiceMemo').addEventListener('input',refreshTaxSummary);
+const softReset=resetBill;resetBill=function(){softReset();taxesFold.open=false;supplementFold.open=false;refreshTaxSummary()};
+const softFill=fillBill;fillBill=function(x){softFill(x);supplementFold.open=!!$('invoiceMemo').value.trim();refreshTaxSummary()};
+taxesFold.open=false;supplementFold.open=false;refreshTaxSummary();
+
+// Wider currency entry with caret-aware thousands separators.
+function currencyInput(input){input.type='text';input.inputMode='decimal';input.style.textAlign='right';const format=value=>{const parts=String(value).replace(/[^\d.]/g,'').split('.');const whole=parts[0].replace(/^0+(?=\d)/,'');return whole.replace(/\B(?=(\d{3})+(?!\d))/g,',')+(parts.length>1?'.'+parts.slice(1).join(''):'')};input.value=format(input.value);const commit=()=>{const before=input.value,caret=input.selectionStart??before.length,semantic=before.slice(0,caret).replace(/[^\d.]/g,'').length;input.value=format(before);let position=0,count=0;while(position<input.value.length&&count<semantic){if(/[\d.]/.test(input.value[position]))count++;position++}input.setSelectionRange(position,position);const row=input.closest('tr'),index=Array.from($('billLines').children).indexOf(row);details[index].unitPrice=input.value===''?NaN:Number(input.value.replaceAll(',',''));calcBill()};input.oninput=e=>{if(!e.isComposing)commit()};input.addEventListener('compositionend',commit)}
+const moneyDraw=drawDetails;drawDetails=function(){moneyDraw();$('billLines').querySelectorAll('tr').forEach(row=>currencyInput(row.children[3].querySelector('input')))};
+const usabilityStyle=document.createElement('style');usabilityStyle.textContent='#billLines td:nth-child(2),#billLines td:nth-child(3){width:65px}#billLines td:nth-child(4){width:160px}#billLines td:nth-child(4) input{width:100%;min-width:150px;font-size:16px;padding:0 10px}#billLines td:last-child{width:48px}#billLines td:first-child{width:auto}#billLines{font-variant-numeric:tabular-nums}#billLines input{width:100%;min-width:0}.bill-lines-table{table-layout:fixed;min-width:600px}.bill-lines-table th:nth-child(2),.bill-lines-table th:nth-child(3){width:65px}.bill-lines-table th:nth-child(4){width:160px}.bill-lines-table th:last-child{width:48px}.entry-grid #invoiceHistory .row-actions{display:flex;flex-wrap:nowrap;white-space:nowrap;gap:4px}.entry-grid #invoiceHistory button{padding:5px 7px;white-space:nowrap}.invoice-history-table{min-width:610px}.invoice-history-table th:last-child{width:225px!important}.invoice-history-summary{cursor:pointer;list-style:none}.invoice-history-summary::-webkit-details-marker{display:none}.invoice-history-summary b:before{content:"▶ ";font-size:10px}.invoice-history-fold[open] .invoice-history-summary b:before{content:"▼ "}';document.head.append(usabilityStyle);
+$('billLines').closest('table').classList.add('bill-lines-table');
+const historyFold=document.createElement('details');historyFold.className='invoice-history-fold';historyFold.open=true;const historySummary=document.createElement('summary');historySummary.className='panel-head invoice-history-summary';const historyTitle=document.createElement('b');historyTitle.textContent='元請請求履歴';const historyCount=document.createElement('span');historyCount.className='who';historySummary.append(historyTitle,historyCount);historyFold.append(historySummary,historyPanel.querySelector('.table-wrap'));historyPanel.replaceChildren(historyFold);invoicePanel.querySelector('.panel-head').append(launch);$('invoiceHistory').closest('table').classList.add('invoice-history-table');
+function refreshHistorySummary(){historyCount.textContent=invoices.length+'件 ／ 合計 '+yen(sum(invoices))}
+const usabilityRender=render;render=function(){usabilityRender();refreshHistorySummary()};
+drawDetails();refreshHistorySummary();
+
+// Keep the saved invoice selected and offer print without opening history.
+const saveNotice=document.createElement('div');saveNotice.id='invoiceSaveNotice';saveNotice.className='hint';saveNotice.setAttribute('role','status');$('invoiceSaveBtn').after(saveNotice);
+window.onInvoiceSaved=()=>{saveNotice.textContent='保存済みです。右側の元請請求履歴にある「請求書を表示」から印刷・PDF保存できます。'};
+const printReset=resetBill;resetBill=function(){printReset();saveNotice.textContent=''};
+const printFill=fillBill;fillBill=function(record){printFill(record);saveNotice.textContent='訂正後は更新してください。請求書は右側の元請請求履歴から表示できます。'};
+function updatePrintState(){}
+displayOpt.classList.add('billing-position-option');displayOpt.lastChild.textContent='請求書に契約・請求状況を載せる';
+const printStyle=document.createElement('style');printStyle.textContent='.invoice-actions{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:8px}.invoice-actions .save{grid-column:auto!important;height:auto;min-height:42px;padding:8px}.billing-position-option{font-size:16px!important;line-height:1.6;font-weight:bold!important;padding:10px;background:#f2f8fc;border-radius:7px}.billing-position-option input{width:22px!important;height:22px!important;flex-shrink:0}';document.head.append(printStyle);updatePrintState();
+
+
+// Separate billing and receipt work while retaining drafts on tab switches.
+const salesTabs=document.createElement('div');salesTabs.className='sales-tabs';salesTabs.setAttribute('role','tablist');salesTabs.setAttribute('aria-label','入力する業務');
+salesTabs.innerHTML='<button type="button" id="salesInvoiceTab" role="tab" aria-controls="salesWorkspace">元請請求</button><button type="button" id="salesReceiptTab" role="tab" aria-controls="salesWorkspace">入金</button>';
+const salesNote=document.createElement('p');salesNote.className='sales-mode-note';
+entryGrid.id='salesWorkspace';entryGrid.setAttribute('role','tabpanel');
+position.before(salesTabs,salesNote);leftColumn.replaceChildren();rightColumn.replaceChildren();
+const leftTitle=document.createElement('div'),rightTitle=document.createElement('div');leftTitle.className=rightTitle.className='sales-column-title';leftTitle.textContent='入力';rightTitle.textContent='一覧・確認';
+leftColumn.append(leftTitle,invoicePanel,receiptPanel);rightColumn.append(rightTitle,historyPanel,receiptHistoryPanel);
+let salesMode='invoice';
+function setSalesMode(mode){
+ salesMode=mode==='receipt'?'receipt':'invoice';const billing=salesMode==='invoice';
+ invoicePanel.hidden=!billing;historyPanel.hidden=!billing;receiptPanel.hidden=billing;receiptHistoryPanel.hidden=billing;position.hidden=!billing;originalMetrics.hidden=billing;
+ $('salesInvoiceTab').setAttribute('aria-selected',String(billing));$('salesReceiptTab').setAttribute('aria-selected',String(!billing));
+ entryGrid.setAttribute('aria-labelledby',billing?'salesInvoiceTab':'salesReceiptTab');
+ salesNote.textContent=billing?'請求明細は税抜で入力します。請求書の総額は消費税を加えた税込金額です。':'入金は、実際に入金された税込金額を記録します。';
+ const url=new URL(location.href);url.searchParams.set('mode',salesMode);history.replaceState(null,'',url.pathname+url.search+url.hash);refreshPosition();
+}
+$('salesInvoiceTab').onclick=()=>setSalesMode('invoice');$('salesReceiptTab').onclick=()=>setSalesMode('receipt');
+salesTabs.addEventListener('keydown',e=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(e.key))return;e.preventDefault();const mode=e.key==='Home'?'invoice':e.key==='End'?'receipt':salesMode==='invoice'?'receipt':'invoice';setSalesMode(mode);$(mode==='invoice'?'salesInvoiceTab':'salesReceiptTab').focus()});
+const tabEditInvoice=window.editInvoice;window.editInvoice=function(id){setSalesMode('invoice');tabEditInvoice(id)};
+const tabEditReceipt=window.editReceipt;window.editReceipt=function(id){setSalesMode('receipt');tabEditReceipt(id)};
+const tabRender=render;render=function(){tabRender();setSalesMode(salesMode)};
+const tabReset=resetBill;resetBill=function(){tabReset();if(salesMode==='receipt')invoicePanel.hidden=true;};
+const tabStyles=document.createElement('style');tabStyles.textContent=`
+.sales-tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:16px 0 8px;padding:0;background:transparent;border:0;border-radius:9px}
+.sales-tabs button{flex:1;min-height:44px;border:0;border-radius:7px;background:#eaf3f9;color:var(--deep);font-size:16px;font-weight:800;cursor:pointer}
+.sales-tabs button[aria-selected="true"]{background:var(--deep);color:white}.sales-tabs button:focus-visible{outline:3px solid #66b7e5;outline-offset:2px}
+.sales-mode-note{font-size:12px;color:#617786;margin:8px 0 12px}.sales-column-title{font-weight:bold;color:var(--deep);font-size:15px}
+#salesWorkspace{grid-template-columns:repeat(2,minmax(0,1fr))}
+#salesWorkspace .panel[hidden],.metrics[hidden]{display:none!important}
+#salesWorkspace .table-wrap{overflow-x:auto}.invoice-history-table{min-width:580px}
+@media(max-width:900px){#salesWorkspace{grid-template-columns:1fr}}
+`;document.head.append(tabStyles);
+
+const readableHistory=document.createElement('style');readableHistory.textContent=`
+#salesWorkspace .table-wrap table{font-size:15px}
+#salesWorkspace .table-wrap th{font-size:13px;padding:10px 8px}
+#salesWorkspace .table-wrap td{font-size:15px;line-height:1.45;padding:11px 8px;white-space:nowrap}
+#salesWorkspace .table-wrap .money{font-weight:700}
+#salesWorkspace .table-wrap .row-actions button{font-size:13px;padding:6px 8px}
+#salesWorkspace .table-wrap .row-actions{flex-wrap:nowrap}
+.history-gross{color:#587183;font-weight:500}.history-net{font-weight:700}
+#salesWorkspace .invoice-history-table{min-width:0;table-layout:auto}
+#salesWorkspace .invoice-history-table th:last-child{width:auto!important}
+#salesWorkspace .invoice-history-summary .who{font-size:13px}
+`;document.head.append(readableHistory);
+$('invoiceHistory').closest('table').querySelectorAll('thead th')[1].textContent='請求額（税抜 ／ 税込）';
+receiptPanel.querySelector('.panel-head .who').textContent='経理担当者・税込の実額';
+// Start with the editable detail lines; keep existing save and calculation handlers.
+const invoiceForm=$('invoiceForm');
+const invoiceDateField=$('invoiceDate').parentElement,customerField=$('billCustomer').parentElement;
+customerField.classList.add('field');customerField.querySelector('label').textContent='請求先（自動表示・変更可）';
+invoiceDateField.querySelector('label').textContent='請求日（今日の日付・変更可）';
+const identityRow=document.createElement('div');identityRow.className='invoice-identity';identityRow.append(invoiceDateField,customerField);
+const detailBlock=document.createElement('div');detailBlock.className='invoice-detail-entry';
+const detailTitle=document.createElement('b');detailTitle.textContent='請求明細（税抜）';
+const detailGuide=document.createElement('p');detailGuide.className='detail-guide';detailGuide.textContent='ここから入力：内容・数量・単価を入力してください。';
+const linesWrap=$('billLines').closest('table').parentElement;
+detailBlock.append(detailTitle,detailGuide,linesWrap,$('billAdd'));
+const settingsFold=document.createElement('details');settingsFold.className='invoice-settings bill-fold';
+const settingsSummary=document.createElement('summary');settingsSummary.textContent='請求書の設定・補足（必要なときだけ変更）';settingsFold.append(settingsSummary);
+const settingsGrid=document.createElement('div');settingsGrid.className='invoice-settings-grid';
+settingsGrid.append($('billType').parentElement,$('billNo').parentElement,$('billDue').parentElement);settingsFold.append(settingsGrid,taxesFold,$('paymentHint'),supplementFold,grossHelp,displayOpt);
+const toolbar=document.createElement('div');toolbar.className='invoice-register-bar';
+const amountField=$('invoiceAmount').parentElement;amountField.hidden=true;
+const actionTools=document.createElement('div');actionTools.className='invoice-secondary-actions';actionTools.append(cancelBill);
+toolbar.append($('billSummary'),amountField,$('invoiceWarning'),invoiceActions,actionTools,saveNotice);
+invoiceForm.replaceChildren(identityRow,detailBlock,toolbar,settingsFold,paymentChoices);
+const compactCalc=calcBill;calcBill=function(){compactCalc();$('invoiceAmount').readOnly=true;};
+$('billTax').onchange=calcBill;$('billRounding').onchange=calcBill;
+const focusFirstDetail=()=>{$('billLines').querySelector('input')?.focus();};
+const guidedLaunch=launch.onclick;launch.onclick=()=>{guidedLaunch();focusFirstDetail();};
+const guidedCancel=cancelBill.onclick;cancelBill.onclick=()=>{guidedCancel();focusFirstDetail();};
+$('invoiceDate').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();focusFirstDetail();}});
+const compactEntryStyle=document.createElement('style');compactEntryStyle.textContent=`
+#invoiceForm{display:flex;flex-direction:column;gap:12px}
+.invoice-identity{display:grid;grid-template-columns:minmax(150px,.8fr) minmax(0,1.2fr);gap:10px}
+.invoice-detail-entry b{font-size:16px;color:var(--deep)}.detail-guide{font-size:13px;color:#315b72;margin:6px 0 8px}
+.invoice-detail-entry .bill-lines-table{min-width:0;width:100%}
+.invoice-detail-entry .bill-lines-table th:nth-child(2),.invoice-detail-entry .bill-lines-table th:nth-child(3){width:48px}
+.invoice-detail-entry .bill-lines-table th:nth-child(4){width:125px}.invoice-detail-entry .bill-lines-table th:last-child{width:46px}
+#billLines td:nth-child(2),#billLines td:nth-child(3){width:48px}#billLines td:nth-child(4){width:125px}#billLines td:nth-child(4) input{min-width:0;font-size:15px}
+#billLines input{height:36px;font-size:14px}#billLines td{padding:7px 4px}#billAdd{margin-top:7px}
+.invoice-panel{overflow:visible}.invoice-panel .panel-head{border-radius:11px 11px 0 0}
+.invoice-register-bar{position:sticky;bottom:10px;z-index:20;background:#f2f8fc;border:1px solid #b9d2e4;border-radius:9px;padding:10px;box-shadow:0 3px 12px #173f6b18}
+.invoice-register-bar #billSummary{font-size:14px!important;font-weight:700;margin:0 0 8px;line-height:1.6}
+.invoice-register-bar .warning{margin-bottom:8px}.invoice-register-bar .invoice-actions{gap:8px}
+.invoice-secondary-actions{display:flex;gap:8px;align-items:center;margin-top:6px}.invoice-secondary-actions button{cursor:pointer}
+.invoice-settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:10px}.invoice-settings-grid label{display:block;font-size:12px;color:#607481;margin-bottom:4px}
+.invoice-settings .billing-position-option{font-size:13px!important}.invoice-settings{margin:0!important}
+.metrics .metric{min-height:0;padding:8px 10px}.metrics .value{margin-top:3px;font-size:20px}.metrics{margin:8px 0}
+@media(max-width:600px){.invoice-identity,.invoice-settings-grid{grid-template-columns:1fr}.invoice-register-bar{bottom:4px}.invoice-actions{grid-template-columns:1fr}.invoice-detail-entry .bill-lines-table{min-width:420px}}
+`;document.head.append(compactEntryStyle);
+calcBill();
+
+setSalesMode(new URLSearchParams(location.search).get('mode'));
+
+document.querySelector('.no').textContent='工事番号　'+(project.legacyProjectNo||project.no||'—');document.querySelector('.name').textContent=project.name||'';document.querySelector('.meta').textContent='発注者：'+(project.clientName||'—')+'　｜　工事担当：'+(project.projectPerson||project.sitePerson||'—')+'　｜　工期：'+(project.startDate||'—')+' ～ '+(project.endDate||'—');$('contractValue').textContent=yen(contract);
+document.querySelectorAll('.top-actions button')[0].onclick=()=>location.href='kouji_carte.html?id='+encodeURIComponent(id);$('invoiceDate').value=today();$('receiptDate').value=today();render();
+})();
+</script><script type="text/pages-deferred">document.addEventListener('DOMContentLoaded',()=>{const q=new URLSearchParams(location.search),pid=q.get('id')||q.get('projectId')||sessionStorage.getItem('mscm:selectedProjectId'),project=pid?MSData.get('projects',pid):null;const order=q.get('orderId')?MSData.get('orders',q.get('orderId')):null;if((order||project)&&!(order||project).moneyBasis){const note=document.createElement('div');note.style.cssText='padding:12px;background:#fff4df;color:#754c15;margin:10px;font-size:13px';note.textContent='金額基準が未確認の既存記録です。入力額を税抜として仮計算しています。受注・契約または発注の編集画面で、金額と税率を確認して保存してから帳票・請求を確定してください。';(document.querySelector('main')||document.body).prepend(note);}});</script>
+<style id="sales-history-fit">
+#salesWorkspace .table-wrap:has(#invoiceHistory),#salesWorkspace .table-wrap:has(#receiptHistory){overflow-x:visible}
+#salesWorkspace table:has(#invoiceHistory),#salesWorkspace table:has(#receiptHistory){table-layout:fixed;min-width:0;width:100%}
+#salesWorkspace table:has(#invoiceHistory) th:first-child,#salesWorkspace table:has(#receiptHistory) th:first-child{width:82px}
+#salesWorkspace table:has(#invoiceHistory) th:nth-child(2){width:190px}
+#salesWorkspace table:has(#receiptHistory) th:nth-child(2){width:245px}
+#salesWorkspace table:has(#invoiceHistory) th:last-child{width:170px!important}
+#salesWorkspace table:has(#receiptHistory) th:last-child{width:82px!important}
+#salesWorkspace table:has(#invoiceHistory) :is(th,td),#salesWorkspace table:has(#receiptHistory) :is(th,td){padding:8px 4px;white-space:nowrap;vertical-align:middle}
+#salesWorkspace :is(#invoiceHistory,#receiptHistory) td{font-size:12px}
+#salesWorkspace :is(#invoiceHistory,#receiptHistory) td:nth-child(3){overflow:hidden;text-overflow:ellipsis}
+#salesWorkspace :is(#invoiceHistory,#receiptHistory) td.money>*{display:inline;white-space:nowrap}
+#salesWorkspace :is(#invoiceHistory,#receiptHistory) .row-actions{display:flex;flex-wrap:nowrap;gap:3px;white-space:nowrap}
+#salesWorkspace :is(#invoiceHistory,#receiptHistory) .row-actions button{padding:5px 4px;font-size:11px;flex-shrink:0}
+@media(max-width:600px){
+#salesWorkspace table:has(#invoiceHistory) th:first-child,#salesWorkspace table:has(#receiptHistory) th:first-child{width:72px}
+#salesWorkspace table:has(#invoiceHistory) th:nth-child(2){width:160px}
+#salesWorkspace table:has(#receiptHistory) th:nth-child(2){width:205px}
+#salesWorkspace :is(#invoiceHistory,#receiptHistory) td{font-size:10px}
+#salesWorkspace table:has(#invoiceHistory) th:last-child{width:155px!important}
+#salesWorkspace :is(#invoiceHistory,#receiptHistory) .row-actions button{font-size:10px;padding:5px 3px}
+}
+</style>
+</body></html>
